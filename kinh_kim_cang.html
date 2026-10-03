@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cốt Lõi Kinh Kim Cang - Ứng Dụng Tu Tập Thực Tiễn</title>
+    <!-- Tải Tailwind CSS qua CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Quicksand:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #0b0f17;
+            color: #e2e8f0;
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Hiệu ứng ánh sáng Kim Cang Bát-Nhã */
+        .diamond-glow {
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.6);
+        }
+        
+        .box-glow {
+            box-shadow: 0 4px 25px -5px rgba(245, 158, 11, 0.15), 0 0 10px rgba(245, 158, 11, 0.05);
+        }
+
+        /* Hoạt ảnh tan biến vọng niệm */
+        @keyframes dissolveThought {
+            0% { opacity: 1; transform: scale(1); filter: blur(0px); }
+            50% { opacity: 0.5; transform: scale(1.05); filter: blur(4px); }
+            100% { opacity: 0; transform: scale(0.9); filter: blur(10px); }
+        }
+
+        .anim-dissolve {
+            animation: dissolveThought 1.6s forwards ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500 selection:text-black">
+
+    <!-- 1. THANH ĐIỀU HƯỚNG TRÊN CÙNG (HEADER) -->
+    <header class="border-b border-amber-500/20 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl text-amber-400">💎</span>
+                <div>
+                    <h1 class="font-cinzel text-lg md:text-xl font-bold text-amber-300 diamond-glow tracking-wide">
+                        Kinh Kim Cang Bát-Nhã
+                    </h1>
+                    <p class="text-[11px] text-slate-400">Trí Tuệ Phá Mọi Kiến Chấp • Y Lời Giảng HT. Thích Thanh Từ</p>
+                </div>
+            </div>
+
+            <!-- Nút Âm Thanh Thiền Định -->
+            <div class="flex items-center gap-2">
+                <button id="btnBell" class="px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-950/30 text-amber-300 text-xs font-semibold hover:bg-amber-900/50 transition-all flex items-center gap-1.5">
+                    <span>🔔</span> <span id="bellText">Chuông Bát 432Hz</span>
+                </button>
+                <button id="btnMuo" class="px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-950/30 text-amber-300 text-xs font-semibold hover:bg-amber-900/50 transition-all flex items-center gap-1.5">
+                    <span>🪵</span> <span id="muoText">Bật Nhịp Mõ</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. KHU VỰC NỘI DUNG CHÍNH (MAIN) -->
+    <main class="max-w-6xl mx-auto px-4 py-6 space-y-8 flex-grow">
+
+        <!-- LỜI DẪN BÁT-NHÃ TRUNG ĐẠO -->
+        <section class="bg-gradient-to-r from-amber-950/30 via-slate-900/40 to-amber-950/30 p-5 rounded-2xl border border-amber-500/20 box-glow text-center max-w-3xl mx-auto">
+            <h2 class="font-cinzel text-amber-300 text-base md:text-lg font-bold mb-2">
+                Diệu Dụng Kinh Kim Cang: "Cây Kiếm Bát-Nhã Phá Sạch Mọi Kiến Chấp"
+            </h2>
+            <p class="text-xs md:text-sm text-slate-300 leading-relaxed italic">
+                "Bát-nhã không phải chấp không. Biết rõ vạn vật do duyên sanh nên không thật có; đủ duyên hiện tiền nên không thể nói thật không. Thấy đúng lý Trung đạo, dẹp tan hai ngọn núi kiến chấp ngã và pháp."
+            </p>
+        </section>
+
+        <!-- BỐN BƯỚC TU TẬP CỐT TỦY (TABS) -->
+        <section class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <h3 class="font-cinzel text-sm md:text-base font-bold text-amber-400 flex items-center gap-2">
+                    <span>🧭</span> Bốn Bước Ứng Dụng Tu Tập Hằng Ngày
+                </h3>
+                <span class="text-xs text-slate-400">Chọn từng bước để xem giải thích</span>
+            </div>
+
+            <!-- Thanh chọn 4 bước -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5" id="stepButtons">
+                <button onclick="selectStep(1)" class="step-btn p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 text-xs font-bold text-left transition-all hover:bg-amber-500/20" data-step="1">
+                    1. Quán Duyên Hợp
+                    <span class="block text-[10px] font-normal text-slate-400 mt-0.5">Mộng Huyễn Bào Ảnh</span>
+                </button>
+                <button onclick="selectStep(2)" class="step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs font-bold text-left transition-all hover:bg-amber-500/20" data-step="2">
+                    2. Hàng Phục Tâm
+                    <span class="block text-[10px] font-normal text-slate-400 mt-0.5">Độ Vọng Niệm Vô Sanh</span>
+                </button>
+                <button onclick="selectStep(3)" class="step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs font-bold text-left transition-all hover:bg-amber-500/20" data-step="3">
+                    3. An Trụ Tâm
+                    <span class="block text-[10px] font-normal text-slate-400 mt-0.5">Ưng Vô Sở Trụ (Lìa 6 Trần)</span>
+                </button>
+                <button onclick="selectStep(4)" class="step-btn p-3 rounded-xl border border-slate-800 bg-slate-900/60 text-slate-300 text-xs font-bold text-left transition-all hover:bg-amber-500/20" data-step="4">
+                    4. Pháp Thân Như Như
+                    <span class="block text-[10px] font-normal text-slate-400 mt-0.5">Không Thủ Tướng Bất Động</span>
+                </button>
+            </div>
+
+            <!-- Nội dung chi tiết của bước được chọn -->
+            <div id="stepDetailCard" class="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 box-glow text-sm text-slate-300 leading-relaxed transition-all">
+                <!-- Nội dung được cập nhật động bằng Javascript -->
+            </div>
+        </section>
+
+        <!-- HAI CÔNG CỤ TƯƠNG TÁC THỰC NGHIỆM TÂM THỨC -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- CÔNG CỤ 1: QUÁN ĐỘ VỌNG TƯỞNG (HÀNG PHỤC TÂM) -->
+            <div class="p-5 rounded-2xl bg-slate-900/70 border border-amber-500/20 flex flex-col justify-between box-glow">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-cinzel text-sm font-bold text-amber-300 flex items-center gap-2">
+                            <span>🧘</span> Thực Hành Độ Vọng Niệm
+                        </h4>
+                        <span class="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono">Đoạn 3 & 18</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4 leading-normal">
+                        Mỗi niệm khởi lên là một chúng sanh. Nhập một suy nghĩ đang làm bạn bận lòng, dùng gươm Bát-nhã đưa nó vào chỗ vô sanh (vô dư Niết-bàn).
+                    </p>
+
+                    <!-- Lựa chọn mẫu hoặc tự nhập -->
+                    <div class="space-y-3">
+                        <div class="flex gap-2">
+                            <input id="inputThought" type="text" placeholder="Ví dụ: Vừa bị người khác chê bai, tức giận..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
+                            <button onclick="handleDissolveThought()" class="px-4 py-2 bg-amber-500 text-slate-950 text-xs font-bold rounded-lg hover:bg-amber-400 transition-all shrink-0">
+                                Quán Độ
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 text-[11px]">
+                            <span class="text-slate-500">Mẫu sẵn:</span>
+                            <button onclick="quickFillThought('Tiếc nuối chuyện buồn hôm qua')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-amber-300">Tâm Quá Khứ</button>
+                            <button onclick="quickFillThought('Lo sợ chuyện khó khăn ngày mai')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-amber-300">Tâm Vị Lai</button>
+                            <button onclick="quickFillThought('Tính toán tranh hơn thua hiện tại')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-amber-300">Tâm Hiện Tại</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Khu vực hiển thị kết quả quán độ -->
+                <div id="thoughtResultArea" class="mt-4 p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 text-xs min-h-[90px] flex items-center justify-center text-center text-slate-400 italic">
+                    "Tâm quá khứ bất khả đắc, tâm hiện tại bất khả đắc, tâm vị lai bất khả đắc. Vọng niệm không thật có tự thể."
+                </div>
+            </div>
+
+            <!-- CÔNG CỤ 2: BỘ CÔNG THỨC BIỆN CHỨNG KIM CANG (A TỨC PHI A, THỊ DANH A) -->
+            <div class="p-5 rounded-2xl bg-slate-900/70 border border-amber-500/20 flex flex-col justify-between box-glow">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-cinzel text-sm font-bold text-amber-300 flex items-center gap-2">
+                            <span>⚖️</span> Biện Chứng Bát-Nhã Tam Đoạn Luận
+                        </h4>
+                        <span class="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono">A ➔ Phi A ➔ Thị danh A</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4 leading-normal">
+                        Xem xét bất kỳ sự vật hiện tượng nào dưới góc nhìn Kim Cang: Bản thể duyên hợp (Tánh Không) và danh xưng tạm đặt (Giả Danh).
+                    </p>
+
+                    <!-- Lựa chọn khái niệm -->
+                    <div class="flex gap-2">
+                        <input id="inputConcept" type="text" placeholder="Nhập một khái niệm: Tiền của, Thân tôi, Căn nhà..." value="Thân thể tôi" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
+                        <button onclick="handleDialecticAnalysis()" class="px-4 py-2 bg-amber-600 text-slate-100 text-xs font-bold rounded-lg hover:bg-amber-500 transition-all shrink-0">
+                            Phân Giải
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bảng hiển thị 3 đoạn luận -->
+                <div id="dialecticDisplay" class="mt-4 p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 text-xs space-y-2">
+                    <div class="text-amber-300 font-semibold">1. Pháp tướng giả định: <span id="diagA" class="font-normal text-slate-200">Thân thể tôi</span></div>
+                    <div class="text-rose-300 font-semibold">2. Tức phi (Bản chất Tánh Không): <span id="diagNotA" class="font-normal text-slate-300">Tứ đại đất nước gió lửa duyên hợp, không có chủ thể cố định.</span></div>
+                    <div class="text-emerald-300 font-semibold">3. Thị danh (Trung đạo giả danh): <span id="diagNameA" class="font-normal text-slate-300">Tùy duyên tạm gọi là "Thân thể tôi" để tu tập, không chấp thật.</span></div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- BỐN CÂU KỆ KIM CANG ĐỂ ĐỜI TRÌ TỤNG -->
+        <section class="bg-slate-900/40 p-5 rounded-2xl border border-slate-800">
+            <h3 class="font-cinzel text-center text-sm md:text-base font-bold text-amber-400 mb-4">
+                Hai Bài Kệ Cốt Tủy Thọ Trì & Quán Chiếu
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl bg-slate-950/80 border border-amber-500/20 text-center space-y-2">
+                    <span class="text-xs font-bold text-amber-400">KỆ LÌA SẮC THANH CẦU PHẬT (Đoạn 26)</span>
+                    <p class="font-serif italic text-amber-100 text-sm leading-relaxed">
+                        "Nhược dĩ sắc kiến ngã,<br>
+                        Dĩ âm thanh cầu ngã,<br>
+                        Thị nhân hành tà đạo,<br>
+                        Bất năng kiến Như Lai."
+                    </p>
+                    <p class="text-[11px] text-slate-400">Pháp thân Phật bất sanh bất diệt, không kẹt vào hình tướng 32 tướng tốt hay âm thanh sinh diệt.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-950/80 border border-amber-500/20 text-center space-y-2">
+                    <span class="text-xs font-bold text-amber-400">KỆ QUÁN CHIẾU HỮU VI (Đoạn 32)</span>
+                    <p class="font-serif italic text-amber-100 text-sm leading-relaxed">
+                        "Nhất thiết hữu vi pháp,<br>
+                        Như mộng, huyễn, bào, ảnh,<br>
+                        Như lộ diệc như điện,<br>
+                        Ưng tác như thị quán."
+                    </p>
+                    <p class="text-[11px] text-slate-400">Tất cả pháp có hình tướng đều vô thường như giấc mộng, bọt nước, sương mai, điện chớp; thường quán như vậy tâm tự như như.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 3. CHÂN TRANG (FOOTER) -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-4 text-center text-[11px] text-slate-500">
+        Ứng dụng được thiết kế dựa trên bản dịch & giảng giải Kinh Kim Cang của Hòa Thượng Thích Thanh Từ (Thiền viện Thường Chiếu, 1992).
+    </footer>
+
+    <!-- ========================================================== -->
+    <!-- LOGIC LẬP TRÌNH JAVASCRIPT THUẦN NỘI TẠI -->
+    <!-- ========================================================== -->
+    <script>
+        /**
+         * 1. HỆ THỐNG ÂM THANH THIỀN ĐỊNH BẰNG WEB AUDIO API
+         * Tổng hợp tiếng Chuông Bát (432Hz) và tiếng Mõ gỗ thuần túy bằng code
+         */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.isBellOn = false;
+                this.isMuoOn = false;
+                this.muoTimer = null;
+            }
+
+            initContext() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Tiếng Chuông Bát Tây Tạng (Singing Bowl - Tần số 432 Hz thanh tịnh)
+            playBowl() {
+                this.initContext();
+                const now = this.ctx.currentTime;
+                const osc1 = this.ctx.createOscillator();
+                const osc2 = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(432, now); // Âm gốc
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(432 * 1.503, now); // Bội âm nhẹ
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.25, now + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 4.5);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 4.5);
+                osc2.stop(now + 4.5);
+            }
+
+            // Tiếng Mõ gỗ thiền định (Decay cực nhanh mô phỏng gỗ mít)
+            playMuo() {
+                this.initContext();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const filter = this.ctx.createBiquadFilter();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.12);
+            }
+
+            toggleMuo(btnElement, textElement) {
+                this.isMuoOn = !this.isMuoOn;
+                if (this.isMuoOn) {
+                    this.initContext();
+                    this.muoTimer = setInterval(() => this.playMuo(), 1000); // 60 nhịp/phút
+                    btnElement.classList.add('border-amber-400', 'bg-amber-900/60');
+                    textElement.innerText = "Dừng Mõ";
+                } else {
+                    clearInterval(this.muoTimer);
+                    this.muoTimer = null;
+                    btnElement.classList.remove('border-amber-400', 'bg-amber-900/60');
+                    textElement.innerText = "Bật Nhịp Mõ";
+                }
+            }
+        }
+
+        const sound = new SoundEngine();
+
+        document.getElementById('btnBell').addEventListener('click', () => {
+            sound.playBowl();
+        });
+
+        document.getElementById('btnMuo').addEventListener('click', function() {
+            sound.toggleMuo(this, document.getElementById('muoText'));
+        });
+
+        /**
+         * 2. DỮ LIỆU & BỐN BƯỚC TU TẬP THỰC TIỄN THEO LỜI GIẢNG HT. THÍCH THANH TỪ
+         */
+        const PRACTICE_STEPS = {
+            1: {
+                title: "Bước 1: Dùng Trí Tuệ Quán Chiếu Duyên Hợp (Khởi Đầu Tu Tập)",
+                sutraSnippet: "Nhất thiết hữu vi pháp, như mộng, huyễn, bào, ảnh...",
+                explanation: "Hòa thượng dạy: Trước tiên phải dùng trí tuệ Bát-nhã thấy tất cả pháp là tướng duyên hợp không có tự tánh, chỉ có giả danh. Có thân tướng hay động tác đều là hữu vi, mà hữu vi thì biến đổi tan hoại như bọt nước, sương mai. Hằng ngày khởi quán như thế thì tâm mới không còn chấp chặt vào sự vật, làm nền tảng vững chắc để hàng phục tâm.",
+                practiceHint: "Ứng dụng: Khi gặp chuyện vừa ý hoặc nghịch lòng, khởi niệm quán: 'Đây là tướng duyên hợp hư giả, như sương sớm, chốc lát liền tan'. Tự nhiên tâm nhẹ nhõm, không buồn giận."
+            },
+            2: {
+                title: "Bước 2: Hàng Phục Tâm (Độ Tận Vọng Niệm Về Chỗ Vô Sanh)",
+                sutraSnippet: "Ngã giai linh nhập vô dư Niết-bàn nhi diệt độ chi, thực vô chúng sanh đắc diệt độ giả...",
+                explanation: "Hòa thượng giải thích rất thấu đáo: Ngài Tu-bồ-đề hỏi việc bên trong mà Phật nói độ chúng sanh là sao? Vì mỗi dấy niệm là một chúng sanh. Dấy nghĩ người là thai sanh, nghĩ chim muông là noãn sanh, nghĩ bướm ong là hóa sanh... Vừa khởi niệm liền biết niệm giả không theo, nó tự lặng xuống chỗ không sanh không dạng mạo (vô dư Niết-bàn). Độ hết niệm mà không thấy có niệm nào thật diệt độ, đó chính là hàng phục tâm.",
+                practiceHint: "Ứng dụng: Khi ngồi làm việc hay nghỉ ngơi, hễ một niệm nhớ chuyện xưa hoặc lo chuyện mai dấy lên, nhận biết nó là vọng, không đuổi theo, trả tâm về khoảng lặng thanh tịnh."
+            },
+            3: {
+                title: "Bước 3: An Trụ Tâm (Ưng Vô Sở Trụ Nhi Sanh Kỳ Tâm)",
+                sutraSnippet: "Bất ưng trụ sắc, thanh, hương, vị, xúc, pháp nhi hành bố thí...",
+                explanation: "Làm sao an trụ tâm? Hòa thượng dạy: Không dính sáu trần chính là an trụ. Thấy sắc không đuổi theo sắc, nghe tiếng không chạy theo tiếng. Tay ta cầm một vật trên bàn là tay động (chấp), buông cả sáu vật thì tay để yên một chỗ là an. Không kẹt sáu trần thì tâm thênh thang như hư không khắp mười phương, đó mới là chân thật an trụ.",
+                practiceHint: "Ứng dụng: Bố thí, giúp đỡ người khác với tâm tự nhiên (vô duyên từ). Giúp xong buông xả, không kể lể, không nhớ nghĩ mong cầu đền đáp; gặp người xúc phạm không ôm ấp trong lòng."
+            },
+            4: {
+                title: "Bước 4: Nhận Lại Pháp Thân Như Như (Đích Đến Cứu Cánh)",
+                sutraSnippet: "Bất thủ ư tướng, như như bất động • Vô sở tùng lai diệc vô sở khứ...",
+                explanation: "Khi đã quán huyễn, hàng phục được vọng niệm và không dính mắc sáu trần, thì cái thể chân thật bất sanh bất diệt tự nhiên hiện tiền. Như Lai không phải hình tướng 32 vẻ đẹp, mà chính là tánh Phật hằng giác nơi mỗi người. Người đạt chỗ này tâm như như bất động, xem nghịch cảnh là Bồ-tát nghịch hạnh thử thách, chuyển Ta Bà thành Tịnh độ.",
+                practiceHint: "Ứng dụng: Sống tỉnh giác trọn vẹn trong hiện tại. Không chạy theo huyễn cảnh, giữ tâm sáng suốt bình đẳng với tất cả mọi người xung quanh."
+            }
+        };
+
+        function selectStep(stepNum) {
+            // Cập nhật kiểu nút bấm
+            document.querySelectorAll('.step-btn').forEach(btn => {
+                const s = btn.getAttribute('data-step');
+                if (s == stepNum) {
+                    btn.classList.add('border-amber-500/50', 'bg-amber-500/20', 'text-amber-300');
+                    btn.classList.remove('border-slate-800', 'bg-slate-900/60', 'text-slate-300');
+                } else {
+                    btn.classList.remove('border-amber-500/50', 'bg-amber-500/20', 'text-amber-300');
+                    btn.classList.add('border-slate-800', 'bg-slate-900/60', 'text-slate-300');
+                }
+            });
+
+            // Hiển thị nội dung chi tiết
+            const data = PRACTICE_STEPS[stepNum];
+            const container = document.getElementById('stepDetailCard');
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-amber-300 text-base font-cinzel">${data.title}</h4>
+                        <span class="text-xs text-amber-400 font-serif italic">${data.sutraSnippet}</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed text-xs md:text-sm">${data.explanation}</p>
+                    <div class="p-3 rounded-xl bg-amber-950/20 border-l-2 border-amber-500 text-xs text-amber-200">
+                        <strong class="text-amber-400">Cách hành trì thực tế:</strong> ${data.practiceHint}
+                    </div>
+                </div>
+            `;
+            sound.playBowl();
+        }
+
+        /**
+         * 3. THỰC NGHIỆM ĐỘ VỌNG NIỆM (HÀNG PHỤC TÂM)
+         */
+        function quickFillThought(text) {
+            document.getElementById('inputThought').value = text;
+        }
+
+        function handleDissolveThought() {
+            const input = document.getElementById('inputThought');
+            const resultBox = document.getElementById('thoughtResultArea');
+            const thought = input.value.trim();
+
+            if (!thought) {
+                resultBox.innerHTML = "<span class='text-amber-400'>Hãy nhập một suy nghĩ, lo lắng hoặc bận lòng của bạn...</span>";
+                return;
+            }
+
+            // Kích hoạt âm thanh chuông bát định tâm
+            sound.playBowl();
+
+            // Hiệu ứng phân giải vọng niệm
+            resultBox.innerHTML = `
+                <div class="space-y-2">
+                    <div class="anim-dissolve text-rose-300 font-semibold text-xs">"${thought}"</div>
+                    <div class="text-emerald-300 font-bold text-xs">✓ Đã quán chiếu: Niệm này do duyên hợp giả khởi, không có tự tánh thật!</div>
+                    <div class="text-[11px] text-slate-300">Đưa vọng niệm vào vô dư Niết-bàn (chỗ lặng lẽ không theo). Không ngã, không nhân, tâm trở về bình an.</div>
+                </div>
+            `;
+
+            input.value = "";
+        }
+
+        /**
+         * 4. BỘ CÔNG THỨC BIỆN CHỨNG KIM CANG "A ➔ PHI A ➔ THỊ DANH A"
+         */
+        function handleDialecticAnalysis() {
+            const input = document.getElementById('inputConcept');
+            const concept = input.value.trim();
+            if (!concept) return;
+
+            sound.playMuo();
+
+            document.getElementById('diagA').innerText = concept;
+            document.getElementById('diagNotA').innerText = `Do nhân duyên tạm hợp thành (Tánh Không), tìm tự tánh chân thật bất biến của '${concept}' hoàn toàn không thể có.`;
+            document.getElementById('diagNameA').innerText = `Dù bản chất là không, nhưng hiện tiền giả tướng đang hiện diện. Tạm mượn danh từ '${concept}' để giao tiếp và làm lợi ích thế gian, tâm không tham trước.`;
+        }
+
+        // Khởi tạo mặc định bước 1
+        selectStep(1);
+    </script>
+</body>
+</html>

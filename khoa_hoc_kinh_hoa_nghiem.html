@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Thước Đo Vũ Trụ Hoa Nghiêm - Scale of the Avatamsaka Universe</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Phật Giáo & Triết Học -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Lora:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --gold-glow: #ffd700;
+      --lotus-pink: #ff758c;
+      --vajra-blue: #00d2ff;
+      --deep-cosmic: #05040a;
+    }
+    body {
+      font-family: 'Lora', serif;
+      background-color: var(--deep-cosmic);
+      color: #f8fafc;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-buddha {
+      font-family: 'Cinzel', serif;
+    }
+    .font-title {
+      font-family: 'Playfair Display', serif;
+    }
+    .font-tech {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Thanh trượt điều khiển tùy biến màu Hoàng Kim Hoa Tạng */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffe066 30%, #e5a93b 90%);
+      box-shadow: 0 0 16px #ffd700, 0 0 28px rgba(255, 215, 0, 0.7);
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+    /* Hiệu ứng kính mờ Mạn-đà-la (Glassmorphism trang nghiêm) */
+    .mandala-glass {
+      background: rgba(13, 11, 24, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 215, 0, 0.28);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 14px rgba(255, 215, 0, 0.08);
+    }
+    .mandala-glass-active {
+      border-color: rgba(255, 215, 0, 0.85);
+      box-shadow: 0 0 22px rgba(255, 215, 0, 0.45);
+    }
+    /* Vòng hào quang xoay Mạn đà la nền */
+    .halo-spin {
+      animation: spin 90s linear infinite;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    /* Thanh hiển thị nhịp sóng âm chuông thiền */
+    .bell-wave {
+      transition: height 0.1s ease, background-color 0.3s ease;
+    }
+    /* Cuộn tùy chỉnh thanh cuộn modal */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(10, 10, 20, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 215, 0, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 215, 0, 0.7);
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden flex flex-col justify-between">
+
+  <!-- Canvas Đồ họa Vũ Trụ Trùng Trùng Duyên Khởi -->
+  <canvas id="universeCanvas" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></canvas>
+
+  <!-- Mạn-đà-la hoa văn nền mờ ảo -->
+  <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-10 z-0">
+    <svg class="w-[90vw] h-[90vw] max-w-[900px] max-h-[900px] halo-spin text-amber-300" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="0.3">
+      <circle cx="50" cy="50" r="48" stroke-dasharray="2, 2"/>
+      <circle cx="50" cy="50" r="40"/>
+      <circle cx="50" cy="50" r="30" stroke-dasharray="4, 2"/>
+      <circle cx="50" cy="50" r="20"/>
+      <polygon points="50,2 62,38 98,50 62,62 50,98 38,62 2,50 38,38"/>
+      <polygon points="50,15 58,42 85,50 58,58 50,85 42,58 15,50 42,42"/>
+    </svg>
+  </div>
+
+  <!-- ==================== HEADER (THANH ĐIỀU HƯỚNG TRÊN) ==================== -->
+  <header class="relative z-10 w-full p-3 sm:p-5 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+    
+    <!-- Tiêu đề Kinh điển -->
+    <div class="pointer-events-auto mandala-glass px-4 py-2.5 rounded-2xl flex items-center gap-3 shadow-xl">
+      <div class="relative w-7 h-7 flex items-center justify-center">
+        <span class="absolute w-full h-full rounded-full bg-amber-400 opacity-75 animate-ping"></span>
+        <svg class="w-6 h-6 text-amber-300 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L9 9l-7 3 7 3 3 7 3-7 7-3-7-3-3-7zm0 4.5l1.8 4.2 4.2 1.8-4.2 1.8L12 18.5l-1.8-4.2-4.2-1.8 4.2-1.8L12 6.5z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-buddha text-xs sm:text-base font-bold tracking-widest text-amber-200 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">
+          VŨ TRỤ QUAN HOA NGHIÊM
+        </h1>
+        <p class="text-[10px] sm:text-xs text-amber-100/70 font-title italic">Sự Sự Vô Ngại • Trùng Trùng Duyên Khởi</p>
+      </div>
+    </div>
+
+    <!-- HUD Chỉ số Thang Đo Phật Triết -->
+    <div class="pointer-events-auto mandala-glass px-5 py-2 rounded-2xl flex items-center gap-4 text-center">
+      <div>
+        <div class="text-[10px] text-amber-300/80 font-tech uppercase tracking-widest">Thang Độ Hoa Nghiêm</div>
+        <div id="hudScaleTitle" class="font-buddha text-xs sm:text-base font-extrabold text-white text-amber-200">
+          Cực Vi Trần (Hạt Bụi)
+        </div>
+      </div>
+      <div class="h-8 w-[1px] bg-amber-400/30"></div>
+      <div>
+        <div class="text-[10px] text-slate-300 font-tech uppercase tracking-widest">Tỷ Lệ Quy Mô Vật Lý</div>
+        <div id="hudScaleMetric" class="font-tech text-xs sm:text-sm font-semibold text-cyan-300">
+          10⁻³⁵ Mét (Thang Planck)
+        </div>
+      </div>
+    </div>
+
+    <!-- Cụm Nút Chức Năng (Âm Thanh, Tra Cứu Kinh Điển, Modal) -->
+    <div class="pointer-events-auto flex items-center gap-2">
+      <!-- Nút Chuông Bát Thiền Định (Singing Bowl) -->
+      <button id="bellAudioBtn" class="mandala-glass hover:bg-amber-950/40 text-amber-300 px-3 py-2 rounded-xl flex items-center gap-2 transition" title="Bật/Tắt Chuông Bát Trầm Hùng">
+        <svg id="bellIconOn" class="w-5 h-5 hidden text-amber-300" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+        </svg>
+        <svg id="bellIconOff" class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+        </svg>
+        <span class="text-xs font-title hidden sm:inline">Chuông Bát</span>
+        <div class="hidden sm:flex items-end gap-[2px] h-4 w-5" id="bellVisualizer">
+          <span class="bell-wave w-1 bg-amber-400 h-1"></span>
+          <span class="bell-wave w-1 bg-amber-400 h-2"></span>
+          <span class="bell-wave w-1 bg-amber-400 h-3"></span>
+          <span class="bell-wave w-1 bg-amber-400 h-1"></span>
+        </div>
+      </button>
+
+      <!-- Nút Mở Bảng Kinh Văn Gốc -->
+      <button id="openScriptureBtn" class="mandala-glass hover:bg-amber-900/40 text-amber-200 px-3 py-2 rounded-xl flex items-center gap-1.5 transition text-xs font-title shadow-lg">
+        <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+        <span>Kinh Văn & Triết Học</span>
+      </button>
+
+      <!-- Nút Bật/Tắt Bảng Chi Tiết Cấp Độ Hiện Tại -->
+      <button id="toggleLevelCardBtn" class="mandala-glass hover:bg-amber-900/40 text-amber-200 p-2 rounded-xl transition" title="Ẩn/Hiện Chi Tiết">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== BẢNG CHI TIẾT CẤP ĐỘ (FLOATING CARD) ==================== -->
+  <aside id="levelInfoCard" class="fixed top-20 right-3 sm:right-6 w-80 sm:w-96 max-h-[75vh] z-20 mandala-glass rounded-2xl p-4 sm:p-5 flex flex-col gap-3 shadow-2xl transition-all duration-300 overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-amber-400/30 pb-2">
+      <div class="flex items-center gap-2">
+        <span id="cardBadge" class="px-2 py-0.5 rounded text-[10px] font-buddha font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">CỰC VI QUAN</span>
+        <span id="cardLevelNum" class="text-xs text-amber-200/70 font-tech">Cấp 1 / 12</span>
+      </div>
+      <button id="closeLevelCardBtn" class="text-amber-200/60 hover:text-white p-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div>
+      <h2 id="cardTitle" class="font-buddha text-base sm:text-lg font-bold text-amber-200 tracking-wide">Nhất Vi Trần (Một Hạt Bụi)</h2>
+      <div id="cardSubtitle" class="text-xs font-title text-amber-400/90 italic mb-2">"Nhất vi trần trung kiến pháp giới"</div>
+      <p id="cardDescription" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
+        Trong một hạt bụi cực nhỏ chứa trọn vẹn vô biên cõi Phật. Không gian vi mô và vĩ mô hòa nhập vô ngại, không có lớn nhỏ ngăn cách.
+      </p>
+    </div>
+
+    <!-- Trích Đoạn Kinh Văn Hoa Nghiêm Chính Xác -->
+    <div class="bg-amber-950/30 border-l-2 border-amber-400 p-2.5 rounded-r-xl">
+      <div class="text-[10px] font-bold text-amber-300 font-buddha flex items-center gap-1">
+        <span>📜 KINH VĂN HOA NGHIÊM:</span>
+      </div>
+      <blockquote id="cardSutraQuote" class="text-xs text-amber-100/90 mt-1 italic font-serif leading-relaxed">
+        "Bao nhiêu vi trần trong thế giới / Trong mỗi vi trần thấy các cõi / Bửu quang hiện Phật vô lượng số / Cảnh giới tự tại của Như Lai."
+      </blockquote>
+      <div id="cardSutraSource" class="text-[10px] text-amber-300/60 text-right mt-1 font-tech">— Phẩm Hoa Tạng Thế Giới thứ 5</div>
+    </div>
+
+    <!-- Đối Chiếu Khoa Học Hiện Đại -->
+    <div class="bg-cyan-950/30 border border-cyan-500/30 p-2.5 rounded-xl text-xs font-tech">
+      <div class="text-cyan-300 text-[10px] font-bold flex items-center gap-1">
+        <span>🔬 ĐỐI CHIẾU VẬT LÝ THIÊN VĂN HIỆN ĐẠI:</span>
+      </div>
+      <p id="cardScienceNote" class="text-slate-300 mt-1 leading-relaxed text-[11px]">
+        Thang độ Planck ($10^{-35}\text{m}$), hình học Fractal vi mô chứa vĩ mô, thuyết Holographic Universe (Vũ trụ Toàn ảnh) và Thuyết dây đa chiều.
+      </p>
+    </div>
+  </aside>
+
+  <!-- ==================== MODAL ĐẠI THƯ VIỆN KINH HOA NGHIÊM ==================== -->
+  <div id="scriptureModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 hidden">
+    <div class="mandala-glass border-amber-400/40 rounded-3xl w-full max-w-4xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Header Modal -->
+      <div class="flex items-center justify-between p-4 sm:p-5 border-b border-amber-400/30 bg-amber-950/20">
+        <div class="flex items-center gap-2">
+          <svg class="w-6 h-6 text-amber-300" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H5V4h14v16z"/>
+            <path d="M7 6h10v2H7zm0 4h10v2H7zm0 4h7v2H7z"/>
+          </svg>
+          <h2 class="font-buddha text-sm sm:text-lg font-bold text-amber-200">KHO TÀNG VŨ TRỤ QUAN KINH HOA NGHIÊM</h2>
+        </div>
+        <button id="closeScriptureBtn" class="text-slate-400 hover:text-white p-1.5 rounded-lg bg-slate-900/60">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Tab Điều Hướng Trong Modal -->
+      <div class="flex border-b border-amber-400/20 bg-slate-950/40 text-xs font-buddha overflow-x-auto">
+        <button class="modal-tab-btn px-4 py-3 text-amber-300 border-b-2 border-amber-400 font-bold shrink-0" data-tab="tab-tutang">TỨ PHÁP GIỚI & HUYỀN MÔN</button>
+        <button class="modal-tab-btn px-4 py-3 text-slate-400 hover:text-amber-200 shrink-0" data-tab="tab-hoatang">20 TẦNG HOA TẠNG & TA BÀ</button>
+        <button class="modal-tab-btn px-4 py-3 text-slate-400 hover:text-amber-200 shrink-0" data-tab="tab-atangky">SỐ HỌC A TĂNG KỲ ($10^{10^{37}}$)</button>
+        <button class="modal-tab-btn px-4 py-3 text-slate-400 hover:text-amber-200 shrink-0" data-tab="tab-tholuong">THỜI GIAN & THỌ LƯỢNG CÁC CÕI</button>
+      </div>
+
+      <!-- Nội Dung Modal -->
+      <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs sm:text-sm leading-relaxed text-slate-200 font-sans">
+        
+        <!-- TAB 1: Tứ Pháp Giới -->
+        <div id="tab-tutang" class="modal-tab-content space-y-4">
+          <h3 class="font-buddha text-base text-amber-300 font-bold">1. Bốn Cấp Bậc Vô Ngại Pháp Giới (Hòa Thượng Thích Trí Tịnh Dịch)</h3>
+          <p class="text-slate-300">
+            Kinh Hoa Nghiêm tuyên bố thực tại vũ trụ vận hành qua 4 cảnh giới tuần tự chứng ngộ:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-serif">
+            <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-400/30">
+              <div class="font-buddha font-bold text-amber-300 mb-1">1. Lý Vô Ngại Pháp Giới</div>
+              <p class="text-[12px] text-slate-300">Thể tánh chân thật (Chân Như, Pháp Tánh) của vạn hữu đồng nhất, bình đẳng, không chia cắt, dung thông tự tại.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-400/30">
+              <div class="font-buddha font-bold text-amber-300 mb-1">2. Sự Vô Ngại Pháp Giới</div>
+              <p class="text-[12px] text-slate-300">Mỗi hiện tượng, sự vật, cõi nước sai biệt thiên hình vạn trạng nhưng không hề làm trở ngại nhau trong vũ trụ.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-400/30">
+              <div class="font-buddha font-bold text-amber-300 mb-1">3. Lý Sự Vô Ngại Pháp Giới</div>
+              <p class="text-[12px] text-slate-300">Bản thể vô hình (Lý) hiển lộ trọn vẹn trong từng hiện tượng cụ thể (Sự); toàn thể Sự tức là toàn thể Lý.</p>
+            </div>
+            <div class="p-3 rounded-xl bg-amber-950/20 border border-amber-400/30">
+              <div class="font-buddha font-bold text-amber-300 mb-1">4. Sự Sự Vô Ngại Pháp Giới (Cứu Cánh)</div>
+              <p class="text-[12px] text-slate-300">Tột cùng của Hoa Nghiêm: Một hạt bụi chứa trọn vẹn ngàn vạn cõi Phật; một sát-na thâu nhiếp vô lượng kiếp quá khứ, hiện tại, vị lai!</p>
+            </div>
+          </div>
+          <blockquote class="p-3 bg-slate-900/80 rounded-xl border-l-4 border-amber-400 italic text-amber-100 font-serif">
+            "Vô lượng vô số núi Tu Di / Đều đem để vào một sợi lông / Một thế giới để vào tất cả / Tất cả thế giới để vào một / Thể tướng thế giới vẫn như cũ / Vô đẳng vô lượng đều cùng khắp." (Kinh Hoa Nghiêm - Trang 4)
+          </blockquote>
+        </div>
+
+        <!-- TAB 2: 20 Tầng Thế Giới Chủng Hoa Tạng -->
+        <div id="tab-hoatang" class="modal-tab-content hidden space-y-4">
+          <h3 class="font-buddha text-base text-amber-300 font-bold">2. Trục 20 Tầng Hoa Tạng Thế Giới Chủng & Vị Trí Cõi Ta Bà</h3>
+          <p class="text-slate-300">
+            Theo <strong>Phẩm Hoa Tạng Thế Giới Thứ 5</strong> (Trang 163-217), toàn thể thế giới Hoa Tạng được nâng đỡ bởi hệ thống <em>Phong Luân</em> (năng lượng gió chuyển động), trên đó là <em>Biển Nước Thơm (Hương Thủy Hải)</em> và đóa sen báu khổng lồ. Trung tâm là Thế Giới Chủng <strong>Phổ Chiếu Thập Phương Xí Nhiên Bửu Quang Minh</strong> gồm 20 tầng thế giới thẳng đứng:
+          </p>
+          <div class="max-h-60 overflow-y-auto space-y-1.5 p-3 rounded-xl bg-slate-900/60 border border-amber-400/20 text-[12px] font-mono">
+            <div class="text-slate-400">Tầng 20 (Đỉnh cao nhất): Diệu Bửu Diệm (Phật hiệu: Phước Đức Tướng Quang Minh)</div>
+            <div class="text-slate-400">Tầng 19: Thanh Tịnh Quang Phổ Chiếu (Phật hiệu: Phổ Chiếu Pháp Giới Hư Không Quang)</div>
+            <div class="text-slate-400">Tầng 18: Ly Trần (Phật hiệu: Vô Lượng Phương Tiện Tối Thắng Tràng)</div>
+            <div class="text-slate-400">Tầng 17: Bửu Trang Nghiêm Tạng (Phật hiệu: Vô Ngại Trí Quang Minh Biến Chiếu)</div>
+            <div class="text-slate-400">Tầng 16: Thanh Tịnh Quang Biến Chiếu (Phật hiệu: Thanh Tịnh Nhựt Công Đức Nhãn)</div>
+            <div class="text-slate-400">Tầng 15: Chúng Diệu Quang Minh Đăng (Phật hiệu: Bất Khả Tồi Phục Lực Phổ Chiếu Tràng)</div>
+            <div class="text-slate-400">Tầng 14: Tịch Tịnh Ly Trần Quang (Phật hiệu: Biến Pháp Giới Thắng Âm)</div>
+            <div class="text-amber-300 font-bold p-1 bg-amber-500/20 rounded border border-amber-400">⭐ TẦNG 13 (VỊ TRÍ CHÚNG TA): CÕI TA BÀ (Đức Phật Thích Ca Mâu Ni / Tỳ Lô Giá Na) & CÕI TÂY PHƯƠNG CỰC LẠC (Đức Phật A Di Đà)</div>
+            <div class="text-slate-400">Tầng 12: Quang Minh Chiếu Diệu (Phật hiệu: Siêu Thích Phạm)</div>
+            <div class="text-slate-400">Tầng 11: Hằng Xuất Hiện Đế Thanh Bửu Quang Minh (Phật hiệu: Vô Lượng Công Đức Pháp)</div>
+            <div class="text-slate-400">Tầng 10: Kim Cang Tràng (Phật hiệu: Nhứt Thiết Pháp Hải Tối Thắng Vương)</div>
+            <div class="text-slate-400">...</div>
+            <div class="text-slate-400">Tầng 1 (Đáy cùng): Tối Thắng Quang Biến Chiếu (Phật hiệu: Tinh Nhãn Ly Cấu Đăng)</div>
+          </div>
+          <p class="text-xs text-amber-200/80 italic">
+            Xung quanh thế giới chủng trung ương này còn có vô lượng thế giới chủng khác tỏa ra mười phương theo hình mạng lưới Đế Võng (*Indra's Net*).
+          </p>
+        </div>
+
+        <!-- TAB 3: Số Học A Tăng Kỳ -->
+        <div id="tab-atangky" class="modal-tab-content hidden space-y-4">
+          <h3 class="font-buddha text-base text-amber-300 font-bold">3. Hệ Thống Toán Học Lũy Thừa Cực Đại Trong Phẩm A Tăng Kỳ Thứ 30</h3>
+          <p class="text-slate-300">
+            Trong phẩm 30 (Trang 827-841), khi Tâm Vương Bồ Tát hỏi về số lượng, Đức Thế Tôn đã thuyết minh một chuỗi số học bình phương tăng dần gồm hơn 120 bậc số:
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono">
+            <div class="p-2 bg-slate-900/60 rounded border border-slate-700">1 Lạc-xoa = $10^5$ (100.000)</div>
+            <div class="p-2 bg-slate-900/60 rounded border border-slate-700">1 Câu-chi (Koti) = $10^7$ (10 triệu)</div>
+            <div class="p-2 bg-slate-900/60 rounded border border-slate-700">1 A-giu-đa = $(10^7)^2 = 10^{14}$</div>
+            <div class="p-2 bg-slate-900/60 rounded border border-slate-700">1 Na-do-tha (Nayuta) = $(10^{14})^2 = 10^{28}$</div>
+            <div class="p-2 bg-slate-900/60 rounded border border-slate-700">1 Tần-bà-la = $(10^{28})^2 = 10^{56}$</div>
+            <div class="p-2 bg-slate-900/60 rounded border border-slate-700">... tiếp tục bình phương hơn 100 lần ...</div>
+            <div class="p-2 bg-amber-950/40 rounded border border-amber-400/50 text-amber-300 col-span-1 sm:col-span-2">
+              Bất Khả Thuyết Bất Khả Thuyết Chuyển $\approx 10^{10^{37}}$ (Lũy thừa vô tận)
+            </div>
+          </div>
+          <p class="text-xs text-slate-300">
+            Khoa học hiện đại ước tính toàn bộ vũ trụ quan sát được chỉ chứa khoảng $10^{80}$ hạt hạ nguyên tử. Con số của Đức Phật đưa ra cách đây 25 thế kỷ vượt xa sức tưởng tượng của bất kỳ nền khoa học nào!
+          </p>
+        </div>
+
+        <!-- TAB 4: Thời Gian & Thọ Lượng -->
+        <div id="tab-tholuong" class="modal-tab-content hidden space-y-4">
+          <h3 class="font-buddha text-base text-amber-300 font-bold">4. Thuyết Tương Đối Thời Gian Trong Phẩm Thọ Lượng Thứ 31</h3>
+          <p class="text-slate-300">
+            Phẩm 31 (Trang 842) giảng về sự tương đối diệu kỳ của dòng thời gian giữa các hệ vũ trụ khác nhau:
+          </p>
+          <div class="p-3 bg-slate-900/70 rounded-2xl border border-amber-400/30 space-y-2 text-xs font-serif">
+            <div class="flex items-center gap-2 text-amber-200">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span><strong>1 Đại kiếp ở Ta Bà</strong> (khoảng hàng tỷ năm Trái Đất) = <strong>1 Ngày 1 Đêm</strong> tại cõi Cực Lạc của Phật A Di Đà.</span>
+            </div>
+            <div class="flex items-center gap-2 text-amber-200">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span><strong>1 Kiếp ở cõi Cực Lạc</strong> = <strong>1 Ngày 1 Đêm</strong> tại cõi Ca Sa Tràng (Phật Kim Cang Kiên).</span>
+            </div>
+            <div class="flex items-center gap-2 text-amber-200">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <span><strong>1 Kiếp ở Ca Sa Tràng</strong> = <strong>1 Ngày 1 Đêm</strong> tại cõi Bất Thối Chuyển Âm Thanh Luân...</span>
+            </div>
+            <div class="text-slate-400 italic text-[11px] pt-1">
+              "Tuần tự như vậy nhẫn đến quá trăm vạn a-tăng-kỳ thế giới... 1 kiếp ở thế giới rốt sau là 1 ngày 1 đêm nơi Thắng Liên Hoa thế giới của Hiền Thắng Phật." (Trang 842)
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="p-4 border-t border-amber-400/20 bg-slate-950/60 flex justify-end">
+        <button id="closeScriptureBtn2" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-buddha text-xs font-bold transition shadow-lg">
+          ÐỒNG TÍN THỌ PHỤNG HÀNH
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== FOOTER (ĐIỀU KHIỂN LOGARITHMIC SLIDER & AUTO TOUR) ==================== -->
+  <footer class="relative z-10 w-full p-3 sm:p-5 flex flex-col items-center gap-2 sm:gap-3 pointer-events-none">
+    
+    <!-- Thanh trượt tỉ lệ vũ trụ Logarithmic Slider -->
+    <div class="w-full max-w-4xl pointer-events-auto mandala-glass px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl flex flex-col gap-2 shadow-2xl">
+      <div class="flex items-center justify-between text-[11px] sm:text-xs font-buddha text-amber-200/80">
+        <span class="text-cyan-300">Cực Vi Trần (10⁻³⁵m)</span>
+        <span class="text-amber-300 font-bold">Thân Người • Ta Bà (Tầng 13)</span>
+        <span class="text-rose-300">Hoa Tạng Pháp Giới (10⁵⁰m)</span>
+      </div>
+
+      <!-- Slider input -->
+      <div class="relative flex items-center py-1">
+        <input id="scaleSlider" type="range" min="0" max="11" step="0.02" value="3" class="w-full h-2.5 bg-slate-900 rounded-lg appearance-none cursor-pointer border border-amber-400/30">
+      </div>
+
+      <!-- Các mốc nhảy nhanh (Quick Jump Pills chuẩn Kinh Hoa Nghiêm) -->
+      <div class="flex items-center justify-between overflow-x-auto gap-1 text-[10px] font-tech text-amber-100/70 py-1 scrollbar-none">
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="0">1. Vi Trần</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="1">2. Đầu Lông</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="2">3. Vi Trùng</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-bold border border-amber-400/50" data-step="3">4. Thân Người</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="4">5. Diêm Phù Đề</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="5">6. Tứ Thiên Hạ</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="6">7. Núi Tu Di</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="7">8. Đại Thiên Giới</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="8">9. Phong Luân</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="9">10. Hương Thủy Hải</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-amber-500/30 text-amber-200 font-bold border border-amber-400/70" data-step="10">11. Cõi Ta Bà (Tầng 13)</button>
+        <button class="jump-btn shrink-0 px-2.5 py-1 rounded-lg bg-slate-900/80 hover:text-amber-300 transition" data-step="11">12. Mạng Lưới Đế Võng</button>
+      </div>
+    </div>
+
+    <!-- Bảng điều khiển Auto Tour & Tốc độ chuyển động -->
+    <div class="pointer-events-auto flex flex-wrap items-center justify-center gap-2 sm:gap-3 mandala-glass px-4 py-2 rounded-2xl shadow-xl">
+      <!-- Nút Play/Pause Auto Tour (Chu Du Hoa Tạng) -->
+      <button id="playPauseBtn" class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-buddha text-xs font-bold px-4 py-2 rounded-xl transition shadow-[0_0_15px_rgba(255,215,0,0.5)]">
+        <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="pauseIcon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        <span id="playBtnText">CHU DU HOA TẠNG (AUTO TOUR)</span>
+      </button>
+
+      <!-- Nút Đảo Chiều (Phóng Đại / Thu Nhiếp Vi Trần) -->
+      <button id="reverseBtn" class="flex items-center gap-1.5 hover:bg-amber-950/40 text-amber-200 font-title text-xs sm:text-sm px-3 py-2 rounded-xl border border-amber-400/30 transition">
+        <svg class="w-4 h-4 transition-transform duration-300" id="dirIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+        <span id="dirText">Hướng: Phóng Khắp (+)</span>
+      </button>
+
+      <!-- Tốc độ chuyển tiếp -->
+      <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-amber-400/30 font-tech text-xs text-amber-200/70">
+        <span class="px-1 text-[10px] text-amber-400/60 font-buddha">TỐC ĐỘ:</span>
+        <button class="speed-btn px-2 py-1 rounded hover:text-white transition" data-speed="0.5">0.5x</button>
+        <button class="speed-btn px-2 py-1 rounded bg-amber-500/40 text-amber-200 font-bold hover:text-white transition" data-speed="1.0">1x</button>
+        <button class="speed-btn px-2 py-1 rounded hover:text-white transition" data-speed="2.0">2x</button>
+        <button class="speed-btn px-2 py-1 rounded hover:text-white transition" data-speed="4.0">4x</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== LOGIC JAVASCRIPT & RENDER ENGINE ==================== -->
+  <script>
+    /* =========================================================================
+     * 1. HỆ THỐNG DỮ LIỆU 12 CẤP ĐỘ HOA NGHIÊM KINH (TẬP HỢP TỪ PDF KINH VĂN)
+     * ========================================================================= */
+    const HOA_NGHIEM_LEVELS = [
+      {
+        step: 0,
+        name: "Nhất Vi Trần (Hạt Bụi Cực Vi)",
+        subtitle: "Nhất vi trần trung kiến pháp giới",
+        metric: "10⁻³⁵ Mét (Thang Planck)",
+        badge: "CỰC VI QUAN",
+        desc: "Trong một hạt bụi nhỏ nhiệm chứa trọn vẹn vô biên thế giới hải và chư Phật tam thế. Cực vi và cực đại tương tức tương nhập, dung thông không ngách ngăn.",
+        sutra: "Bao nhiêu vi trần trong thế giới / Trong mỗi vi trần thấy các cõi / Bửu quang hiện Phật vô lượng số / Cảnh giới tự tại của Như Lai.",
+        source: "Kinh Hoa Nghiêm - Phẩm Thế Giới Thành Tựu thứ 4 & Phẩm 5",
+        science: "Thang độ Planck ($10^{-35}\\text{m}$), Hình học Fractal vô tận, Thuyết Vũ Trụ Toàn Ảnh (Holographic Principle: toàn bộ thông tin vũ trụ nằm trong bề mặt vi mô).",
+        color: "#00f0ff"
+      },
+      {
+        step: 1,
+        name: "Nhất Mao Khổng (Đầu Một Sợi Lông)",
+        subtitle: "Một sợi lông bao hàm tam thế Phật sát",
+        metric: "10⁻⁶ Mét (1 Micromet)",
+        badge: "CHÂN LÔNG VI TẾ",
+        desc: "Đầu một sợi lông có thể dung nạp tất cả thế giới mười phương mà không chật hẹp. Thân tướng Bồ Tát thanh tịnh, nơi mỗi lỗ chân lông đều phóng vô lượng quang minh.",
+        sutra: "Vô lượng vô số núi Tu Di / Đều đem để vào một sợi lông / Một thế giới để vào tất cả / Thể tướng thế giới vẫn như cũ.",
+        source: "Kinh Hoa Nghiêm - Lời nói đầu & Phẩm 33",
+        science: "Cấu trúc vi mô sinh học sợi tóc / tế bào. Thuyết chiều không gian cuộn tròn Compactified Dimensions của Vật lý hạt.",
+        color: "#38ef7d"
+      },
+      {
+        step: 2,
+        name: "Vi Trùng Trong Thân (8 Vạn 4 Ngàn Vi Trùng)",
+        subtitle: "Thế giới sinh vật tế vi trong cơ thể",
+        metric: "10⁻³ Mét (1 Milimet)",
+        badge: "TIỂU KHÁNH SANH",
+        desc: "Trong thân thể con người có tám vạn bốn ngàn vi trùng nương náu sinh sống. Bồ Tát lúc ăn uống phát tâm hồi hướng nuôi dưỡng đàn vi trùng no đủ, không khởi lòng tham vị.",
+        sutra: "Trong thân thể của tôi có tám vạn thi trùng, thân tôi sung túc chúng nó cũng sung túc... Nguyện khắp chúng sanh đều được no đủ.",
+        source: "Kinh Hoa Nghiêm - Phẩm Thập Hồi Hướng thứ 25 (Trang 444)",
+        science: "Hệ vi sinh vật (Microbiome) trong cơ thể người gồm hàng chục nghìn tỷ vi khuẩn, tế bào sống cộng sinh.",
+        color: "#ff758c"
+      },
+      {
+        step: 3,
+        name: "Thân Người & Thế Giới Hữu Tình",
+        subtitle: "Tiểu vũ trụ trung tâm quán chiếu",
+        metric: "1.7 Mét (Thang con người 10⁰m)",
+        badge: "VẬT THỂ SỐNG",
+        desc: "Thân người là điểm tựa tu chứng Giác ngộ. Bồ Tát tu tập mười điều hồi hướng, xả bỏ thân mạng tài sản làm lợi ích cho muôn loài, phát tâm Vô thượng Bồ đề.",
+        sutra: "Chúng sanh và Phật đồng một thể tánh... Dầu hiện thân sanh vào thế gian nhưng không nhiễm trước thế pháp.",
+        source: "Kinh Hoa Nghiêm - Phẩm Thập Trụ & Thập Hồi Hướng",
+        science: "Quy mô con người nằm ở trung bình hình học logarit giữa toàn bộ thang đo tự nhiên (từ Planck $10^{-35}\\text{m}$ đến Vũ trụ khả kiến $10^{26}\\text{m}$).",
+        color: "#ffd700"
+      },
+      {
+        step: 4,
+        name: "Nam Thiểm Bộ Châu (Diêm Phù Đề)",
+        subtitle: "Cõi nhân gian nơi Đức Phật giáng thế",
+        metric: "10⁷ Mét (Trái Đất - 12.742 km)",
+        badge: "NHÂN GIAN THẾ",
+        desc: "Châu đất hình tam giác ngược ở phía nam núi Tu Di, có rừng cây Diêm-phù, núi Tuyết (Himalaya), sông Hằng. Nơi đây chúng sanh nhiều dũng khí, là nơi chư Phật xuất thế thành đạo.",
+        sutra: "Đức Thế Tôn ở nước Ma Kiệt Đề trong đạo tràng Bồ Đề A Lan Nhã điện Phổ Quang Minh, vừa thành bực Chánh Giác...",
+        source: "Kinh Hoa Nghiêm - Phẩm Thế Chủ Diệu Nghiêm thứ 1",
+        science: "Hành tinh Trái Đất trong hệ mặt trời với bầu khí quyển và đại dương bao bọc dung chứa sự sống.",
+        color: "#4facfe"
+      },
+      {
+        step: 5,
+        name: "Tứ Thiên Hạ & Thiết Vi Sơn",
+        subtitle: "Bốn đại châu lục bao quanh núi chúa",
+        metric: "10¹⁰ Mét (Thái dương hệ thu nhỏ)",
+        badge: "TỨ ĐẠI CHÂU",
+        desc: "Đông Thắng Thần Châu (bán nguyệt), Tây Ngưu Hóa Châu (tròn), Nam Thiểm Bộ Châu (tam giác), Bắc Câu Lư Châu (vuông), ngăn cách bởi biển mặn và bao quanh bởi dãy núi Thiết Vi.",
+        sutra: "Trăm ức Diêm Phù Đề, trăm ức Phất Bà Đề, trăm ức Cù Gia Ni, trăm ức Uất Đơn Việt, trăm ức đại hải, trăm ức Luân Vi Sơn...",
+        source: "Kinh Hoa Nghiêm - Phẩm Quang Minh Giác thứ 9 (Trang 247)",
+        science: "Hệ thống các thiên thể và vành đai tiểu hành tinh bao quanh vùng hấp dẫn trung tâm.",
+        color: "#a18cd1"
+      },
+      {
+        step: 6,
+        name: "Núi Tu Di & Tam Thập Tam Thiên",
+        subtitle: "Trục vũ trụ bằng tứ báu tỏa sáng",
+        metric: "10¹² Mét (Trục Thế Giới)",
+        badge: "TU DI SƠN VƯƠNG",
+        desc: "Núi Tu Di cao vọi làm bằng vàng, bạc, lưu ly, pha lê. Mặt trời mặt trăng quay ngang lưng núi; trên đảnh là thành Thiện Kiến cõi trời Đao Lợi; trên nữa là các tầng trời Dạ Ma, Đâu Suất, Hóa Lạc, Tha Hóa...",
+        sutra: "Đức Phật chẳng rời dưới cây Bồ Đề, mà thăng lên đảnh núi Tu Di, hướng đến điện Diệu Thắng của Đế Thích...",
+        source: "Kinh Hoa Nghiêm - Phẩm Thăng Tu Di Sơn Đảnh thứ 13",
+        science: "Trọng tâm hấp dẫn của cụm sao và các mức năng lượng trường lượng tử trong không gian đa chiều.",
+        color: "#fbc2eb"
+      },
+      {
+        step: 7,
+        name: "Tam Thiên Đại Thiên Thế Giới",
+        subtitle: "Một cõi Phật giáo hóa (Một tỷ thái dương hệ)",
+        metric: "10²¹ Mét (Cụm thiên hà / Ngân Hà)",
+        badge: "ĐẠI THIÊN GIỚI",
+        desc: "1.000 Tiểu thế giới = Tiểu Thiên; 1.000 Tiểu Thiên = Trung Thiên; 1.000 Trung Thiên = Đại Thiên (gồm một tỷ núi Tu Di và thái dương hệ). Một Đức Phật giáo hóa trong một cõi Đại Thiên.",
+        sutra: "Bấy giờ Đức Thế Tôn từ hai bàn chân phóng ra trăm ức tia sáng chiếu khắp Đại Thiên thế giới: trăm ức Tu Di Sơn, trăm ức Tứ Thiên Vương...",
+        source: "Kinh Hoa Nghiêm - Phẩm 9 & Phẩm 30",
+        science: "Dải Ngân Hà (Milky Way) chứa 100-400 tỷ ngôi sao và hành tinh quay quanh một lỗ đen siêu trọng.",
+        color: "#ff0844"
+      },
+      {
+        step: 8,
+        name: "Hệ Thống Phong Luân Nâng Đỡ",
+        subtitle: "Tầng tầng gió năng lượng vũ trụ nâng đỡ vạn vật",
+        metric: "10²⁶ Mét (Trường Năng Lượng Vũ Trụ)",
+        badge: "PHONG LUÂN TRÌ",
+        desc: "Vô số phong luân xếp tầng từ dưới lên nâng đỡ toàn bộ thế giới: Bình Đẳng Trụ, Xuất Sanh Bửu, Bửu Oai Đức, Bình Đẳng Diệm, Phổ Thanh Tịnh... Trên hết là Thù Thắng Oai Quang Tạng phong luân.",
+        sutra: "Hoa Tạng thế giới trang nghiêm này có Tu Di sơn vi trần số phong luân nhiếp trì... Phong luân dưới chót tên Bình Đẳng Trụ...",
+        source: "Kinh Hoa Nghiêm - Phẩm Hoa Tạng Thế Giới thứ 5 (Trang 163)",
+        science: "Năng lượng tối (Dark Energy) và trường Chân không lượng tử nguyên thủy sinh ra và nâng đỡ toàn thể không-thời gian.",
+        color: "#00c6ff"
+      },
+      {
+        step: 9,
+        name: "Hương Thủy Hải & Đại Liên Hoa",
+        subtitle: "Biển nước thơm bát công đức & Tòa sen vô tận",
+        metric: "10³² Mét (Biển Không Gian Bản Thể)",
+        badge: "HƯƠNG THỦY HẢI",
+        desc: "Nằm trên phong luân tối thượng là Biển Nước Thơm 'Vô Biên Diệu Hoa Quang'. Giữa biển mọc lên đại liên hoa vĩ đại 'Chủng Chủng Quang Minh Nhụy Hương Tràng', trên đó toàn bộ thế giới an trụ.",
+        sutra: "Biển hương thủy này có liên hoa lớn tên Chủng Chủng Quang Minh Nhụy Hương Tràng. Hoa Tạng thế giới hải trụ trong tràng đó...",
+        source: "Kinh Hoa Nghiêm - Phẩm 5 (Trang 163-164)",
+        science: "Siêu màng không-thời gian (Bulk / Hyperspace) trong lý thuyết M-Theory nâng đỡ đa vũ trụ song song.",
+        color: "#f6d365"
+      },
+      {
+        step: 10,
+        name: "20 Tầng Hoa Tạng Thế Giới (Cõi Ta Bà)",
+        subtitle: "Cột trụ 20 tầng thế giới chủng thẳng đứng",
+        metric: "10⁴⁰ Mét (Đa Vũ Trụ Hoa Tạng)",
+        badge: "HOA TẠNG THẾ GIỚI",
+        desc: "Thế giới chủng Phổ Chiếu Thập Phương gồm 20 tầng đĩa thế giới. Tầng 13 ở giữa chính là Cõi Ta Bà (Phật Thích Ca) và cõi Cực Lạc (Phật A Di Đà). Xung quanh có muôn ức cõi nước vây quanh.",
+        sutra: "Trên đó, quá Phật sát vi trần số thế giới, có thế giới tên Ta Bà... mười ba Phật sát vi trần số thế giới bao quanh, Phật chính là đức Tỳ Lô Giá Na Như Lai.",
+        source: "Kinh Hoa Nghiêm - Phẩm 5 (Trang 177)",
+        science: "Cấu trúc vũ trụ bọt đa tầng (Multiverse Stack), mỗi tầng là một vũ trụ độc lập với hằng số vật lý riêng biệt.",
+        color: "#ff9a9e"
+      },
+      {
+        step: 11,
+        name: "Mạng Lưới Thiên Đế (Indra's Net) & Trùng Trùng Pháp Giới",
+        subtitle: "Vô tận trùng trùng duyên khởi - Lặp lại vi trần",
+        metric: "10⁵⁰ Mét -> 10⁻³⁵ Mét (Vòng Lặp Vô Tận)",
+        badge: "SỰ SỰ VÔ NGẠI",
+        desc: "Mạng lưới ngọc Đế Thích vô tận: mỗi mắt lưới đính một viên ngọc, mỗi viên ngọc phản chiếu tất cả các viên ngọc khác, trong mỗi phản chiếu lại có toàn bộ mạng lưới. Phóng to vào trong lại thấy hạt bụi ban đầu!",
+        sutra: "Bất khả thuyết bất khả thuyết Phật sát vi trần số thế giới... Trong mỗi vi trần lại hiện vô biên cõi Phật... Tận cùng vị lai không có gián đoạn.",
+        source: "Kinh Hoa Nghiêm - Phẩm A Tăng Kỳ & Phẩm Nhập Pháp Giới",
+        science: "Hình học Fractal vũ trụ tuần hoàn, Vạn vật tương liên vô sở trụ, Nhất tức nhất thiết - Nhất thiết tức nhất.",
+        color: "#fbc2eb"
+      }
+    ];
+
+    /* =========================================================================
+     * 2. BỘ TỔNG HỢP ÂM THANH CHUÔNG BÁT THIỀN ĐỊNH (WEB AUDIO API PROCEDURAL)
+     * ========================================================================= */
+    class BuddhistSingingBowlSynth {
+      constructor() {
+        this.ctx = null;
+        this.isPlaying = false;
+        this.masterGain = null;
+        this.timer = null;
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
+        this.masterGain.connect(this.ctx.destination);
+      }
+
+      toggle() {
+        if (!this.ctx) this.init();
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+
+        this.isPlaying = !this.isPlaying;
+        const now = this.ctx.currentTime;
+        if (this.isPlaying) {
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.linearRampToValueAtTime(0.35, now + 1.0);
+          this.startSingingBowlLoop();
+        } else {
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+          if (this.timer) clearInterval(this.timer);
+        }
+        return this.isPlaying;
+      }
+
+      // Tạo tiếng gõ chuông xoay Tây Tạng (Singing Bowl Harmonic Strike)
+      strikeBowl(freq = 108) {
+        if (!this.ctx || !this.isPlaying) return;
+        const now = this.ctx.currentTime;
+
+        // Tần số hài âm chuông đồng cổ: Họa âm căn bản và bội âm phi điều hòa
+        const harmonics = [1.0, 2.76, 5.4, 8.9];
+        const gains = [0.4, 0.22, 0.12, 0.05];
+
+        harmonics.forEach((h, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = i === 0 ? 'sine' : 'triangle';
+          osc.frequency.setValueAtTime(freq * h, now);
+
+          // Nhịp dao động chậm tạo độ ngân u u u vi diệu
+          const lfo = this.ctx.createOscillator();
+          const lfoGain = this.ctx.createGain();
+          lfo.frequency.setValueAtTime(2.5 + i * 0.4, now);
+          lfoGain.gain.setValueAtTime(3.0, now);
+          lfo.connect(osc.frequency);
+          lfo.start(now);
+
+          // Envelope âm thanh ngân dài 6-8 giây
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(gains[i], now + 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 7.5);
+
+          osc.connect(gain);
+          gain.connect(this.masterGain);
+
+          osc.start(now);
+          osc.stop(now + 8.0);
+          lfo.stop(now + 8.0);
+        });
+      }
+
+      startSingingBowlLoop() {
+        this.strikeBowl(108); // Chuông trầm 108Hz
+        this.timer = setInterval(() => {
+          if (this.isPlaying) {
+            // Chuông ngân định kỳ mỗi 8 giây
+            const baseFreq = 108 * (1 + (Math.sin(Date.now() * 0.001) * 0.1));
+            this.strikeBowl(baseFreq);
+          }
+        }, 8000);
+      }
+
+      updateToneByScale(scaleVal) {
+        // Tùy chỉnh nhẹ độ lọc theo cấp độ vũ trụ
+        if (!this.ctx || !this.isPlaying) return;
+      }
+    }
+
+    /* =========================================================================
+     * 3. KHỞI TẠO BIẾN TOÀN CỤC & DOM ELEMENTS
+     * ========================================================================= */
+    const canvas = document.getElementById('universeCanvas');
+    const ctx = canvas.getContext('2d');
+    const bowlSynth = new BuddhistSingingBowlSynth();
+
+    // DOM Header & HUD
+    const hudScaleTitle = document.getElementById('hudScaleTitle');
+    const hudScaleMetric = document.getElementById('hudScaleMetric');
+    const scaleSlider = document.getElementById('scaleSlider');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const playBtnText = document.getElementById('playBtnText');
+    const reverseBtn = document.getElementById('reverseBtn');
+    const dirIcon = document.getElementById('dirIcon');
+    const dirText = document.getElementById('dirText');
+    const bellAudioBtn = document.getElementById('bellAudioBtn');
+    const bellIconOn = document.getElementById('bellIconOn');
+    const bellIconOff = document.getElementById('bellIconOff');
+    const bellWaveBars = document.querySelectorAll('.bell-wave');
+
+    // DOM Level Card
+    const levelInfoCard = document.getElementById('levelInfoCard');
+    const toggleLevelCardBtn = document.getElementById('toggleLevelCardBtn');
+    const closeLevelCardBtn = document.getElementById('closeLevelCardBtn');
+    const cardBadge = document.getElementById('cardBadge');
+    const cardLevelNum = document.getElementById('cardLevelNum');
+    const cardTitle = document.getElementById('cardTitle');
+    const cardSubtitle = document.getElementById('cardSubtitle');
+    const cardDescription = document.getElementById('cardDescription');
+    const cardSutraQuote = document.getElementById('cardSutraQuote');
+    const cardSutraSource = document.getElementById('cardSutraSource');
+    const cardScienceNote = document.getElementById('cardScienceNote');
+
+    // DOM Modal Kinh Văn
+    const scriptureModal = document.getElementById('scriptureModal');
+    const openScriptureBtn = document.getElementById('openScriptureBtn');
+    const closeScriptureBtn = document.getElementById('closeScriptureBtn');
+    const closeScriptureBtn2 = document.getElementById('closeScriptureBtn2');
+    const modalTabBtns = document.querySelectorAll('.modal-tab-btn');
+    const modalTabContents = document.querySelectorAll('.modal-tab-content');
+
+    // Trạng thái điều khiển ứng dụng
+    let currentScale = 3.0;       // Vị trí mặc định: Thân người (Level 3)
+    let targetScale = 3.0;        // Vị trí nội suy mượt mà
+    let isAutoTour = false;       // Tự động chu du
+    let tourDirection = 1;        // 1: Phóng đại ra Hoa Tạng; -1: Thu nhiếp vào vi trần
+    let tourSpeedMult = 1.0;
+    let baseTourSpeed = 0.008;
+    let animTime = 0;
+    let isDragging = false;
+    let lastMouseY = 0;
+
+    // Resize Canvas theo độ phân giải màn hình
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Khởi tạo các vì sao lấp lánh trong pháp giới
+    const cosmosStars = [];
+    for (let i = 0; i < 260; i++) {
+      cosmosStars.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        r: Math.random() * 1.6 + 0.3,
+        alpha: Math.random() * 0.8 + 0.2,
+        twinkleRate: Math.random() * 0.03 + 0.01,
+        color: ['#ffd700', '#ffffff', '#ff9a9e', '#a1c4fd', '#c2e9fb'][Math.floor(Math.random() * 5)]
+      });
+    }
+
+    /* =========================================================================
+     * 4. CẬP NHẬT HUD & BẢNG THÔNG TIN KINH ĐIỂN
+     * ========================================================================= */
+    function updateHUDAndCard(scaleVal) {
+      // Giới hạn scaleVal trong khoảng [0, 11]
+      const clampedVal = Math.max(0, Math.min(11, scaleVal));
+      const activeIdx = Math.round(clampedVal);
+      const levelData = HOA_NGHIEM_LEVELS[activeIdx];
+
+      hudScaleTitle.textContent = levelData.name;
+      hudScaleMetric.textContent = levelData.metric;
+
+      // Cập nhật card chi tiết
+      cardBadge.textContent = levelData.badge;
+      cardLevelNum.textContent = `Cấp ${activeIdx + 1} / 12`;
+      cardTitle.textContent = levelData.name;
+      cardSubtitle.textContent = levelData.subtitle;
+      cardDescription.textContent = levelData.desc;
+      cardSutraQuote.textContent = `"${levelData.sutra}"`;
+      cardSutraSource.textContent = `— ${levelData.source}`;
+      cardScienceNote.textContent = levelData.science;
+
+      // Đánh dấu active trên quick jump pills
+      document.querySelectorAll('.jump-btn').forEach(btn => {
+        const step = parseInt(btn.dataset.step);
+        if (step === activeIdx) {
+          btn.classList.add('bg-amber-500/30', 'text-amber-200', 'border-amber-400');
+          btn.classList.remove('bg-slate-900/80');
+        } else {
+          btn.classList.remove('bg-amber-500/30', 'text-amber-200', 'border-amber-400');
+          btn.classList.add('bg-slate-900/80');
+        }
+      });
+    }
+
+    /* =========================================================================
+     * 5. THUẬT TOÁN ĐỒ HỌA HOA NGHIÊM (PROCEDURAL CANVAS RENDERERS)
+     * ========================================================================= */
+    
+    // Vòng tròn hào quang Phật giáo (Aura / Reticle)
+    function drawBuddhistAura(cx, cy, radius, opacity, color = '#ffd700') {
+      if (opacity <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = opacity * 0.45;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.2;
+
+      // Vòng tròn chính
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Vòng tròn hoa văn tia sáng
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 1.18, 0, Math.PI * 2);
+      ctx.setLineDash([6, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.restore();
+    }
+
+    // Level 0: Nhất Vi Trần (Hạt bụi cực vi chứa cõi Phật)
+    function drawViTran(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const r = 40 * scale;
+      // Ánh sáng cực vi phát quang
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 2.5);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.3, '#00f0ff');
+      grad.addColorStop(0.7, '#7b2cbf');
+      grad.addColorStop(1, 'transparent');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bên trong hạt vi trần: Hiển lộ hình ảnh đóa sen cõi Phật thu nhỏ vi diệu
+      const petalCount = 8;
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.75)';
+      ctx.lineWidth = Math.max(1, 1.5 * scale);
+      for (let i = 0; i < petalCount; i++) {
+        const ang = (i * (Math.PI * 2) / petalCount) + t * 0.5;
+        const px = cx + Math.cos(ang) * r * 0.8;
+        const py = cy + Math.sin(ang) * r * 0.8;
+        ctx.beginPath();
+        ctx.arc(px, py, r * 0.35, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Hạt nhân trung tâm tự tại
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 6 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Level 1: Nhất Mao Khổng (Đầu sợi lông phóng đại quang minh)
+    function drawMaoKhong(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Vẽ sợi lông phát sáng vươn dài
+      const len = 180 * scale;
+      ctx.strokeStyle = '#38ef7d';
+      ctx.lineWidth = Math.max(1.5, 3 * scale);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + len * 0.5);
+      ctx.quadraticCurveTo(cx + Math.sin(t * 2) * 20 * scale, cy, cx, cy - len * 0.5);
+      ctx.stroke();
+
+      // Đầu sợi lông phóng mây ánh sáng mười phương
+      const tipY = cy - len * 0.5;
+      const glowGrad = ctx.createRadialGradient(cx, tipY, 0, cx, tipY, 60 * scale);
+      glowGrad.addColorStop(0, '#ffffff');
+      glowGrad.addColorStop(0.4, '#11998e');
+      glowGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = glowGrad;
+      ctx.beginPath();
+      ctx.arc(cx, tipY, 60 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Các tia sáng từ lỗ chân lông phát tỏa
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+      ctx.lineWidth = 1;
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+        ctx.beginPath();
+        ctx.moveTo(cx, tipY);
+        ctx.lineTo(cx + Math.cos(a + t) * 75 * scale, tipY + Math.sin(a + t) * 75 * scale);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // Level 2: Vi Trùng Trong Thân (8 vạn 4 ngàn sinh linh tế vi)
+    function drawViTrung(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const clusterRadius = 90 * scale;
+      // Vẽ nhiều sinh vật nhỏ chuyển động nhịp nhàng
+      for (let i = 0; i < 28; i++) {
+        const angle = i * 0.6 + t * 0.8;
+        const dist = (30 + (i % 5) * 14) * scale;
+        const mx = cx + Math.cos(angle) * dist;
+        const my = cy + Math.sin(angle) * dist;
+        const cellR = (6 + (i % 3) * 3) * scale;
+
+        ctx.fillStyle = (i % 2 === 0) ? 'rgba(255, 117, 140, 0.75)' : 'rgba(255, 215, 0, 0.7)';
+        ctx.beginPath();
+        ctx.ellipse(mx, my, cellR * 1.3, cellR * 0.8, angle, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Đốm sáng tâm từ bi
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(mx, my, 2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Vòng năng lượng từ bi bảo bọc
+      ctx.strokeStyle = 'rgba(255, 117, 140, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, clusterRadius * 1.2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Level 3: Thân Người (Tiểu Vũ Trụ Thiền Định)
+    function drawThanNguoi(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const h = 180 * scale;
+      const topY = cy - h * 0.45;
+
+      // Hào quang đầu (Phật quang trí huệ)
+      const headY = topY + 22 * scale;
+      const auraGrad = ctx.createRadialGradient(cx, headY, 5 * scale, cx, headY, 50 * scale);
+      auraGrad.addColorStop(0, '#ffffff');
+      auraGrad.addColorStop(0.35, 'rgba(255, 215, 0, 0.8)');
+      auraGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = auraGrad;
+      ctx.beginPath();
+      ctx.arc(cx, headY, 50 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hình bóng thiền tọa kiết già trang nghiêm
+      ctx.strokeStyle = '#ffd700';
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+      ctx.lineWidth = Math.max(1.8, 3 * scale);
+
+      // Đầu
+      ctx.beginPath();
+      ctx.arc(cx, headY, 16 * scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Thân mình & Cột sống phát quang 7 luân xa
+      ctx.beginPath();
+      ctx.moveTo(cx, headY + 16 * scale);
+      ctx.lineTo(cx, cy + 35 * scale);
+      // Vai & Cánh tay kiết ấn thiền
+      ctx.moveTo(cx - 38 * scale, headY + 30 * scale);
+      ctx.lineTo(cx + 38 * scale, headY + 30 * scale);
+      ctx.lineTo(cx + 15 * scale, cy + 28 * scale);
+      ctx.moveTo(cx - 38 * scale, headY + 30 * scale);
+      ctx.lineTo(cx - 15 * scale, cy + 28 * scale);
+      // Chân ngồi kiết già tọa thiền
+      ctx.moveTo(cx - 50 * scale, cy + 45 * scale);
+      ctx.lineTo(cx + 50 * scale, cy + 45 * scale);
+      ctx.stroke();
+
+      // 7 Luân xa / Tâm bảo phát sáng dọc thân
+      for (let i = 0; i < 7; i++) {
+        const dotY = headY + 12 * scale + i * (11 * scale);
+        ctx.fillStyle = ['#ffffff', '#00f0ff', '#38ef7d', '#ffd700', '#ff9a9e', '#a18cd1', '#ff0844'][i];
+        ctx.beginPath();
+        ctx.arc(cx, dotY, 3.5 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    // Level 4: Nam Thiểm Bộ Châu (Diêm Phù Đề hình tam giác ngược)
+    function drawDiemPhuDe(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const size = 130 * scale;
+      // Theo kinh văn: Nam Thiểm Bộ Châu có hình như cỗ xe (tam giác đỉnh chúc xuống phía nam)
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Đảo ngọc Diêm Phù Đề
+      const landGrad = ctx.createRadialGradient(0, 0, 10 * scale, 0, 0, size);
+      landGrad.addColorStop(0, '#11998e');
+      landGrad.addColorStop(0.6, '#38ef7d');
+      landGrad.addColorStop(1, '#0575e6');
+      ctx.fillStyle = landGrad;
+      ctx.strokeStyle = '#ffd700';
+      ctx.lineWidth = Math.max(1.5, 2.5 * scale);
+
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.9, -size * 0.6); // Góc tây bắc
+      ctx.lineTo(size * 0.9, -size * 0.6);  // Góc đông bắc
+      ctx.lineTo(0, size * 0.8);           // Đỉnh chúc về phương nam
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Dãy núi Tuyết (Himalaya) & Cây Diêm Phù (Jambu) tỏa bóng
+      ctx.fillStyle = '#ffffff';
+      for (let i = -3; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(i * 22 * scale, -size * 0.4, 9 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Dòng sông Hằng chảy uốn lượn
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 2 * scale;
+      ctx.beginPath();
+      ctx.moveTo(-20 * scale, -size * 0.3);
+      ctx.bezierCurveTo(0, 0, 15 * scale, 20 * scale, 0, size * 0.65);
+      ctx.stroke();
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    // Level 5: Tứ Thiên Hạ & Thiết Vi Sơn
+    function drawTuThienHa(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const r = 140 * scale;
+
+      // Đại Hải bao la
+      const oceanGrad = ctx.createRadialGradient(cx, cy, 30 * scale, cx, cy, r);
+      oceanGrad.addColorStop(0, '#0a2342');
+      oceanGrad.addColorStop(0.8, '#0f4c81');
+      oceanGrad.addColorStop(1, '#020b14');
+      ctx.fillStyle = oceanGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dãy Thiết Vi Sơn (núi sắt bao bọc ngoài cùng)
+      ctx.strokeStyle = '#718096';
+      ctx.lineWidth = Math.max(2, 4 * scale);
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.95, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 4 Đại Châu bao quanh theo 4 hướng:
+      const chauDist = r * 0.55;
+
+      // 1. Đông Thắng Thần Châu (hình bán nguyệt)
+      ctx.fillStyle = '#63b3ed';
+      ctx.beginPath();
+      ctx.arc(cx + chauDist, cy, 22 * scale, -Math.PI / 2, Math.PI / 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // 2. Tây Ngưu Hóa Châu (hình tròn như mặt trăng)
+      ctx.fillStyle = '#ecc94b';
+      ctx.beginPath();
+      ctx.arc(cx - chauDist, cy, 18 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 3. Bắc Câu Lư Châu (hình vuông)
+      ctx.fillStyle = '#48bb78';
+      ctx.fillRect(cx - 16 * scale, cy - chauDist - 16 * scale, 32 * scale, 32 * scale);
+
+      // 4. Nam Thiểm Bộ Châu (hình tam giác chúc xuống)
+      ctx.fillStyle = '#ed8936';
+      ctx.beginPath();
+      ctx.moveTo(cx - 18 * scale, cy + chauDist - 10 * scale);
+      ctx.lineTo(cx + 18 * scale, cy + chauDist - 10 * scale);
+      ctx.lineTo(cx, cy + chauDist + 20 * scale);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Level 6: Núi Tu Di (Sơn Vương Tứ Báu) & Các Tầng Trời
+    function drawNuiTuDi(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const mtWidth = 90 * scale;
+      const mtHeight = 170 * scale;
+
+      // Núi Tu Di thắt eo ở giữa (hình đồng hồ cát / hoa sen ngược)
+      const mtGrad = ctx.createLinearGradient(cx, cy - mtHeight * 0.5, cx, cy + mtHeight * 0.5);
+      mtGrad.addColorStop(0, '#ffd700'); // Đỉnh vàng
+      mtGrad.addColorStop(0.3, '#3182ce'); // Lưu ly
+      mtGrad.addColorStop(0.7, '#e2e8f0'); // Bạch ngân
+      mtGrad.addColorStop(1, '#dd6b20'); // Hổ phách
+
+      ctx.fillStyle = mtGrad;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = Math.max(1, 2 * scale);
+
+      ctx.beginPath();
+      ctx.moveTo(cx - mtWidth * 0.8, cy - mtHeight * 0.5); // Đỉnh trái (Đao Lợi)
+      ctx.lineTo(cx + mtWidth * 0.8, cy - mtHeight * 0.5); // Đỉnh phải
+      ctx.lineTo(cx + mtWidth * 0.35, cy);                 // Eo giữa
+      ctx.lineTo(cx + mtWidth, cy + mtHeight * 0.5);       // Chân núi phải
+      ctx.lineTo(cx - mtWidth, cy + mtHeight * 0.5);       // Chân núi trái
+      ctx.lineTo(cx - mtWidth * 0.35, cy);                 // Eo giữa
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Thành Thiện Kiến & Cung trời Đao Lợi trên đỉnh
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 25 * scale, cy - mtHeight * 0.5 - 15 * scale, 50 * scale, 15 * scale);
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath();
+      ctx.arc(cx, cy - mtHeight * 0.5 - 15 * scale, 8 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mặt Trời & Mặt Trăng quay quanh eo núi
+      const sunAngle = t * 1.5;
+      const orbitR = mtWidth * 0.85;
+      const sunX = cx + Math.cos(sunAngle) * orbitR;
+      const sunY = cy + Math.sin(sunAngle) * (20 * scale);
+      const moonX = cx - Math.cos(sunAngle) * orbitR;
+      const moonY = cy - Math.sin(sunAngle) * (20 * scale);
+
+      // Quỹ đạo elip
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, orbitR, 20 * scale, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Mặt Trời (Đỏ cam chói lọi)
+      ctx.fillStyle = '#ff4500';
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, 8 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mặt Trăng (Bạch ngọc mát mẻ)
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.arc(moonX, moonY, 6 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Level 7: Tam Thiên Đại Thiên Thế Giới (Mạng lưới một tỷ thái dương hệ)
+    function drawDaiThienTheGioi(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const r = 160 * scale;
+      // Vòng xoáy thiên hà chứa ngàn vạn Tu Di Sơn
+      const galaxyCount = 3;
+      for (let arm = 0; arm < galaxyCount; arm++) {
+        const offset = arm * ((Math.PI * 2) / galaxyCount);
+        ctx.fillStyle = (arm === 0) ? '#ffd700' : (arm === 1 ? '#00f0ff' : '#ff758c');
+
+        for (let i = 0; i < 90; i++) {
+          const progress = i / 90;
+          const theta = progress * Math.PI * 3.5 + offset + t * 0.4;
+          const dist = progress * r;
+          const spread = (Math.sin(i * 12) * 14) * scale;
+          const px = cx + Math.cos(theta) * (dist + spread);
+          const py = cy + Math.sin(theta) * (dist + spread) * 0.7;
+
+          ctx.beginPath();
+          ctx.arc(px, py, Math.max(0.6, 2.2 * scale * (1 - progress * 0.5)), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Lõi trung tâm Chánh Biến Tri chói lọi
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 35 * scale);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.5, 'rgba(255, 215, 0, 0.8)');
+      coreGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 35 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Level 8: Hệ Thống Phong Luân Nâng Đỡ (Tầng tầng gió năng lượng)
+    function drawPhongLuan(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const layers = [
+        { name: "Bình Đẳng Trụ", color: "#e056fd", r: 160 * scale },
+        { name: "Xuất Sanh Bửu", color: "#00d2d3", r: 135 * scale },
+        { name: "Bửu Oai Đức", color: "#ff9f43", r: 110 * scale },
+        { name: "Thù Thắng Oai Quang", color: "#ffd700", r: 85 * scale }
+      ];
+
+      layers.forEach((l, idx) => {
+        ctx.strokeStyle = l.color;
+        ctx.lineWidth = Math.max(1.5, 3 * scale);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((idx % 2 === 0 ? 1 : -1) * t * (0.5 + idx * 0.2));
+
+        // Vòng xoáy gió phong luân
+        ctx.beginPath();
+        for (let a = 0; a < Math.PI * 2; a += 0.2) {
+          const wave = Math.sin(a * 8 + t * 4) * 6 * scale;
+          const px = Math.cos(a) * (l.r + wave);
+          const py = Math.sin(a) * (l.r * 0.75 + wave);
+          if (a === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    // Level 9: Hương Thủy Hải & Đại Liên Hoa (Biển nước thơm ngào ngạt)
+    function drawHuongThuyHai(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Biển nước thơm phát sáng lấp lánh sóng ngọc
+      const seaWidth = 190 * scale;
+      const seaHeight = 60 * scale;
+
+      const seaGrad = ctx.createRadialGradient(cx, cy + 30 * scale, 10 * scale, cx, cy + 30 * scale, seaWidth);
+      seaGrad.addColorStop(0, '#00d2ff');
+      seaGrad.addColorStop(0.5, '#3a7bd5');
+      seaGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = seaGrad;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 30 * scale, seaWidth, seaHeight, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Đóa sen khổng lồ "Chủng Chủng Quang Minh Nhụy Hương Tràng"
+      const flowerY = cy - 20 * scale;
+      const petalCount = 12;
+      for (let p = 0; p < petalCount; p++) {
+        const ang = (p * (Math.PI * 2) / petalCount) + t * 0.2;
+        const petX = cx + Math.cos(ang) * 55 * scale;
+        const petY = flowerY + Math.sin(ang) * 25 * scale;
+
+        ctx.fillStyle = 'rgba(255, 117, 140, 0.65)';
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(petX, petY, 26 * scale, 14 * scale, ang, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Đài sen tỏa ánh hoàng kim trung tâm
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath();
+      ctx.ellipse(cx, flowerY, 28 * scale, 12 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Level 10: 20 Tầng Hoa Tạng Thế Giới (Cõi Ta Bà Tầng 13)
+    function drawHoaTang20Tang(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const totalTiers = 20;
+      const colHeight = 220 * scale;
+      const startY = cy + colHeight * 0.48;
+      const stepY = colHeight / totalTiers;
+
+      for (let i = 1; i <= totalTiers; i++) {
+        const y = startY - (i - 1) * stepY;
+        const isTaBa = (i === 13); // Tầng 13 là cõi Ta Bà
+        const diskW = (50 + Math.sin(i * 0.4) * 20) * scale;
+        const diskH = 8 * scale;
+
+        if (isTaBa) {
+          // Tầng 13 sáng rực rỡ đặc biệt (Ta Bà & Cực Lạc)
+          ctx.fillStyle = '#ffd700';
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2.5 * scale;
+          ctx.beginPath();
+          ctx.ellipse(cx, y, diskW * 1.35, diskH * 1.5, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Nhãn chỉ rõ Tầng 13
+          if (scale > 0.45) {
+            ctx.fillStyle = '#ffd700';
+            ctx.font = `bold ${Math.floor(10 * Math.min(scale, 1.4))}px Cinzel`;
+            ctx.fillText("TẦNG 13: CÕI TA BÀ", cx + diskW * 1.45, y + 3);
+          }
+        } else {
+          // Các tầng thế giới khác
+          ctx.fillStyle = (i % 2 === 0) ? 'rgba(0, 210, 255, 0.4)' : 'rgba(255, 117, 140, 0.4)';
+          ctx.strokeStyle = 'rgba(255, 215, 0, 0.5)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(cx, y, diskW, diskH, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      }
+
+      // Trục năng lượng chói lọi nối liền 20 tầng
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 2 * scale;
+      ctx.beginPath();
+      ctx.moveTo(cx, startY + 10 * scale);
+      ctx.lineTo(cx, startY - colHeight);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // Level 11: Mạng Lưới Thiên Đế (Indra's Net) & Trùng Trùng Duyên Khởi
+    function drawMangLuoiDeVong(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Vẽ mạng lưới các viên ngọc phản chiếu lẫn nhau
+      const nodes = [];
+      const rings = 4;
+      for (let r = 1; r <= rings; r++) {
+        const count = r * 6;
+        const rad = r * (42 * scale);
+        for (let i = 0; i < count; i++) {
+          const ang = (i * Math.PI * 2) / count + (t * 0.15 * (r % 2 === 0 ? 1 : -1));
+          nodes.push({
+            x: cx + Math.cos(ang) * rad,
+            y: cy + Math.sin(ang) * rad * 0.8
+          });
+        }
+      }
+
+      // Vẽ các dây lưới ánh sáng liên kết
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.22)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < nodes.length; i += 2) {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(nodes[i].x, nodes[i].y);
+        ctx.stroke();
+      }
+
+      // Vẽ từng viên ngọc bảo châu phản chiếu trùng trùng duyên khởi
+      nodes.forEach((n, idx) => {
+        const jewelGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 7 * scale);
+        jewelGrad.addColorStop(0, '#ffffff');
+        jewelGrad.addColorStop(0.4, (idx % 2 === 0 ? '#ffd700' : '#00f0ff'));
+        jewelGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = jewelGrad;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 7 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Bảo châu trung tâm: Chiếu ngược lại hình ảnh một hạt vi trần
+      const centerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 32 * scale);
+      centerGrad.addColorStop(0, '#ffffff');
+      centerGrad.addColorStop(0.5, '#ffd700');
+      centerGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = centerGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 32 * scale, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    /* =========================================================================
+     * 6. VÒNG LẶP RENDER CHÍNH (MAIN ANIMATION LOOP 60FPS)
+     * ========================================================================= */
+    function renderFrame() {
+      animTime += 0.016;
+
+      // 1. Tự động chạy Auto-Tour
+      if (isAutoTour) {
+        targetScale += tourDirection * baseTourSpeed * tourSpeedMult;
+        if (targetScale >= 11.0) {
+          targetScale = 11.0;
+          tourDirection = -1; // Đảo chiều thu nhiếp vi trần
+          updateDirectionUI();
+        } else if (targetScale <= 0.0) {
+          targetScale = 0.0;
+          tourDirection = 1;  // Đảo chiều phóng đại thế giới
+          updateDirectionUI();
+        }
+      }
+
+      // 2. Nội suy mượt mà tỷ lệ (Smooth Spring Damping)
+      currentScale += (targetScale - currentScale) * 0.12;
+
+      // Đồng bộ slider
+      if (Math.abs(parseFloat(scaleSlider.value) - currentScale) > 0.02) {
+        scaleSlider.value = currentScale;
+      }
+      updateHUDAndCard(currentScale);
+      bowlSynth.updateToneByScale(currentScale);
+
+      // Hiệu ứng Visualizer Waveform nhấp nháy khi chuông bật
+      if (bowlSynth.isPlaying) {
+        bellWaveBars.forEach((bar, idx) => {
+          const h = 4 + Math.sin(animTime * 6 + idx) * 8 + Math.random() * 3;
+          bar.style.height = `${Math.max(2, h)}px`;
+        });
+      }
+
+      // 3. Xóa nền và vẽ bầu trời sao Pháp Giới
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+
+      // Vẽ trường sao Pháp Giới lung linh
+      cosmosStars.forEach(s => {
+        const tw = Math.sin(animTime * 3 * s.twinkleRate * 100) * 0.35 + 0.65;
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = s.alpha * tw;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 4. Danh sách hàm vẽ theo thứ tự 12 cấp bậc Hoa Nghiêm
+      const renderers = [
+        { step: 0,  fn: drawViTran },
+        { step: 1,  fn: drawMaoKhong },
+        { step: 2,  fn: drawViTrung },
+        { step: 3,  fn: drawThanNguoi },
+        { step: 4,  fn: drawDiemPhuDe },
+        { step: 5,  fn: drawTuThienHa },
+        { step: 6,  fn: drawNuiTuDi },
+        { step: 7,  fn: drawDaiThienTheGioi },
+        { step: 8,  fn: drawPhongLuan },
+        { step: 9,  fn: drawHuongThuyHai },
+        { step: 10, fn: drawHoaTang20Tang },
+        { step: 11, fn: drawMangLuoiDeVong }
+      ];
+
+      // Vẽ từng cấp độ dựa trên khoảng cách delta đến mốc hiện tại
+      renderers.forEach(obj => {
+        const delta = currentScale - obj.step;
+        // Hiển thị trong khoảng +/- 1.3 bước chuyển
+        if (Math.abs(delta) < 1.3) {
+          // Tính độ mờ mượt mà (Hàm Cosine)
+          const alpha = Math.pow(Math.cos((delta / 1.3) * (Math.PI / 2)), 2);
+          // Tỷ lệ hiển thị zoom
+          const visualScale = Math.pow(10, -delta * 0.45);
+
+          obj.fn(cx, cy, visualScale, alpha, animTime);
+
+          // Vẽ hào quang Phật giáo nếu ở tiêu điểm chính
+          if (alpha > 0.65) {
+            drawBuddhistAura(cx, cy, 140 * Math.min(visualScale, 2.0), alpha * 0.8, HOA_NGHIEM_LEVELS[obj.step].color);
+          }
+        }
+      });
+
+      requestAnimationFrame(renderFrame);
+    }
+
+    /* =========================================================================
+     * 7. XỬ LÝ SỰ KIỆN TƯƠNG TÁC NGƯỜI DÙNG
+     * ========================================================================= */
+    function updateDirectionUI() {
+      if (tourDirection === 1) {
+        dirIcon.style.transform = 'rotate(0deg)';
+        dirText.textContent = 'Hướng: Phóng Khắp (+)';
+      } else {
+        dirIcon.style.transform = 'rotate(180deg)';
+        dirText.textContent = 'Hướng: Thu Nhiếp (-)';
+      }
+    }
+
+    function toggleAutoTour() {
+      isAutoTour = !isAutoTour;
+      if (isAutoTour) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        playBtnText.textContent = 'TẠM DỪNG TOUR';
+        playPauseBtn.classList.replace('from-amber-500', 'from-rose-500');
+        playPauseBtn.classList.replace('to-amber-400', 'to-rose-400');
+      } else {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = 'CHU DU HOA TẠNG (AUTO TOUR)';
+        playPauseBtn.classList.replace('from-rose-500', 'from-amber-500');
+        playPauseBtn.classList.replace('to-rose-400', 'to-amber-400');
+      }
+    }
+
+    // Thanh trượt Slider
+    scaleSlider.addEventListener('input', (e) => {
+      targetScale = parseFloat(e.target.value);
+      isAutoTour = false;
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = 'CHU DU HOA TẠNG (AUTO TOUR)';
+    });
+
+    playPauseBtn.addEventListener('click', toggleAutoTour);
+
+    reverseBtn.addEventListener('click', () => {
+      tourDirection *= -1;
+      updateDirectionUI();
+    });
+
+    // Nút tốc độ
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => {
+          b.classList.remove('bg-amber-500/40', 'text-amber-200', 'font-bold');
+        });
+        btn.classList.add('bg-amber-500/40', 'text-amber-200', 'font-bold');
+        tourSpeedMult = parseFloat(btn.dataset.speed);
+      });
+    });
+
+    // Các mốc nhảy nhanh (Quick Jump)
+    document.querySelectorAll('.jump-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        targetScale = parseFloat(btn.dataset.step);
+        isAutoTour = false;
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = 'CHU DU HOA TẠNG (AUTO TOUR)';
+      });
+    });
+
+    // Âm thanh Chuông Bát
+    bellAudioBtn.addEventListener('click', () => {
+      const active = bowlSynth.toggle();
+      if (active) {
+        bellIconOn.classList.remove('hidden');
+        bellIconOff.classList.add('hidden');
+      } else {
+        bellIconOn.classList.add('hidden');
+        bellIconOff.classList.remove('hidden');
+      }
+    });
+
+    // Bật tắt Card thông tin
+    toggleLevelCardBtn.addEventListener('click', () => {
+      levelInfoCard.classList.toggle('translate-x-[120%]');
+    });
+    closeLevelCardBtn.addEventListener('click', () => {
+      levelInfoCard.classList.add('translate-x-[120%]');
+    });
+
+    // Modal Kinh Văn & Triết Học
+    openScriptureBtn.addEventListener('click', () => {
+      scriptureModal.classList.remove('hidden');
+    });
+    closeScriptureBtn.addEventListener('click', () => {
+      scriptureModal.classList.add('hidden');
+    });
+    closeScriptureBtn2.addEventListener('click', () => {
+      scriptureModal.classList.add('hidden');
+    });
+
+    // Chuyển Tab trong Modal
+    modalTabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabTarget = btn.dataset.tab;
+        modalTabBtns.forEach(b => {
+          b.classList.remove('text-amber-300', 'border-b-2', 'border-amber-400', 'font-bold');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('text-amber-300', 'border-b-2', 'border-amber-400', 'font-bold');
+        btn.classList.remove('text-slate-400');
+
+        modalTabContents.forEach(content => {
+          if (content.id === tabTarget) {
+            content.classList.remove('hidden');
+          } else {
+            content.classList.add('hidden');
+          }
+        });
+      });
+    });
+
+    // Cuộn chuột Zoom In/Out
+    window.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomDelta = e.deltaY * -0.0025;
+      targetScale = Math.max(0, Math.min(11, targetScale + zoomDelta));
+      isAutoTour = false;
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = 'CHU DU HOA TẠNG (AUTO TOUR)';
+    }, { passive: false });
+
+    // Kéo thả chuột trên Desktop
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouseY = e.clientY;
+    });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dy = lastMouseY - e.clientY;
+      lastMouseY = e.clientY;
+      targetScale = Math.max(0, Math.min(11, targetScale + dy * 0.012));
+      isAutoTour = false;
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = 'CHU DU HOA TẠNG (AUTO TOUR)';
+    });
+
+    // Vuốt chạm trên Thiết bị di động (Touch)
+    let touchStartY = 0;
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        const dy = touchStartY - e.touches[0].clientY;
+        touchStartY = e.touches[0].clientY;
+        targetScale = Math.max(0, Math.min(11, targetScale + dy * 0.01));
+        isAutoTour = false;
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = 'CHU DU HOA TẠNG (AUTO TOUR)';
+      }
+    }, { passive: true });
+
+    // Bắt đầu vòng lặp
+    updateHUDAndCard(3);
+    requestAnimationFrame(renderFrame);
+  </script>
+</body>
+</html>

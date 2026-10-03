@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thước Đo Vũ Trụ 3D - Vũ Trụ Quan Kinh Hoa Nghiêm</title>
+    <!-- Giao diện Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thư viện Three.js 3D Engine và OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Quicksand:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #020204;
+            color: #f8fafc;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        .gold-glow {
+            text-shadow: 0 0 12px rgba(245, 158, 11, 0.8), 0 0 24px rgba(217, 119, 6, 0.5);
+        }
+
+        .gold-box-glow {
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.25), inset 0 0 15px rgba(245, 158, 11, 0.1);
+        }
+
+        /* Ẩn con trỏ chuột mặc định khi xoay 3D */
+        canvas {
+            outline: none;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen relative flex flex-col justify-between overflow-hidden">
+
+    <!-- 1. MÀN HÌNH VIEWPORT 3D THREE.JS -->
+    <div id="canvas-container" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></div>
+
+    <!-- 2. THANH TIÊU ĐỀ & ĐIỀU KHIỂN TÂM LINH (TRÊN CÙNG) -->
+    <header class="relative z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/90 via-black/40 to-transparent pointer-events-none">
+        <div class="pointer-events-auto">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl text-amber-400 animate-spin" style="animation-duration: 20s;">☸</span>
+                <div>
+                    <h1 class="text-lg md:text-2xl font-bold font-cinzel text-amber-300 gold-glow tracking-wider uppercase">
+                        Vũ Trụ Quan Hoa Nghiêm 3D
+                    </h1>
+                    <p class="text-[11px] md:text-xs text-amber-200/70">Tương tác xoay 360° • Phóng to / Thu nhỏ • Sự Sự Vô Ngại</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-3 pointer-events-auto">
+            <!-- Nút bật/tắt Mõ & Trì Chú -->
+            <button id="btnChant" class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full border border-amber-500/50 bg-amber-950/40 text-amber-300 text-xs font-semibold hover:bg-amber-800/40 transition-all gold-box-glow">
+                <span id="chantDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="chantText">Bật Mõ & Trì Chú</span>
+            </button>
+            <!-- Nút bật/tắt Chuông Bát -->
+            <button id="btnBell" class="p-2 rounded-full border border-slate-700 bg-slate-900/60 text-slate-300 hover:border-amber-400 hover:text-amber-300 text-sm" title="Chuông Bát 432Hz">
+                🔔
+            </button>
+            <!-- Nút hướng dẫn xoay 3D -->
+            <button id="btnHelp" class="px-3 py-2 rounded-full border border-slate-700 bg-slate-900/60 text-slate-300 text-xs hover:border-amber-400 hover:text-amber-300">
+                ❓ Thao Tác
+            </button>
+        </div>
+    </header>
+
+    <!-- 3. KHUNG THÔNG TIN CẤP ĐỘ VŨ TRỤ (HUD GÓC TRÁI DƯỚI) -->
+    <section class="relative z-10 px-6 max-w-lg pointer-events-none">
+        <div class="p-5 rounded-2xl bg-black/65 border border-amber-500/30 backdrop-blur-md pointer-events-auto gold-box-glow transition-all">
+            <div class="flex items-center justify-between mb-2">
+                <span id="levelBadge" class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    Tầng 1 / 10
+                </span>
+                <span id="levelMetric" class="text-xs font-mono text-amber-200/80">
+                    10^-35m (Cực Vi Trần)
+                </span>
+            </div>
+            <h2 id="levelTitle" class="text-xl md:text-2xl font-bold font-cinzel text-amber-300 mb-2">
+                Hạt Cực Vi Trần & Lượng Tử
+            </h2>
+            <p id="levelDesc" class="text-xs md:text-sm text-slate-300 leading-relaxed mb-3">
+                Trong một hạt bụi vi trần dung chứa toàn bộ thế giới ba ngàn đại thiên. Vạn pháp tương tức tương nhập, đồng thời hiện bày.
+            </p>
+            <div class="p-3 rounded-xl bg-amber-950/30 border-l-2 border-amber-500 text-[12px] italic text-amber-200/90 leading-normal">
+                <span class="font-semibold text-amber-400 not-italic">Kinh văn Hoa Nghiêm:</span>
+                <span id="levelSutra">"Bao nhiêu vi trần trong thế giới / Trong mỗi vi trần thấy các cõi / Bửu quang hiện Phật vô lượng số / Cảnh giới tự tại của Như Lai."</span>
+            </div>
+            <div class="mt-3 pt-2 border-t border-amber-500/20 flex items-center justify-between text-xs text-amber-400/90 font-mono">
+                <span>Chân ngôn hộ trì:</span>
+                <span id="levelMantra" class="font-bold">Án Lam (Tịnh Pháp Giới Chơn Ngôn)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. THANH TRƯỢT TỈ LỆ & ĐIỀU KHIỂN CHU DU VŨ TRỤ (DƯỚI CÙNG) -->
+    <footer class="relative z-10 flex flex-col items-center px-6 py-4 bg-gradient-to-t from-black/95 via-black/50 to-transparent">
+        <div class="w-full max-w-2xl flex items-center gap-4 mb-2">
+            <span class="text-xs text-amber-400 font-mono">10⁻³⁵m</span>
+            <input id="sliderScale" type="range" min="0" max="9" step="0.001" value="0" class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500 hover:accent-amber-400">
+            <span class="text-xs text-amber-400 font-mono">10²⁶m</span>
+        </div>
+
+        <div class="flex items-center gap-3 md:gap-5">
+            <button id="btnPrev" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 text-slate-300 text-xs hover:border-amber-400 transition-all">
+                ⏮ Tầng Trước
+            </button>
+            <button id="btnAutoTour" class="px-5 py-1.5 rounded-full border border-amber-500 bg-amber-500/20 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all gold-box-glow">
+                ▶ Chu Du Tự Động (Ping-Pong)
+            </button>
+            <button id="btnNext" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 text-slate-300 text-xs hover:border-amber-400 transition-all">
+                Tầng Kế ⏭
+            </button>
+            <button id="btnResetView" class="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 text-slate-300 text-xs hover:border-amber-400 transition-all" title="Đặt lại góc nhìn camera">
+                🎯 Góc Nhìn
+            </button>
+        </div>
+    </footer>
+
+    <!-- 5. BẢNG HƯỚNG DẪN THAO TÁC 3D (MODAL) -->
+    <div id="modalHelp" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden">
+        <div class="relative w-full max-w-md bg-slate-950 border border-amber-500/40 rounded-2xl p-6 text-slate-300 gold-box-glow">
+            <div class="flex items-center justify-between pb-3 border-b border-amber-500/20 mb-4">
+                <h3 class="text-base font-bold font-cinzel text-amber-300">Hướng Dẫn Tương Tác 3D</h3>
+                <button id="btnCloseHelp" class="text-slate-400 hover:text-amber-400 text-lg">✕</button>
+            </div>
+            <ul class="space-y-3 text-xs md:text-sm">
+                <li class="flex items-center gap-3">
+                    <span class="text-amber-400 text-base">🖱️</span>
+                    <span><strong>Chuột trái (hoặc 1 ngón tay):</strong> Giữ và kéo để xoay 360° quanh vật thể.</span>
+                </li>
+                <li class="flex items-center gap-3">
+                    <span class="text-amber-400 text-base">🔍</span>
+                    <span><strong>Con lăn chuột (hoặc chụm 2 ngón):</strong> Phóng to / Thu nhỏ không gian.</span>
+                </li>
+                <li class="flex items-center gap-3">
+                    <span class="text-amber-400 text-base">🖐️</span>
+                    <span><strong>Chuột phải (hoặc 2 ngón kéo):</strong> Xê dịch vị trí tâm nhìn (Pan).</span>
+                </li>
+                <li class="flex items-center gap-3">
+                    <span class="text-amber-400 text-base">☸</span>
+                    <span><strong>Thanh trượt dưới:</strong> Dịch chuyển mượt mà qua 10 cấp độ Hoa Nghiêm.</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- MÃ JAVASCRIPT: KHỞI TẠO THREE.JS VÀ THUẬT TOÁN 3D NỘI TẠI -->
+    <!-- ========================================================== -->
+    <script>
+        /**
+         * 1. CƠ SỞ DỮ LIỆU 10 TẦNG VŨ TRỤ QUAN HOA NGHIÊM CHUẨN XÁC
+         */
+        const TIERS_DATA = [
+            {
+                metric: "10^-35m (Cực Vi Trần)",
+                title: "1. Hạt Cực Vi Trần & Lượng Tử",
+                desc: "Đơn vị vật chất vi tế tột cùng. Trong mỗi hạt bụi nhỏ li ti đều chứa đựng toàn bộ vũ giới chư Phật.",
+                sutra: "Bao nhiêu vi trần trong thế giới / Trong mỗi vi trần thấy các cõi / Bửu quang hiện Phật vô lượng số / Cảnh giới tự tại của Như Lai.",
+                mantra: "Án Lam (Tịnh Pháp Giới Chơn Ngôn)"
+            },
+            {
+                metric: "10^-10m (Hạ Nguyên Tử)",
+                title: "2. Nguyên Tử & Đám Mây Điện Tử",
+                desc: "Các quỹ đạo electron chuyển động như bánh xe pháp luân, minh chứng cho tánh Không và tính tương duyên của vạn vật.",
+                sutra: "Chư Phật trí huệ vô biên tế / Trong một chân lông đều thấy rõ vô số vô lượng chư Như Lai.",
+                mantra: "Án Ta Phạ Bà Phạ Thuật Đà Ta Phạ"
+            },
+            {
+                metric: "10^-6m (Tế Bào Sống)",
+                title: "3. Tế Bào & 8 Vạn 4 Ngàn Vi Trùng",
+                desc: "Đức Phật thấy rõ trong một giọt nước và một tế bào có vô số vi trùng sinh sống mà Bồ Tát luôn khởi tâm từ nuôi dưỡng.",
+                sutra: "Bồ Tát quán thấy trong thân có tám vạn bốn ngàn vi trùng, nguyện cho chúng đều được no đủ và cùng chứng bồ đề.",
+                mantra: "Nam Mô A Di Đà Phật"
+            },
+            {
+                metric: "10^0m (Thân Người)",
+                title: "4. Thân Người Thiền Định (Tiểu Vũ Trụ)",
+                desc: "Thân người là điểm giao hội giữa vi mô và vĩ mô, là pháp khí trân quý để chuyển mê khai ngộ giữa dòng sinh tử.",
+                sutra: "Tất cả chúng sanh đều có đầy đủ đức tướng trí huệ của Như Lai, chỉ vì vọng tưởng chấp trước mà chưa chứng đắc.",
+                mantra: "Nam Mô Bản Sư Thích Ca Mâu Ni Phật"
+            },
+            {
+                metric: "10^7m (Nam Thiểm Bộ Châu)",
+                title: "5. Địa Cầu (Diêm Phù Đề)",
+                desc: "Cõi người nằm ở phương Nam của núi Tu Di, được bao bọc bởi đại dương và bốn đại bộ châu rộng lớn.",
+                sutra: "Ví như địa cầu gìn giữ cung điện, khéo truyền đạo mầu rất an vui.",
+                mantra: "Nam Mô Đại Bi Quán Thế Âm Bồ Tát"
+            },
+            {
+                metric: "10^11m (Núi Chúa Tu Di)",
+                title: "6. Núi Tu Di Tứ Báu & Nhật Nguyệt",
+                desc: "Núi Tu Di hình đồng hồ cát bằng 4 báu: Vàng, Bạc, Lưu ly, Pha lê. Mặt trời và Mặt trăng xoay quanh sườn núi chiếu soi thế gian.",
+                sutra: "Núi Tu Di cao rộng tốt đẹp, các luân báu bủa giăng rủ bốn phía, chư thiên cõi trời Đao Lợi an ngự trên đỉnh núi.",
+                mantra: "Om Mani Padme Hum"
+            },
+            {
+                metric: "10^13m (Tiểu Thiên Thế Giới)",
+                title: "7. Thái Dương Hệ & Tiểu Thiên",
+                desc: "Một ngàn hệ thống núi Tu Di và Thái dương hệ xoay vần hợp thành một Tiểu Thiên Thế Giới theo chu kỳ thành trụ hoại không.",
+                sutra: "Một ngàn thế giới gom lại gọi là Tiểu Thiên, xoay vần trong hư không vô ngại.",
+                mantra: "Om Tare Tuttare Ture Soha"
+            },
+            {
+                metric: "10^21m (Tam Thiên Đại Thiên)",
+                title: "8. Thiên Hà & Tam Thiên Đại Thiên",
+                desc: "Một tỷ thế giới hợp thành một cõi giáo hóa của một Đức Phật. Toàn bộ thiên hà tựa như một hạt cát trôi nổi trong biển lớn.",
+                sutra: "Tam thiên đại thiên thế giới vô lượng vô biên, đều hiện rõ trong ánh sáng một sợi lông của Như Lai.",
+                mantra: "Om Muni Muni Mahamuni Shakyamuniye Svaha"
+            },
+            {
+                metric: "10^23m (Hoa Tạng Thế Giới Chủng)",
+                title: "9. Trục 20 Tầng Thế Giới (Ta Bà Tầng 13)",
+                desc: "Trục 20 tầng đĩa thế giới nương trên Biển Nước Thơm. Cõi Ta Bà và cõi Cực Lạc của chúng ta cùng nằm ở Tầng thứ 13.",
+                sutra: "Trên đó quá Phật sát vi trần số thế giới, có thế giới tên Ta Bà... Phật chính là Đức Tỳ Lô Giá Na Như Lai.",
+                mantra: "Om Vairochana Hum"
+            },
+            {
+                metric: "10^26m (Tận Cùng Vũ Trụ)",
+                title: "10. Mạng Lưới Đế Thích (Indra's Net)",
+                desc: "Mạng lưới ngọc vô tận: mỗi viên ngọc phản chiếu tất cả các viên ngọc khác. Zoom sâu vào tận cùng lại quay về một hạt vi trần ban đầu!",
+                sutra: "Một thế giới để vào tất cả, tất cả thế giới để vào một. Thể tướng thế giới vẫn như cũ, trùng trùng duyên khởi vô ngại.",
+                mantra: "Om Amogha Vairochana Mahamudra Manipadma Jvalapravarttaya Hum"
+            }
+        ];
+
+        /**
+         * 2. BỘ TỔNG HỢP ÂM THANH WEB AUDIO API (Chuông Bát & Mõ Gỗ)
+         */
+        class SacredAudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.isBellEnabled = false;
+                this.isChantingEnabled = false;
+                this.chantTimer = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContextClass();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Chuông Bát Tây Tạng ngân vang (432Hz)
+            playBell(freq = 432, duration = 4.0) {
+                if (!this.isBellEnabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+
+                const osc1 = this.ctx.createOscillator();
+                const osc2 = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(freq, now);
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(freq * 1.503, now); // Bội âm hài hòa
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.25, now + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + duration);
+                osc2.stop(now + duration);
+            }
+
+            // Tiếng Mõ gỗ gõ nhịp (320Hz xuống 150Hz decay trong 0.1s)
+            playWoodenFish() {
+                if (!this.isChantingEnabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+
+                const osc = this.ctx.createOscillator();
+                const filter = this.ctx.createBiquadFilter();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(320, now);
+                osc.frequency.exponentialRampToValueAtTime(140, now + 0.08);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.12);
+            }
+
+            startChanting(onBeat) {
+                this.isChantingEnabled = true;
+                this.init();
+                this.chantTimer = setInterval(() => {
+                    this.playWoodenFish();
+                    if (onBeat) onBeat();
+                }, 1000); // 60 BPM
+            }
+
+            stopChanting() {
+                this.isChantingEnabled = false;
+                if (this.chantTimer) {
+                    clearInterval(this.chantTimer);
+                    this.chantTimer = null;
+                }
+            }
+        }
+
+        const audio = new SacredAudioEngine();
+
+        /**
+         * 3. KHỞI TẠO KHUNG CẢNH 3D THREE.JS
+         */
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x020205, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 20);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.appendChild(renderer.domElement);
+
+        // Điều khiển tương tác 3D (OrbitControls)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 100;
+        controls.minDistance = 2;
+
+        // Ánh sáng trong không gian 3D
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const goldenPointLight = new THREE.PointLight(0xf59e0b, 2.5, 60);
+        goldenPointLight.position.set(0, 0, 0);
+        scene.add(goldenPointLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffecd2, 1.2);
+        dirLight.position.set(10, 20, 15);
+        scene.add(dirLight);
+
+        // Bụi sao nền vũ trụ 3D (Deep Space Starfield)
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 3000;
+        const starPos = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount * 3; i++) {
+            starPos[i] = (Math.random() - 0.5) * 400;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xfffbeb, size: 0.6, transparent: true, opacity: 0.7 });
+        const starField = new THREE.Points(starGeo, starMat);
+        scene.add(starField);
+
+        /**
+         * 4. THUẬT TOÁN TẠO 10 ĐỐI TƯỢNG 3D HOA NGHIÊM NỘI TẠI
+         */
+        const tierGroups = [];
+
+        // HÀM HỖ TRỢ VẬT LIỆU PHÁT SÁNG VÀNG HOA TẠNG
+        function createGoldMaterial(wireframe = false) {
+            return new THREE.MeshStandardMaterial({
+                color: 0xf59e0b,
+                emissive: 0x78350f,
+                roughness: 0.3,
+                metalness: 0.8,
+                wireframe: wireframe
+            });
+        }
+
+        // --- TẦNG 0: CỰC VI TRẦN & LƯỢNG TỬ ---
+        const g0 = new THREE.Group();
+        const dodeca = new THREE.Mesh(new THREE.DodecahedronGeometry(3.5, 1), new THREE.MeshStandardMaterial({
+            color: 0xfbbf24,
+            wireframe: true,
+            emissive: 0xd97706
+        }));
+        g0.add(dodeca);
+        // Hạt bụi năng lượng lượng tử
+        const qGeo = new THREE.BufferGeometry();
+        const qCount = 500;
+        const qPos = new Float32Array(qCount * 3);
+        for(let i=0; i<qCount*3; i++) qPos[i] = (Math.random()-0.5)*10;
+        qGeo.setAttribute('position', new THREE.BufferAttribute(qPos, 3));
+        const qPoints = new THREE.Points(qGeo, new THREE.PointsMaterial({color: 0xfef08a, size: 0.15}));
+        g0.add(qPoints);
+        tierGroups.push(g0);
+
+        // --- TẦNG 1: NGUYÊN TỬ & ĐÁM MÂY ĐIỆN TỬ ---
+        const g1 = new THREE.Group();
+        const nucleus = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), new THREE.MeshStandardMaterial({color: 0xef4444, emissive: 0x7f1d1d}));
+        g1.add(nucleus);
+        // 3 Vòng quỹ đạo electron đan nhau
+        for(let i=0; i<3; i++) {
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(3.8, 0.05, 16, 100), new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.8}));
+            ring.rotation.x = Math.PI / (i + 1.5);
+            ring.rotation.y = (i * Math.PI) / 3;
+            g1.add(ring);
+            // Hạt electron phát sáng
+            const eSphere = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 8), new THREE.MeshBasicMaterial({color: 0x67e8f9}));
+            eSphere.position.set(3.8 * Math.cos(i), 3.8 * Math.sin(i), 0);
+            ring.add(eSphere);
+        }
+        tierGroups.push(g1);
+
+        // --- TẦNG 2: TẾ BÀO SỐNG (8 VẠN 4 NGÀN VI TRÙNG) ---
+        const g2 = new THREE.Group();
+        const cell = new THREE.Mesh(new THREE.IcosahedronGeometry(3.5, 3), new THREE.MeshStandardMaterial({
+            color: 0x10b981,
+            roughness: 0.4,
+            wireframe: true,
+            emissive: 0x064e3b
+        }));
+        g2.add(cell);
+        const core = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 16), new THREE.MeshStandardMaterial({color: 0x34d399, emissive: 0x065f46}));
+        g2.add(core);
+        tierGroups.push(g2);
+
+        // --- TẦNG 3: THÂN NGƯỜI THIỀN ĐỊNH & 7 LUÂN XA ---
+        const g3 = new THREE.Group();
+        // Dáng ngồi thiền cách điệu (Kim tự tháp năng lượng & khối cầu đầu)
+        const bodyBase = new THREE.Mesh(new THREE.ConeGeometry(2.5, 4, 4), new THREE.MeshStandardMaterial({color: 0xf59e0b, wireframe: true}));
+        bodyBase.position.y = -0.5;
+        g3.add(bodyBase);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), new THREE.MeshStandardMaterial({color: 0xfde68a, emissive: 0xb45309}));
+        head.position.y = 2.2;
+        g3.add(head);
+        // 7 điểm năng lượng Luân Xa dọc trục tủy
+        const chakraColors = [0xef4444, 0xf97316, 0xfacc15, 0x22c55e, 0x06b6d4, 0x3b82f6, 0xa855f7];
+        chakraColors.forEach((col, idx) => {
+            const ch = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8), new THREE.MeshBasicMaterial({color: col}));
+            ch.position.set(0, -1.8 + idx * 0.6, 0.4);
+            g3.add(ch);
+        });
+        tierGroups.push(g3);
+
+        // --- TẦNG 4: ĐỊA CẦU (NAM THIỂM BỘ CHÂU) ---
+        const g4 = new THREE.Group();
+        const earth = new THREE.Mesh(new THREE.SphereGeometry(3.2, 32, 32), new THREE.MeshStandardMaterial({
+            color: 0x2563eb,
+            roughness: 0.6,
+            emissive: 0x1e3a8a
+        }));
+        g4.add(earth);
+        // Vành đai mây khí quyển
+        const clouds = new THREE.Mesh(new THREE.SphereGeometry(3.35, 32, 32), new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.25
+        }));
+        g4.add(clouds);
+        tierGroups.push(g4);
+
+        // --- TẦNG 5: NÚI CHÚA TU DI (SUMERU) & NHẬT NGUYỆT ---
+        const g5 = new THREE.Group();
+        // Núi Tu Di hình đồng hồ cát tứ báu
+        const upperCone = new THREE.Mesh(new THREE.ConeGeometry(3.5, 3.5, 4), createGoldMaterial(true));
+        upperCone.rotation.x = Math.PI;
+        upperCone.position.y = 1.75;
+        const lowerCone = new THREE.Mesh(new THREE.ConeGeometry(3.5, 3.5, 4), createGoldMaterial(true));
+        lowerCone.position.y = -1.75;
+        g5.add(upperCone);
+        g5.add(lowerCone);
+        // Quỹ đạo Nhật Nguyệt quanh sườn núi
+        const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({color: 0xf59e0b}));
+        sunMesh.position.set(4.5, 0, 0);
+        const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 12), new THREE.MeshBasicMaterial({color: 0xe0e7ff}));
+        moonMesh.position.set(-4.5, 0, 0);
+        g5.add(sunMesh);
+        g5.add(moonMesh);
+        tierGroups.push(g5);
+
+        // --- TẦNG 6: THÁI DƯƠNG HỆ (TIỂU THIÊN THẾ GIỚI) ---
+        const g6 = new THREE.Group();
+        const sunCenter = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 24), new THREE.MeshBasicMaterial({color: 0xfbbf24}));
+        g6.add(sunCenter);
+        for(let i=1; i<=5; i++) {
+            const orbit = new THREE.Mesh(new THREE.TorusGeometry(i * 1.5 + 1, 0.03, 8, 80), new THREE.MeshBasicMaterial({color: 0x94a3b8, transparent: true, opacity: 0.4}));
+            orbit.rotation.x = Math.PI / 2;
+            g6.add(orbit);
+            const planet = new THREE.Mesh(new THREE.SphereGeometry(0.25 + i * 0.05, 8, 8), new THREE.MeshStandardMaterial({color: 0x38bdf8}));
+            planet.position.set(i * 1.5 + 1, 0, 0);
+            g6.add(planet);
+        }
+        tierGroups.push(g6);
+
+        // --- TẦNG 7: THIÊN HÀ & TAM THIÊN ĐẠI THIÊN ---
+        const g7 = new THREE.Group();
+        const galaxyGeo = new THREE.BufferGeometry();
+        const galCount = 4000;
+        const galPos = new Float32Array(galCount * 3);
+        const galColor = new Float32Array(galCount * 3);
+        for(let i=0; i<galCount; i++) {
+            const r = Math.random() * 8 + 0.5;
+            const theta = r * 2.5 + (Math.random() - 0.5) * 0.8;
+            galPos[i*3] = r * Math.cos(theta);
+            galPos[i*3+1] = (Math.random() - 0.5) * (8 - r) * 0.4;
+            galPos[i*3+2] = r * Math.sin(theta);
+
+            galColor[i*3] = 0.9 + Math.random()*0.1;
+            galColor[i*3+1] = 0.7 + Math.random()*0.3;
+            galColor[i*3+2] = 0.3 + Math.random()*0.7;
+        }
+        galaxyGeo.setAttribute('position', new THREE.BufferAttribute(galPos, 3));
+        galaxyGeo.setAttribute('color', new THREE.BufferAttribute(galColor, 3));
+        const galPoints = new THREE.Points(galaxyGeo, new THREE.PointsMaterial({size: 0.12, vertexColors: true, transparent: true, opacity: 0.85}));
+        g7.add(galPoints);
+        tierGroups.push(g7);
+
+        // --- TẦNG 8: HOA TẠNG THẾ GIỚI CHỦNG (20 TẦNG - TA BÀ TẦNG 13) ---
+        const g8 = new THREE.Group();
+        // 20 đĩa thế giới xếp chồng theo phương thẳng đứng
+        for(let i=1; i<=20; i++) {
+            const isTaBa = (i === 13);
+            const disc = new THREE.Mesh(
+                new THREE.CylinderGeometry(4 - (i * 0.08), 4 - (i * 0.08), 0.15, 24),
+                new THREE.MeshStandardMaterial({
+                    color: isTaBa ? 0xf59e0b : 0x3b82f6,
+                    emissive: isTaBa ? 0xb45309 : 0x1e3a8a,
+                    roughness: 0.3
+                })
+            );
+            disc.position.y = (i - 10) * 0.55;
+            g8.add(disc);
+
+            if(isTaBa) {
+                // Điểm sáng biểu thị cõi Ta Bà và cõi Cực Lạc
+                const beacon = new THREE.Mesh(new THREE.TorusGeometry(4.4, 0.08, 8, 32), new THREE.MeshBasicMaterial({color: 0xfef08a}));
+                beacon.position.y = disc.position.y;
+                beacon.rotation.x = Math.PI / 2;
+                g8.add(beacon);
+            }
+        }
+        tierGroups.push(g8);
+
+        // --- TẦNG 9: MẠNG LƯỚI THIÊN ĐẾ THÍCH (INDRA'S NET) ---
+        const g9 = new THREE.Group();
+        const lattice = new THREE.Mesh(new THREE.IcosahedronGeometry(5, 2), new THREE.MeshStandardMaterial({
+            color: 0xf59e0b,
+            wireframe: true,
+            emissive: 0x78350f
+        }));
+        g9.add(lattice);
+        // Đính các viên châu ngọc phản quang lấp lánh tại các đỉnh lưới
+        const posAttr = lattice.geometry.attributes.position;
+        for(let i=0; i<posAttr.count; i+=3) {
+            const jewel = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), new THREE.MeshBasicMaterial({color: 0xfde047}));
+            jewel.position.set(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i));
+            g9.add(jewel);
+        }
+        tierGroups.push(g9);
+
+        // Thêm tất cả các nhóm vào cảnh 3D
+        tierGroups.forEach((grp, idx) => {
+            scene.add(grp);
+            grp.visible = (idx === 0);
+        });
+
+        /**
+         * 5. HỆ THỐNG ĐỒNG BỘ GIAO DIỆN & CHUYỂN CẢNH MƯỢT MÀ
+         */
+        let currentScaleValue = 0;
+        let isAutoTouring = false;
+        let autoDirection = 1;
+
+        const slider = document.getElementById('sliderScale');
+        const levelBadge = document.getElementById('levelBadge');
+        const levelMetric = document.getElementById('levelMetric');
+        const levelTitle = document.getElementById('levelTitle');
+        const levelDesc = document.getElementById('levelDesc');
+        const levelSutra = document.getElementById('levelSutra');
+        const levelMantra = document.getElementById('levelMantra');
+
+        function updateSceneScale(valFloat) {
+            slider.value = valFloat;
+            const baseIdx = Math.min(Math.floor(valFloat), 9);
+            const frac = valFloat - baseIdx;
+
+            // Cập nhật thông tin HUD
+            const data = TIERS_DATA[baseIdx];
+            levelBadge.innerText = `Tầng ${baseIdx + 1} / 10`;
+            levelMetric.innerText = data.metric;
+            levelTitle.innerText = data.title;
+            levelDesc.innerText = data.desc;
+            levelSutra.innerText = `"${data.sutra}"`;
+            levelMantra.innerText = data.mantra;
+
+            // Xử lý chuyển đổi độ mờ & hiển thị giữa 2 đối tượng 3D kế tiếp
+            tierGroups.forEach((grp, idx) => {
+                if(idx === baseIdx) {
+                    grp.visible = true;
+                    const scaleFactor = 1 + frac * 1.5;
+                    grp.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                } else if(idx === baseIdx + 1 && frac > 0.05) {
+                    grp.visible = true;
+                    const inScale = 0.2 + frac * 0.8;
+                    grp.scale.set(inScale, inScale, inScale);
+                } else {
+                    grp.visible = false;
+                }
+            });
+        }
+
+        // Bắt sự kiện kéo thanh trượt
+        slider.addEventListener('input', (e) => {
+            currentScaleValue = parseFloat(e.target.value);
+            isAutoTouring = false;
+            document.getElementById('btnAutoTour').innerText = "▶ Chu Du Tự Động";
+            updateSceneScale(currentScaleValue);
+        });
+
+        // Bắt sự kiện cuộn chuột để phóng to thu nhỏ tầng
+        window.addEventListener('wheel', (e) => {
+            if(isAutoTouring) return;
+            const delta = e.deltaY * 0.0015;
+            currentScaleValue = Math.max(0, Math.min(9, currentScaleValue + delta));
+            updateSceneScale(currentScaleValue);
+        }, { passive: true });
+
+        // Nút bấm Tầng Trước / Tầng Kế
+        document.getElementById('btnNext').addEventListener('click', () => {
+            currentScaleValue = Math.min(9, Math.floor(currentScaleValue) + 1);
+            updateSceneScale(currentScaleValue);
+            audio.playBell(528, 2.5);
+        });
+
+        document.getElementById('btnPrev').addEventListener('click', () => {
+            currentScaleValue = Math.max(0, Math.ceil(currentScaleValue) - 1);
+            updateSceneScale(currentScaleValue);
+            audio.playBell(396, 2.5);
+        });
+
+        // Tự động chu du 2 chiều (Ping-Pong Auto-Tour)
+        const btnAutoTour = document.getElementById('btnAutoTour');
+        btnAutoTour.addEventListener('click', () => {
+            isAutoTouring = !isAutoTouring;
+            btnAutoTour.innerText = isAutoTouring ? "⏸ Tạm Dừng" : "▶ Chu Du Tự Động";
+            if(isAutoTouring) audio.playBell(432, 4.0);
+        });
+
+        // Đặt lại góc nhìn camera
+        document.getElementById('btnResetView').addEventListener('click', () => {
+            controls.reset();
+            camera.position.set(0, 5, 20);
+        });
+
+        // Nút Trì Chú & Mõ
+        const btnChant = document.getElementById('btnChant');
+        const chantDot = document.getElementById('chantDot');
+        const chantText = document.getElementById('chantText');
+        btnChant.addEventListener('click', () => {
+            if(!audio.isChantingEnabled) {
+                audio.startChanting(() => {
+                    chantDot.classList.remove('bg-amber-400');
+                    chantDot.classList.add('bg-white');
+                    setTimeout(() => {
+                        chantDot.classList.remove('bg-white');
+                        chantDot.classList.add('bg-amber-400');
+                    }, 120);
+                });
+                chantText.innerText = "Tắt Mõ & Chú";
+                btnChant.classList.add('border-amber-400');
+                audio.playBell(432, 3.0);
+            } else {
+                audio.stopChanting();
+                chantText.innerText = "Bật Mõ & Trì Chú";
+                btnChant.classList.remove('border-amber-400');
+            }
+        });
+
+        // Nút Chuông Bát
+        const btnBell = document.getElementById('btnBell');
+        btnBell.addEventListener('click', () => {
+            audio.isBellEnabled = !audio.isBellEnabled;
+            btnBell.classList.toggle('text-amber-400', audio.isBellEnabled);
+            btnBell.classList.toggle('border-amber-400', audio.isBellEnabled);
+            if(audio.isBellEnabled) audio.playBell(432, 3.5);
+        });
+
+        // Quản lý Modal hướng dẫn
+        const modalHelp = document.getElementById('modalHelp');
+        document.getElementById('btnHelp').addEventListener('click', () => modalHelp.classList.remove('hidden'));
+        document.getElementById('btnCloseHelp').addEventListener('click', () => modalHelp.classList.add('hidden'));
+
+        // Cập nhật khi thay đổi kích thước cửa sổ trình duyệt
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        /**
+         * 6. VÒNG LẶP RENDER CHÍNH 60 FPS (ANIMATION LOOP)
+         */
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
+
+            // Tự động xoay nhẹ các đối tượng 3D
+            tierGroups.forEach((grp, idx) => {
+                if(grp.visible) {
+                    grp.rotation.y += 0.005;
+                    grp.rotation.x = Math.sin(elapsed * 0.5) * 0.05;
+                }
+            });
+
+            // Xoay nhẹ bầu trời sao nền
+            starField.rotation.y = elapsed * 0.002;
+
+            // Vận hành tự động chu du phóng to / thu nhỏ
+            if(isAutoTouring) {
+                currentScaleValue += 0.006 * autoDirection;
+                if(currentScaleValue >= 9) {
+                    currentScaleValue = 9;
+                    autoDirection = -1; // Chạm đỉnh Indra's Net, đảo chiều thu nhỏ lại vi trần
+                    audio.playBell(324, 4.0);
+                } else if(currentScaleValue <= 0) {
+                    currentScaleValue = 0;
+                    autoDirection = 1; // Chạm đáy vi trần, đảo chiều phóng lớn ra vũ trụ
+                    audio.playBell(432, 4.0);
+                }
+                updateSceneScale(currentScaleValue);
+            }
+
+            controls.update(); // Cập nhật chuyển động quán tính camera
+            renderer.render(scene, camera);
+        }
+
+        // Khởi động
+        updateSceneScale(0);
+        animate();
+    </script>
+</body>
+</html>
