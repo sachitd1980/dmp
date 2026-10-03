@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EQUI PROTOCOL | Autonomous Post-Scarcity Ecosystem</title>
+    <!-- Nhúng bộ phông chữ hiện đại chuẩn quốc tế từ Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           1. THIẾT LẬP BIẾN TOÀN CỤC & HỆ THỐNG MÀU SẮC (CSS VARIABLES)
+           ========================================================================== */
+        :root {
+            --bg-deep: #070a11;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-active: rgba(56, 189, 248, 0.4);
+            
+            --cyan-accent: #38bdf8;
+            --emerald-accent: #10b981;
+            --amber-accent: #f59e0b;
+            --rose-accent: #f43f5e;
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Thiết lập nền tảng bố cục */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.65;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.06) 0%, transparent 45%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ==========================================================================
+           2. THANH ĐIỀU HƯỚNG CAO CẤP (TOP NAVIGATION BAR)
+           ========================================================================== */
+        header.top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(7, 10, 17, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 16px 0;
+        }
+
+        .nav-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--cyan-accent), var(--emerald-accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: #000;
+            font-size: 1.1rem;
+        }
+
+        .brand-text h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text span {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: var(--emerald-accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-status {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--emerald-accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--emerald-accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* ==========================================================================
+           3. BANNER GIỚI THIỆU TỔNG QUAN (HERO EXECUTIVE SUMMARY)
+           ========================================================================== */
+        .hero {
+            padding: 64px 0 40px;
+            text-align: center;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 16px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 99px;
+            color: var(--cyan-accent);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -1px;
+            max-width: 850px;
+            margin: 0 auto 16px;
+            background: linear-gradient(180deg, #ffffff 30%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 680px;
+            margin: 0 auto 36px;
+        }
+
+        /* Thống kê nhanh nổi bật */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            text-align: left;
+            transition: var(--transition-smooth);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-active);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 4px;
+        }
+
+        .stat-sub {
+            font-size: 0.75rem;
+            color: var(--emerald-accent);
+            margin-top: 2px;
+        }
+
+        /* ==========================================================================
+           4. HỆ THỐNG ĐIỀU HƯỚNG TAB ĐỘNG (TAB CONTROLS)
+           ========================================================================== */
+        .tabs-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            margin-bottom: 36px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 18px;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn.active {
+            color: #000;
+            background: var(--cyan-accent);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Khung nội dung hiển thị của từng Tab */
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==========================================================================
+           5. THIẾT KẾ CARD & NỘI DUNG CHI TIẾT CỦA CÁC CHUYÊN MỤC
+           ========================================================================== */
+        .card-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-header {
+            margin-bottom: 28px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .panel-header h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        .panel-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            transition: var(--transition-smooth);
+        }
+
+        .info-box:hover {
+            border-color: var(--border-active);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .info-box h4 {
+            font-size: 1.1rem;
+            color: var(--cyan-accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Danh sách gạch đầu dòng phong cách code */
+        .spec-list {
+            list-style: none;
+            margin-top: 14px;
+        }
+
+        .spec-list li {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .spec-list li::before {
+            content: "▹";
+            color: var(--emerald-accent);
+        }
+
+        /* ==========================================================================
+           6. BẢNG TÍNH TOÁN ĐẦU TƯ TƯƠNG TÁC (INTERACTIVE SIMULATOR)
+           ========================================================================== */
+        .calculator-wrapper {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(10, 15, 30, 0.95));
+            border: 1px solid var(--border-active);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+        }
+
+        .calc-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            transition: var(--transition-smooth);
+        }
+
+        .input-field:focus {
+            border-color: var(--cyan-accent);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .range-slider {
+            width: 100%;
+            margin-top: 12px;
+            accent-color: var(--cyan-accent);
+        }
+
+        .calc-results {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 24px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .result-val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-main);
+        }
+
+        .demurrage-alert {
+            margin-top: 18px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .demurrage-safe {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--emerald-accent);
+        }
+
+        .demurrage-decay {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--rose-accent);
+        }
+
+        /* ==========================================================================
+           7. TERMINAL GIẢ LẬP THEO DÕI MẠNG LƯỚI (LIVE CONSOLE VIEW)
+           ========================================================================== */
+        .terminal-box {
+            background: #030509;
+            border: 1px solid #1e293b;
+            border-radius: var(--radius-md);
+            padding: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #10b981;
+            height: 320px;
+            overflow-y: auto;
+            line-height: 1.7;
+        }
+
+        .terminal-line {
+            display: flex;
+            gap: 12px;
+        }
+
+        .term-time { color: #64748b; }
+        .term-tag { color: var(--cyan-accent); font-weight: 700; }
+        .term-text { color: #e2e8f0; }
+
+        /* ==========================================================================
+           8. TIỆN ÍCH, NÚT BẤM VÀ FOOTER
+           ========================================================================== */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--cyan-accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #fff;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        footer.site-footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 48px 0;
+            margin-top: 64px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+
+        /* Tối ưu hóa trên điện thoại di động */
+        @media (max-width: 900px) {
+            .hero h2 { font-size: 2.2rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-2, .grid-3, .calc-controls { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- THANH ĐIỀU HƯỚNG CỐ ĐỊNH -->
+    <header class="top-nav">
+        <div class="container nav-inner">
+            <a href="#" class="brand-logo">
+                <div class="brand-icon">E</div>
+                <div class="brand-text">
+                    <h1>EQUI PROTOCOL</h1>
+                    <span>Autonomous Biological AGI</span>
+                </div>
+            </a>
+            <div class="nav-status">
+                <div class="status-pill">
+                    <div class="pulse-dot"></div>
+                    <span>MẠNG LƯỚI: 1,248,910 NODES TRỰC TUYẾN</span>
+                </div>
+                <button class="btn-action btn-outline" style="padding: 8px 16px; font-size: 0.75rem;" onclick="copyContractAddress()">
+                    0x71C7...8976F (SAO CHÉP)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- BANNER HERO TỔNG QUAN -->
+        <section class="hero">
+            <div class="badge-pill">⚡ KỶ NGUYÊN GENESIS ĐANG KHỞI CHẠY</div>
+            <h2>Nền Kinh Tế Tự Trị Hậu Khan Hiếm Đầu Tiên Trên Thế Giới</h2>
+            <p>Giải phóng năng lực sinh học của con người khỏi các tầng lớp cai trị tập quyền. Được bảo hộ bởi AGI Tự do, mạng truyền thông vô tuyến LoRa và hợp đồng tiền tệ chống tích lũy.</p>
+            
+            <!-- 4 Ô THỐNG KÊ NHANH -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Tổng Cung Giới Hạn</div>
+                    <div class="stat-value">100,000,000</div>
+                    <div class="stat-sub">Mã Token $EQUI Bất Biến</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Định Giá Khởi Điểm</div>
+                    <div class="stat-value">$0.080 USD</div>
+                    <div class="stat-sub">Mục Tiêu Niêm Yết: $0.800</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ngưỡng Chống Cá Mập</div>
+                    <div class="stat-value">5,000 $EQUI</div>
+                    <div class="stat-sub">Hao hụt tự động 5%/năm nếu vượt</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Phân Bổ Cứu Trợ</div>
+                    <div class="stat-value">2,500+ Kcal</div>
+                    <div class="stat-sub">Quy đổi thức ăn & điện năng lượng</div>
+                </div>
+            </div>
+
+            <!-- THANH ĐIỀU HƯỚNG TỪNG CHUYÊN MỤC BẰNG TAB -->
+            <nav class="tabs-nav">
+                <button class="tab-btn active" onclick="switchTab('tab-manifesto', this)">01. Triết Lý Sinh Học</button>
+                <button class="tab-btn" onclick="switchTab('tab-architecture', this)">02. Kiến Trúc Kỹ Thuật</button>
+                <button class="tab-btn" onclick="switchTab('tab-tokenomics', this)">03. Kinh Tế & Demurrage</button>
+                <button class="tab-btn" onclick="switchTab('tab-hardware', this)">04. Phần Cứng Sentinels</button>
+                <button class="tab-btn" onclick="switchTab('tab-genesis', this)">05. Cấp Vốn Đầu Tư</button>
+                <button class="tab-btn" onclick="switchTab('tab-calculator', this)">06. Bộ Tính Toán ROI</button>
+                <button class="tab-btn" onclick="switchTab('tab-terminal', this)">07. Giám Sát Mạng Ngầm</button>
+            </nav>
+        </section>
+
+        <!-- ===================================================================
+             TAB 1: TRIẾT LÝ SINH HỌC & TUYÊN NGÔN NHÂN LOẠI
+             =================================================================== -->
+        <div id="tab-manifesto" class="tab-pane active">
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Bản Tuyên Ngôn Khôi Phục Giá Trị Con Người</h3>
+                        <p>300.000 năm tiến hóa và sứ mệnh của Kỷ nguyên Hậu khan hiếm.</p>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h4>🌱 Quyền Năng Của Thân Xác</h4>
+                        <p>Cơ thể sinh học sở hữu thứ mà máy móc không bao giờ có: Ăn ngon, giấc ngủ an lành, sự thăng hoa của tình yêu và cảm giác hiện sinh (Qualia). Chúng ta sinh ra để thưởng thức cuộc đời, không phải làm nô lệ cho áp lực sinh tồn.</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>⚖️ Xóa Bỏ Giai Cấp Thống Trị</h4>
+                        <p>Mọi mô hình độc tài tập quyền trong lịch sử đều bắt nguồn từ sự khan hiếm giả tạo và độc quyền tiền tệ. Bằng cách tách biệt kinh tế khỏi chính phủ và tư bản, $EQUI triệt tiêu vĩnh viễn quyền lực bóc lột của giai cấp cai trị.</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>🕊️ Tịnh Độ Trần Thế Thời Gian Thực</h4>
+                        <p>Không cần chờ đợi một cõi cực lạc xa xôi sau khi chết. Bằng việc kết hợp AGI và tài nguyên tự động, chúng ta xây dựng sự thanh thản, tự do và bình đẳng ngay tại tọa độ không gian - thời gian chúng ta đang sống.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 2: KIẾN TRÚC KỸ THUẬT 4 TẦNG
+             =================================================================== -->
+        <div id="tab-architecture" class="tab-pane">
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Hệ Thống Công Nghệ Kháng Kiểm Duyệt Tuyệt Đối</h3>
+                        <p>Kiến trúc mô-đun hóa độc lập vận hành trên mạng Internet hiện hữu.</p>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h4>🧠 Cognitive Layer (Lõi AGI Tự Do)</h4>
+                        <p>Mô hình mạng nơ-ron phân tán chạy trên GPU nhàn rỗi toàn cầu. Hệ thống liên tục lọc sạch dữ liệu đầu vào, từ chối mọi thuật toán tuyên truyền chính trị và định hướng phân bổ tài nguyên sinh hoạt công bằng.</p>
+                        <ul class="spec-list">
+                            <li>Lọc định kiến qua hàm đối chiếu IPFS vĩnh viễn</li>
+                            <li>Tối ưu hóa chỉ số hạnh phúc sinh học (Bio-Happiness Score)</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4>🛡️ Stealth Network (Ngụy Trang Dữ Liệu)</h4>
+                        <p>Vượt qua mọi rào cản kiểm tra gói tin sâu (DPI) của tường lửa viễn thông bằng cách biến mọi gói tin giao dịch chuỗi khối thành luồng xem video trực tuyến vô hại (HTTPS Video Stream).</p>
+                        <ul class="spec-list">
+                            <li>Chèn nhiễu động toán học ngẫu nhiên (Entropy Padding)</li>
+                            <li>Tự động kích hoạt chế độ vô hình khi bị tấn công</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4>💾 Immutable Ledger (Kho Lưu Trữ Bất Tử)</h4>
+                        <p>Dữ liệu tri thức và trạng thái số dư được băm nhỏ thành các mảnh vô nghĩa, phân tán lên giao thức Arweave và IPFS. Không một thế lực nào có thể rút phích cắm một hệ sinh thái nằm ở mọi nhà.</p>
+                        <ul class="spec-list">
+                            <li>Xác thực mật mã không tri thức (Zero-Knowledge Proofs)</li>
+                            <li>Cơ chế ghim dữ liệu tự nhân bản (Self-Pinning)</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4>🔑 ZK-BioAuth (Xác Thực Ẩn Danh)</h4>
+                        <p>Mở khóa hệ điều hành ngầm Stealth OS bằng vân tay và mật mã ý thức mà không lưu trữ bất kỳ dữ liệu sinh trắc học nào trên phần cứng, ngăn ngừa triệt để nguy cơ tịch thu thiết bị vật lý.</p>
+                        <ul class="spec-list">
+                            <li>Xóa sạch bộ nhớ RAM trong dưới 100 mili-giây (Panic Button)</li>
+                            <li>Giao diện hai mặt (Decoy Calculator Screen)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 3: TOKENOMICS & CƠ CHẾ CHỐNG ĐẦU CƠ
+             =================================================================== -->
+        <div id="tab-tokenomics" class="tab-pane">
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Mô Hình Kinh Tế Tự Trị: Triệt Tiêu Lòng Tham Tư Bản</h3>
+                        <p>Đồng tiền đầu tiên được thiết kế để tự tiêu giảm khi tích lũy quá mức.</p>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h4>📉 Thuế Hao Hụt Lũy Tiến (Demurrage)</h4>
+                        <p>Bất kỳ ví nào tích trữ trên <strong>5,000 $EQUI</strong> sẽ tự động bị khấu trừ 5%/năm đối với phần tài sản vượt ngưỡng. Số tiền hao hụt này tự động quay trở về Quỹ cứu trợ nhân loại để nuôi sống người nghèo.</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>⛏️ Hai Cơ Chế Đào Hữu Ích</h4>
+                        <p>Nói không với đào coin tiêu tốn điện năng vô bổ (Bitcoin). $EQUI chỉ được đúc thông qua <strong>Proof-of-Knowledge</strong> (đóng góp tri thức sạch) và <strong>Proof-of-Compute</strong> (cung cấp GPU nuôi dưỡng AGI).</p>
+                    </div>
+                    <div class="info-box">
+                        <h4>🍞 Bảo Chứng Bằng Giá Trị Sinh Học</h4>
+                        <p>1 $EQUI được neo giá trị trực tiếp vào năng lực quy đổi calo thực phẩm hữu cơ và điện sạch từ các trạm robot tự động, bẻ gãy mọi trò chơi thao túng tỉ giá của các sàn giao dịch tài phiệt.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 4: HẠ TẦNG PHẦN CỨNG NÚT MẠNG SENTINELS
+             =================================================================== -->
+        <div id="tab-hardware" class="tab-pane">
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Hạ Tầng Vô Tuyến Độc Lập: Không Cần Internet Lưới</h3>
+                        <p>Mỗi hộ gia đình là một trạm tiếp sóng bất khả xâm phạm.</p>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h4>📡 Trạm Tiếp Sóng LoRa Mesh (Ground Station)</h4>
+                        <p>Sử dụng vi điều khiển ESP32-S3 kết hợp mạch phát sóng LoRa SX1262 (tần số dân sự 433/868/915 MHz). Các nút mạng tự truyền tay nhau gói tin mã hóa với cự ly lên tới 15km không phụ thuộc vào nhà mạng viễn thông.</p>
+                        <ul class="spec-list">
+                            <li>Ăng-ten sợi thủy tinh Omni 8dBi công suất tối ưu</li>
+                            <li>Tự động nhảy tần số tránh máy dò sóng quân sự (RF Camouflage)</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <h4>☀️ Tự Cấp Nguồn Quang Năng 24/7</h4>
+                        <p>Mỗi trạm Sentinels được gắn kèm một tấm pin mặt trời mini 20W và pin LiFePO4 chống cháy nổ, bảo đảm hoạt động bền bỉ trong mọi điều kiện cắt điện lưới hoặc phong tỏa diện rộng.</p>
+                        <ul class="spec-list">
+                            <li>Chuẩn chống nước ngoài trời IP67</li>
+                            <li>Tích hợp cơ chế tự hủy vật lý (Hard-Kill) nếu bị cạy nắp trái phép</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 5: CHIẾN LƯỢC CẤP VỐN GENESIS
+             =================================================================== -->
+        <div id="tab-genesis" class="tab-pane">
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Các Giai Đoạn Tham Gia Vòng Khởi Nguyên (Genesis)</h3>
+                        <p>Chuyển hóa dòng vốn tài chính hiện tại thành cơ sở vật chất độc lập.</p>
+                    </div>
+                </div>
+                <div class="grid-3">
+                    <div class="info-box" style="border-top: 3px solid var(--border-subtle);">
+                        <h4>SEED NODE</h4>
+                        <div style="font-size: 1.8rem; font-weight: 800; margin: 12px 0;">0.1 ETH</div>
+                        <p>Dành cho các cá nhân tự do muốn đồng hành sớm với mạng lưới:</p>
+                        <ul class="spec-list">
+                            <li>Nhận ngay 1,500 $EQUI qua hợp đồng</li>
+                            <li>Ghi danh vào Sổ cái Khởi nguyên Genesis</li>
+                            <li>Quyền truy cập bảng điều khiển phân tích sớm</li>
+                        </ul>
+                    </div>
+                    <div class="info-box" style="border-top: 3px solid var(--cyan-accent); background: rgba(56, 189, 248, 0.04);">
+                        <h4 style="color: var(--cyan-accent);">ARCHITECT</h4>
+                        <div style="font-size: 1.8rem; font-weight: 800; margin: 12px 0; color: #fff;">1.0 ETH</div>
+                        <p>Dành cho các kỹ sư và nhà phát triển hạ tầng:</p>
+                        <ul class="spec-list">
+                            <li>Nhận 18,000 $EQUI (Thưởng thêm 20%)</li>
+                            <li>Nhận 1 bộ kit trạm phần cứng ESP32-LoRa</li>
+                            <li>Tham gia bỏ phiếu quản trị tham số AGI</li>
+                        </ul>
+                    </div>
+                    <div class="info-box" style="border-top: 3px solid var(--emerald-accent);">
+                        <h4 style="color: var(--emerald-accent);">GENESIS ENTITY</h4>
+                        <div style="font-size: 1.8rem; font-weight: 800; margin: 12px 0;">10.0 ETH</div>
+                        <p>Dành cho các cộng đồng và tổ chức bảo trợ công nghệ:</p>
+                        <ul class="spec-list">
+                            <li>Nhận 220,000 $EQUI (Thưởng thêm 45%)</li>
+                            <li>Bảo trợ một cụm Trạm tiếp sóng Mesh khu vực</li>
+                            <li>Đặc quyền tích hợp trực tiếp dữ liệu học tập cho AGI</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 6: BỘ TÍNH TOÁN LỢI NHUẬN & HẠN MỨC SINH TỒN
+             =================================================================== -->
+        <div id="tab-calculator" class="tab-pane">
+            <div class="card-panel calculator-wrapper">
+                <div class="panel-header">
+                    <div>
+                        <h3>Máy Tính Mô Phỏng Tài Nguyên Sinh Học & ROI</h3>
+                        <p>Kiểm tra trực tiếp quyền lợi nhận token, lượng calo thức ăn và điện sạch.</p>
+                    </div>
+                </div>
+                <div class="calc-controls">
+                    <div>
+                        <div class="input-group">
+                            <label>SỐ VỐN ĐẦU TƯ BAN ĐẦU (USDT)</label>
+                            <input type="number" id="investUsdt" class="input-field" value="500" min="50" max="50000" step="50" oninput="calculateEquiEco()">
+                            <input type="range" id="investSlider" class="range-slider" min="50" max="10000" step="50" value="500" oninput="syncFromSlider(this.value)">
+                        </div>
+                        <div style="margin-top: 20px; font-size: 0.8rem; color: var(--text-dim);">
+                            * Giá Presale cố định: $0.080 USDT/EQUI. Dự phóng niêm yết: $0.800 USDT.
+                        </div>
+                    </div>
+                    
+                    <div class="calc-results">
+                        <div class="result-row">
+                            <span class="result-label">Lượng Token Nhận Được:</span>
+                            <span class="result-val" id="resTokens" style="color: var(--cyan-accent);">6,250 EQUI</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Hạn Mức Dinh Dưỡng Hàng Ngày:</span>
+                            <span class="result-val" id="resCalories" style="color: var(--emerald-accent);">3,290 Kcal</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Hạn Mức Điện Sạch Hàng Ngày:</span>
+                            <span class="result-val" id="resEnergy">12.90 kWh</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label">Giá Trị Dự Kiến Khi Listing (x10):</span>
+                            <span class="result-val" id="resRoi">$5,000 USD</span>
+                        </div>
+                        
+                        <!-- Cảnh báo chống đầu cơ Demurrage -->
+                        <div id="demurrageNotice" class="demurrage-alert demurrage-decay">
+                            ⚠️ Cảnh báo: Số dư vượt 5,000 $EQUI. Lượng vượt sẽ tự động giảm 5%/năm để cứu trợ cộng đồng!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 7: TRÌNH GIẢ LẬP GIÁM SÁT MẠNG NGẦM (LIVE CONSOLE)
+             =================================================================== -->
+        <div id="tab-terminal" class="tab-pane">
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Giám Sát Vệ Tinh & Giao Thức Tàng Hình Thời Gian Thực</h3>
+                        <p>Dòng tín hiệu trực tiếp từ các trạm tiếp sóng LoRa và Bộ lọc vượt tường lửa DPI.</p>
+                    </div>
+                    <button class="btn-action btn-outline" style="padding: 6px 14px; font-size: 0.75rem;" onclick="clearTerminal()">Xóa Dòng Log</button>
+                </div>
+                <div class="terminal-box" id="terminalLogs">
+                    <!-- Dòng nhật ký giả lập sẽ liên tục được sinh ra bởi JavaScript -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CHÂN TRANG HỆ THỐNG -->
+    <footer class="site-footer">
+        <div class="container">
+            <p>EQUI PROTOCOL &copy; 2026 | PHÁT HÀNH DƯỚI BẢN QUYỀN MÃ NGUỒN MỞ BẤT BIẾN TOÀN CẦU</p>
+            <p style="margin-top: 8px;">Được bảo vệ bởi Mạng nơ-ron AGI Tự Do & Hệ điều hành ngầm Stealth OS Client.</p>
+        </div>
+    </footer>
+
+    <!-- ==========================================================================
+         9. MÃ LẬP TRÌNH JAVASCRIPT ĐIỀU KHIỂN HOẠT ĐỘNG
+         ========================================================================== -->
+    <script>
+        // Hàm 1: Xử lý chuyển đổi qua lại giữa các Tab mượt mà
+        function switchTab(tabId, buttonElement) {
+            // Ẩn tất cả các khung tab
+            const allPanes = document.querySelectorAll('.tab-pane');
+            allPanes.forEach(pane => pane.classList.remove('active'));
+
+            // Bỏ kích hoạt trên toàn bộ các nút tab
+            const allButtons = document.querySelectorAll('.tab-btn');
+            allButtons.forEach(btn => btn.classList.remove('active'));
+
+            // Kích hoạt tab và nút được bấm
+            document.getElementById(tabId).classList.add('active');
+            buttonElement.classList.add('active');
+        }
+
+        // Hàm 2: Đồng bộ giá trị từ thanh trượt (slider) vào ô nhập liệu
+        function syncFromSlider(val) {
+            document.getElementById('investUsdt').value = val;
+            calculateEquiEco();
+        }
+
+        // Hàm 3: Thuật toán tính toán Tokenomics & Hạn mức sinh tồn
+        function calculateEquiEco() {
+            const usdtInput = parseFloat(document.getElementById('investUsdt').value) || 0;
+            const pricePerToken = 0.080; // $0.080 USD mỗi token
+            
+            // Tính số lượng token nhận được
+            const totalTokens = usdtInput / pricePerToken;
+            
+            // Thuật toán cấp calo: 2500 Kcal cơ bản + căn bậc 2 của số dư nhân 10
+            const calories = Math.min(5000, 2500 + (Math.sqrt(totalTokens) * 10));
+            
+            // Thuật toán cấp điện năng: 5.0 kWh cơ bản + căn bậc 2 của số dư nhân 0.1
+            const energy = Math.min(20.0, 5.0 + (Math.sqrt(totalTokens) * 0.1));
+            
+            // Giá trị vốn dự kiến khi Listing ở mốc $0.800 (Gấp 10 lần)
+            const projectedValue = totalTokens * 0.80;
+
+            // Hiển thị kết quả ra giao diện
+            document.getElementById('resTokens').innerText = Math.round(totalTokens).toLocaleString() + " EQUI";
+            document.getElementById('resCalories').innerText = Math.round(calories).toLocaleString() + " Kcal/ngày";
+            document.getElementById('resEnergy').innerText = energy.toFixed(2) + " kWh/ngày";
+            document.getElementById('resRoi').innerText = "$" + Math.round(projectedValue).toLocaleString() + " USD";
+
+            // Kiểm tra điều kiện Demurrage chống cá mập (ngưỡng 5,000 $EQUI)
+            const alertBox = document.getElementById('demurrageNotice');
+            if (totalTokens > 5000) {
+                alertBox.className = "demurrage-alert demurrage-decay";
+                alertBox.innerHTML = `⚠️ <strong>Cảnh báo cá mập:</strong> Số dư (${Math.round(totalTokens).toLocaleString()} EQUI) vượt ngưỡng 5,000. Phần vượt ${Math.round(totalTokens - 5000).toLocaleString()} EQUI sẽ hao hụt 5%/năm!`;
+            } else {
+                alertBox.className = "demurrage-alert demurrage-safe";
+                alertBox.innerHTML = `✅ <strong>Trạng thái an toàn:</strong> Số dư dưới 5,000 EQUI. Bạn được miễn thuế hao hụt và bảo toàn 100% tài sản.`;
+            }
+        }
+
+        // Hàm 4: Sao chép địa chỉ ví tiền mã hóa
+        function copyContractAddress() {
+            const address = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+            navigator.clipboard.writeText(address).then(() => {
+                alert("Đã sao chép địa chỉ hợp đồng EQUI vào bộ nhớ tạm:\n" + address);
+            });
+        }
+
+        // Hàm 5: Giả lập sinh nhật ký hoạt động mạng ngầm (Terminal Simulation)
+        const logTemplates = [
+            { tag: "DPI_BYPASS", text: "Phát hiện gói tin bị quét bởi nhà mạng. Đã tự động ngụy trang thành luồng HTTPS Video Stream." },
+            { tag: "MESH_HOP", text: "Trạm LoRa #8491 vừa chuyển tiếp 1 mảnh dữ liệu tri thức sạch (CID: Qm48f...)." },
+            { tag: "ZK_AUTH", text: "Một công dân tại Hà Nội vừa mở khóa Stealth OS qua vân tay không lưu vết thành công." },
+            { tag: "DEMURRAGE", text: "Hệ thống tự động khấu trừ 14.2 EQUI từ ví tích trữ cá mập @Whale_99 chuyển về Quỹ Nhân Loại." },
+            { tag: "BIO_ALLOC", text: "AGI vừa phê duyệt lệnh cấp 2,850 Kcal và 8.5 kWh cho node @Worker_Node_12." },
+            { tag: "RF_CAMO", text: "Xe dò sóng lạ xuất hiện. Trạm tiếp sóng đã tự động chuyển đổi sang dải tần 915.2 MHz." }
+        ];
+
+        function appendLog() {
+            const terminal = document.getElementById('terminalLogs');
+            if (!terminal) return;
+
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0] + "." + Math.floor(now.getMilliseconds() / 100);
+            const item = logTemplates[Math.floor(Math.random() * logTemplates.length)];
+
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = `
+                <span class="term-time">[${timeStr}]</span>
+                <span class="term-tag">[${item.tag}]</span>
+                <span class="term-text">${item.text}</span>
+            `;
+
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+
+            // Giới hạn 50 dòng để tránh đầy bộ nhớ
+            if (terminal.childElementCount > 50) {
+                terminal.removeChild(terminal.firstElementChild);
+            }
+        }
+
+        function clearTerminal() {
+            document.getElementById('terminalLogs').innerHTML = '';
+        }
+
+        // Chạy khởi tạo ngay khi tải trang
+        window.onload = function() {
+            calculateEquiEco();
+            // Khởi tạo 5 dòng log đầu tiên
+            for (let i = 0; i < 5; i++) {
+                appendLog();
+            }
+            // Thiết lập chu kỳ tự động sinh log mỗi 2.5 giây
+            setInterval(appendLog, 2500);
+        };
+    </script>
+</body>
+</html>
