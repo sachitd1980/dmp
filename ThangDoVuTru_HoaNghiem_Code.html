@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thước Đo Vũ Trụ 3D - Kinh Hoa Nghiêm (Scale of the Universe)</title>
+  <!-- Tailwind CSS & Three.js CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; background: #020617; color: #f8fafc; }
+    .font-tech { font-family: 'Orbitron', sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .glass-gold { background: rgba(30, 20, 10, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(251, 191, 36, 0.5); }
+    .glow-text { text-shadow: 0 0 12px rgba(251, 191, 36, 0.6); }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 20px; width: 20px; border-radius: 50%;
+      background: #fbbf24; cursor: pointer;
+      box-shadow: 0 0 15px #f59e0b;
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen select-none">
+
+  <!-- Canvas 3D -->
+  <div id="canvas-container" class="absolute inset-0 z-0"></div>
+
+  <!-- HUD Header Top -->
+  <header class="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-[92%] max-w-5xl flex items-center justify-between glass px-6 py-3 rounded-2xl border-amber-500/30">
+    <div class="flex items-center gap-3">
+      <div class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></div>
+      <h1 class="font-tech text-sm sm:text-lg font-bold text-amber-300 tracking-wider glow-text">
+        THƯỚC ĐO VŨ TRỤ HOA NGHIÊM
+      </h1>
+    </div>
+    <div class="flex items-center gap-4 text-xs font-tech">
+      <div class="text-right">
+        <div class="text-slate-400 text-[10px]">THANG ĐO LŨY THỪA</div>
+        <div id="hud-exponent" class="text-amber-300 text-sm font-bold">10⁰ m</div>
+      </div>
+      <div class="h-6 w-[1px] bg-amber-500/30"></div>
+      <div>
+        <div class="text-slate-400 text-[10px]">CẤP ĐỘ KHÔNG GIAN</div>
+        <div id="hud-scale-name" class="text-cyan-300 text-sm font-bold">Con Người</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Info Overlay Card Side -->
+  <div class="absolute top-24 right-4 sm:right-8 z-10 w-[90%] sm:w-96 glass-gold p-5 rounded-2xl flex flex-col gap-3 shadow-2xl transition-all">
+    <div class="flex items-center justify-between border-b border-amber-500/20 pb-2">
+      <span id="info-tag" class="text-[10px] font-tech font-bold text-amber-400 uppercase tracking-widest">THIÊN NHIÊN & KHOA HỌC</span>
+      <span id="info-metric" class="text-xs font-tech text-cyan-300">1.7 Mét</span>
+    </div>
+
+    <h2 id="info-title" class="text-lg font-bold text-white text-amber-200 font-tech">Con Người (Nhất Niệm)</h2>
+    <p id="info-desc" class="text-xs text-slate-200 leading-relaxed">
+      Điểm mốc quan sát trung tâm của vũ trụ. Kinh Hoa Nghiêm chỉ ra rằng ngay trong một niệm hiện tại có thể nhiếp trọn ba đời và toàn thể không gian.
+    </p>
+
+    <!-- Trích dẫn Kinh văn -->
+    <div class="bg-amber-950/40 border-l-2 border-amber-400 p-3 rounded-r-xl">
+      <div class="text-[10px] font-bold text-amber-300 font-tech mb-1">📜 KINH HOA NGHIÊM TUYÊN THUYẾT:</div>
+      <p id="info-sutra" class="text-xs text-amber-100/90 italic leading-snug">
+        "Trong một niệm tôi thấy ba đời... Sự sự vô ngại pháp giới dung thông tự tại."
+      </p>
+    </div>
+
+    <!-- Chi tiết Vật lý & Giáo lý -->
+    <div class="grid grid-cols-2 gap-2 text-[11px] bg-slate-950/60 p-2.5 rounded-xl border border-amber-500/20">
+      <div>
+        <span class="text-slate-400 block text-[9px]">ĐỐI CHIẾU VẬT LÝ:</span>
+        <span id="info-physics" class="text-cyan-300 font-semibold">Thang sinh học</span>
+      </div>
+      <div>
+        <span class="text-slate-400 block text-[9px]">PHÁP GIỚI HOA NGHIÊM:</span>
+        <span id="info-dharma" class="text-amber-300 font-semibold">Hiện Tạng Pháp Giới</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation & Slider Controls -->
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 w-[92%] max-w-4xl flex flex-col gap-3">
+    <!-- Quick Jump Pills -->
+    <div class="flex items-center justify-between overflow-x-auto gap-1.5 text-[10px] font-tech py-1 px-2 glass rounded-xl scrollbar-none">
+      <button onclick="jumpTo(-35)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Vi Trần / Planck</button>
+      <button onclick="jumpTo(-10)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Nguyên Tử</button>
+      <button onclick="jumpTo(0)" class="px-2.5 py-1 rounded bg-amber-500/30 text-amber-300 font-bold shrink-0">Con Người</button>
+      <button onclick="jumpTo(7)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Tứ Châu / Trái Đất</button>
+      <button onclick="jumpTo(12)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Tiểu Thiên Thế Giới</button>
+      <button onclick="jumpTo(21)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Tam Thiên Đại Thiên</button>
+      <button onclick="jumpTo(23)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Hương Thủy Hải</button>
+      <button onclick="jumpTo(25)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Ta Bà Thế Giới</button>
+      <button onclick="jumpTo(26)" class="px-2.5 py-1 rounded bg-slate-900/80 hover:bg-amber-500/30 text-amber-300 shrink-0">Hoa Tạng Thế Giới Hải</button>
+    </div>
+
+    <!-- Slider Box -->
+    <div class="glass px-6 py-3 rounded-2xl flex flex-col gap-2">
+      <div class="flex justify-between text-[11px] font-tech text-slate-400">
+        <span class="text-purple-400">10⁻³⁵m (Nhất Vi Trần)</span>
+        <span class="text-amber-400 font-bold">10⁰m (Nhất Niệm)</span>
+        <span class="text-cyan-400">10²⁶m (Hoa Tạng Thế Giới Hải)</span>
+      </div>
+      <input id="scale-slider" type="range" min="-35" max="26" step="0.1" value="0" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer">
+    </div>
+
+    <!-- Auto Tour & Controls -->
+    <div class="flex items-center justify-center gap-4 glass px-4 py-2 rounded-xl">
+      <button id="play-btn" class="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-tech text-xs font-bold px-4 py-1.5 rounded-lg transition shadow-lg">
+        ▶ AUTO TOUR VŨ TRỤ
+      </button>
+      <div class="text-xs font-tech text-slate-400 flex items-center gap-2">
+        <span>TỐC ĐỘ:</span>
+        <button onclick="setSpeed(0.5)" class="px-2 py-0.5 rounded bg-slate-800 hover:text-amber-300">0.5x</button>
+        <button onclick="setSpeed(1)" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">1x</button>
+        <button onclick="setSpeed(2)" class="px-2 py-0.5 rounded bg-slate-800 hover:text-amber-300">2x</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js Visual Script -->
+  <script>
+    // Dữ liệu 10 Cấp độ Vũ Trụ Hoa Nghiêm
+    const scalesData = [
+      {
+        exp: -35,
+        name: "Nhất Vi Trần / Lỗ Chân Lông",
+        metric: "1.6 × 10⁻³⁵ Mét",
+        tag: "VI MÔ TẬN CÙNG / BỌT LƯỢNG TỬ",
+        desc: "Trong một hạt bụi hay một đầu sợi lông đều chứa trọn vô lượng cõi nước rộng lớn, núi Tu Di và chư Phật đang thuyết pháp.",
+        sutra: "Bao nhiêu vi trần trong thế giới, trong mỗi vi trần thấy các cõi, bửu quang hiện Phật vô lượng số.",
+        physics: "Thang Planck (Quantum Foam)",
+        dharma: "Sự Sự Vô Ngại Pháp Giới",
+        color: 0xa855f7
+      },
+      {
+        exp: -10,
+        name: "Nguyên Tử & Hạt Lực",
+        metric: "10⁻¹⁰ Mét",
+        tag: "CẤU TRÚC VI TẾ",
+        desc: "Các đám mây electron xoay quanh hạt nhân, tương đan liên kết chặt chẽ tựa như Lưới Nhơn Đà La vi diệu.",
+        sutra: "Trong một chân lông đều thấy rõ, vô số vô lượng chư Như Lai.",
+        physics: "Thang Nguyên Tử",
+        dharma: "Nhất Đa Tương Tức",
+        color: 0x3b82f6
+      },
+      {
+        exp: 0,
+        name: "Con Người (Nhất Niệm)",
+        metric: "1.7 Mét",
+        tag: "TRUNG TÂM QUAN SÁT",
+        desc: "Cột mốc thực tại sinh học. Nhất niệm khởi tâm bao hàm toàn thể ba thời quá khứ, hiện tại và vị lai.",
+        sutra: "Trong một niệm tôi thấy ba đời, tất cả các đấng Nhơn Sư Tử.",
+        physics: "Thang Sinh Học (Thực tại)",
+        dharma: "Hiện Tạng Pháp Giới",
+        color: 0xf59e0b
+      },
+      {
+        exp: 7,
+        name: "Tứ Châu Thiên Hạ & Núi Tu Di",
+        metric: "10⁷ Mét",
+        tag: "THẾ GIỚI ĐƠN LẺ",
+        desc: "Hệ hành tinh với trung tâm là núi Tu Di, bốn đại châu xoay quanh bao bọc bởi biển mặn.",
+        sutra: "Bao nhiêu núi Tu Di, tứ đại châu thiên hạ, đều hiện rõ trong ánh sáng của Đức Như Lai.",
+        physics: "Thang Hành Tinh / Trái Đất",
+        dharma: "Tiểu Thế Giới Tạng",
+        color: 0x10b981
+      },
+      {
+        exp: 12,
+        name: "Tiểu Thiên Thế Giới",
+        metric: "10¹² Mét",
+        tag: "CỤM THỆ GIỚI TỂ",
+        desc: "Tập hợp 1.000 Tứ Châu Thiên Hạ và Núi Tu Di hội tụ thành một cụm không gian tiểu thiên.",
+        sutra: "Gồm một ngàn thế giới đơn lẻ hợp thành một Tiểu Thiên Thế Giới.",
+        physics: "Hệ Mặt Trời",
+        dharma: "Tiểu Thiên Pháp Giới",
+        color: 0x06b6d4
+      },
+      {
+        exp: 21,
+        name: "Tam Thiên Đại Thiên Thế Giới",
+        metric: "10²¹ Mét",
+        tag: "CÕI GIÁO HÓA CỦA PHẬT",
+        desc: "Tập hợp 1 tỷ hệ thế giới đơn lẻ. Đây là phạm vi độ hóa của một vị Phật Ứng Thân.",
+        sutra: "Tam thiên đại thiên thế giới chấn động sáu cách khi Đức Phật thành Chánh Giác.",
+        physics: "Dải Ngân Hà (Galaxy)",
+        dharma: "Phật Sát Hải",
+        color: 0x6366f1
+      },
+      {
+        exp: 23,
+        name: "Hương Thủy Hải & Thế Giới Chủng",
+        metric: "10²³ Mét",
+        tag: "CỤM VŨ TRỤ / THẾ GIỚI CHỦNG",
+        desc: "Các biển nước thơm nâng đỡ chuỗi Thế Giới Chủng với đa dạng hình trạng: hình xoáy, hoa sen, chày kim cang, lầu các...",
+        sutra: "Biển nước thơm nâng đỡ thế giới chủng, xếp tầng lớp rực rỡ báu ma ni.",
+        physics: "Cụm Siêu Thiên Hà",
+        dharma: "Thế Giới Chủng Tạng",
+        color: 0xec4899
+      },
+      {
+        exp: 25,
+        name: "Ta Bà Thế Giới (Tầng 13)",
+        metric: "10²⁵ Mét",
+        tag: "VŨ TRỤ CHÚNG SÁNH",
+        desc: "Thế giới Ta Bà nơi Đức Thích Ca Mâu Ni xuất thế, nằm ở tầng thứ 13 của Thế giới chủng Biến Chiếu Thập Phương Xí Nhiên Bửu Quang Minh.",
+        sutra: "Ta Bà thế giới nương liên hoa võng do phong luân nhiếp trì mà trụ, ở tầng thứ 13.",
+        physics: "Vũ Trụ Quan Sát Được",
+        dharma: "Ta Bà Phật Sát",
+        color: 0xf43f5e
+      },
+      {
+        exp: 26,
+        name: "Hoa Tạng Thế Giới Hải & Lưới Nhơn Đà La",
+        metric: "10²⁶ Mét",
+        tag: "TOÀN THỂ ĐẠI VŨ TRỤ",
+        desc: "Toàn bộ vũ trụ vô tận an trụ trên Đại Liên Hoa Chủng Chủng Quang Minh Nhụy Hương Tràng. Mọi điểm tương nhập tương tức như Lưới Báu Thiên Đế.",
+        sutra: "Hoa Tạng thế giới hải đồng với hư không, trùng trùng điệp điệp, chiếu soi lẫn nhau vô tận.",
+        physics: "Đa Vũ Trụ / Lưới Không Thời Gian",
+        dharma: "Hoa Tạng Thế Giới Hải",
+        color: 0xfbbf24
+      }
+    ];
+
+    // Khởi tạo Scene Three.js
+    let scene, camera, renderer, particleSystem, coreMesh;
+    let currentExp = 0;
+    let isPlaying = false;
+    let tourSpeed = 0.05;
+
+    function init3D() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x020617, 0.015);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 25;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      // Đèn chiếu sáng
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+
+      const pointLight = new THREE.PointLight(0xfbbf24, 2, 100);
+      pointLight.position.set(10, 10, 10);
+      scene.add(pointLight);
+
+      // Mạng lưới hạt Báu (Indra's Net Particle System)
+      const particleCount = 3000;
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+
+      for(let i = 0; i < particleCount * 3; i+=3) {
+        positions[i] = (Math.random() - 0.5) * 120;
+        positions[i+1] = (Math.random() - 0.5) * 120;
+        positions[i+2] = (Math.random() - 0.5) * 120;
+
+        colors[i] = 0.98;
+        colors[i+1] = 0.75;
+        colors[i+2] = 0.14;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+      const material = new THREE.PointsMaterial({
+        size: 0.35,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.7
+      });
+
+      particleSystem = new THREE.Points(geometry, material);
+      scene.add(particleSystem);
+
+      // Khối Visual Trung Tâm 3D
+      const coreGeo = new THREE.IcosahedronGeometry(6, 2);
+      const coreMat = new THREE.MeshStandardMaterial({
+        color: 0xf59e0b,
+        wireframe: true,
+        emissive: 0x78350f,
+        roughness: 0.3
+      });
+      coreMesh = new THREE.Mesh(coreGeo, coreMat);
+      scene.add(coreMesh);
+
+      window.addEventListener('resize', onWindowResize);
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (coreMesh) {
+        coreMesh.rotation.y += 0.005;
+        coreMesh.rotation.x += 0.002;
+      }
+
+      if (particleSystem) {
+        particleSystem.rotation.y -= 0.001;
+      }
+
+      if (isPlaying) {
+        currentExp += tourSpeed;
+        if (currentExp > 26) currentExp = -35;
+        document.getElementById('scale-slider').value = currentExp;
+        updateScaleUI(currentExp);
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // Cập nhật Giao diện & Đổi màu 3D theo Thang đo
+    function updateScaleUI(exp) {
+      currentExp = parseFloat(exp);
+
+      // Tìm cấp độ tương ứng gần nhất
+      let activeScale = scalesData[0];
+      for (let i = 0; i < scalesData.length; i++) {
+        if (currentExp >= scalesData[i].exp) {
+          activeScale = scalesData[i];
+        }
+      }
+
+      document.getElementById('hud-exponent').innerHTML = `10<sup>${Math.round(currentExp)}</sup> m`;
+      document.getElementById('hud-scale-name').innerText = activeScale.name;
+
+      document.getElementById('info-tag').innerText = activeScale.tag;
+      document.getElementById('info-metric').innerText = activeScale.metric;
+      document.getElementById('info-title').innerText = activeScale.name;
+      document.getElementById('info-desc').innerText = activeScale.desc;
+      document.getElementById('info-sutra').innerText = `"${activeScale.sutra}"`;
+      document.getElementById('info-physics').innerText = activeScale.physics;
+      document.getElementById('info-dharma').innerText = activeScale.dharma;
+
+      // Biến đổi Khối 3D
+      if (coreMesh) {
+        coreMesh.material.color.setHex(activeScale.color);
+        const scaleFactor = 1 + (currentExp + 35) / 20;
+        coreMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+      }
+    }
+
+    function jumpTo(exp) {
+      currentExp = exp;
+      document.getElementById('scale-slider').value = exp;
+      updateScaleUI(exp);
+    }
+
+    function setSpeed(speed) {
+      tourSpeed = 0.05 * speed;
+    }
+
+    // Event Listeners
+    document.getElementById('scale-slider').addEventListener('input', (e) => {
+      isPlaying = false;
+      document.getElementById('play-btn').innerText = "▶ AUTO TOUR VŨ TRỤ";
+      updateScaleUI(e.target.value);
+    });
+
+    document.getElementById('play-btn').addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      document.getElementById('play-btn').innerText = isPlaying ? "⏸ TẠM DỪNG TOUR" : "▶ AUTO TOUR VŨ TRỤ";
+    });
+
+    // Khởi chạy khi tải trang
+    window.onload = () => {
+      init3D();
+      updateScaleUI(0);
+    };
+  </script>
+</body>
+</html>

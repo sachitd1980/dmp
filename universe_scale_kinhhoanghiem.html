@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đại Phương Quảng Phật Hoa Nghiêm Kinh — Mô Phỏng Hoa Tạng Thế Giới Hải</title>
+    <!-- Nhúng thư viện Three.js bản chuẩn ổn định -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --gold: #f6c85f;
+            --gold-glow: rgba(246, 200, 95, 0.4);
+            --lotus-cyan: #00e5ff;
+            --bg-dark: #020409;
+            --panel-bg: rgba(7, 13, 24, 0.88);
+            --border-line: rgba(246, 200, 95, 0.25);
+            --text-main: #f0f4f8;
+            --text-dim: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        #canvas3d {
+            position: fixed; inset: 0;
+            z-index: 1; cursor: grab;
+        }
+        #canvas3d:active { cursor: grabbing; }
+
+        /* BẢNG TIÊU ĐỀ TRÊN CÙNG */
+        .header-bar {
+            position: fixed; top: 20px; left: 24px; right: 24px;
+            z-index: 10; display: flex; justify-content: space-between; align-items: flex-start;
+            pointer-events: none;
+        }
+        .main-title {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-line);
+            border-left: 4px solid var(--gold);
+            padding: 12px 20px; border-radius: 6px;
+            backdrop-filter: blur(12px); pointer-events: auto;
+        }
+        .main-title h1 {
+            font-size: 16px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold); text-shadow: 0 0 12px var(--gold-glow);
+        }
+        .main-title p {
+            font-size: 11px; color: var(--text-dim); margin-top: 4px;
+        }
+
+        .level-readout {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-line);
+            padding: 12px 20px; border-radius: 6px;
+            text-align: right; backdrop-filter: blur(12px);
+            pointer-events: auto; min-width: 280px;
+        }
+        .level-tier {
+            font-size: 10px; color: var(--lotus-cyan);
+            letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;
+        }
+        .level-name {
+            font-size: 20px; font-weight: bold; color: #fff;
+            margin-top: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        /* BẢNG GIẢI NGHĨA KINH VĂN BÊN TRÁI */
+        .sutra-panel {
+            position: fixed; left: 24px; top: 110px;
+            width: 340px; max-height: calc(100vh - 240px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border-line);
+            border-radius: 8px; padding: 18px;
+            backdrop-filter: blur(16px); z-index: 10;
+            display: flex; flex-direction: column; gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+            overflow-y: auto;
+        }
+        .sutra-quote {
+            font-style: italic; font-size: 12px;
+            line-height: 1.6; color: var(--gold);
+            background: rgba(246, 200, 95, 0.08);
+            padding: 10px 12px; border-radius: 4px;
+            border-left: 2px solid var(--gold);
+        }
+        .sutra-desc {
+            font-size: 12px; line-height: 1.65; color: var(--text-dim);
+        }
+        .sutra-meta {
+            font-size: 11px; border-top: 1px dashed var(--border-line);
+            padding-top: 10px; display: flex; flex-direction: column; gap: 4px;
+        }
+        .meta-row {
+            display: flex; justify-content: space-between;
+        }
+        .meta-row span:last-child { color: var(--lotus-cyan); font-weight: 600; }
+
+        /* DANH SÁCH 9 BẬC CÕI BÊN PHẢI */
+        .tier-navigator {
+            position: fixed; right: 24px; top: 110px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-line);
+            border-radius: 8px; padding: 12px 14px;
+            backdrop-filter: blur(16px); z-index: 10;
+            max-height: calc(100vh - 240px); overflow-y: auto;
+            width: 220px; font-size: 11px;
+        }
+        .tier-navigator h4 {
+            font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--gold);
+            padding-bottom: 8px; border-bottom: 1px solid var(--border-line);
+            margin-bottom: 8px;
+        }
+        .nav-item {
+            padding: 6px 10px; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-dim); margin-bottom: 2px;
+        }
+        .nav-item:hover { background: rgba(246, 200, 95, 0.12); color: #fff; }
+        .nav-item.active {
+            background: var(--gold); color: #000; font-weight: 700;
+        }
+        .nav-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: currentColor; flex-shrink: 0;
+        }
+
+        /* KHỐI ĐIỀU KHIỂN ĐÁY MÀN HÌNH */
+        .hud-bottom {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%); z-index: 10;
+            width: min(92vw, 880px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border-line);
+            border-radius: 12px; padding: 14px 24px;
+            backdrop-filter: blur(16px);
+            display: flex; flex-direction: column; gap: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .slider-row {
+            display: flex; align-items: center; gap: 16px;
+        }
+        .slider-tag {
+            font-size: 11px; font-weight: 600;
+            letter-spacing: 1px; color: var(--gold); white-space: nowrap;
+        }
+        input[type="range"] {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 6px; border-radius: 3px;
+            background: rgba(255,255,255,0.1); outline: none; cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: var(--gold); box-shadow: 0 0 12px var(--gold);
+            cursor: pointer;
+        }
+
+        .buttons-row {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+        }
+        .btn-group { display: flex; gap: 8px; }
+        button {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-line);
+            color: var(--text-main); padding: 8px 14px;
+            border-radius: 6px; font-size: 11px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
+        }
+        button:hover {
+            border-color: var(--gold); color: var(--gold);
+            box-shadow: 0 0 10px var(--gold-glow);
+        }
+        button.active {
+            background: var(--gold); color: #05070a; border-color: var(--gold);
+        }
+        .hint-text {
+            font-size: 11px; color: var(--text-dim); font-style: italic;
+        }
+
+        /* MÀN HÌNH CHỜ */
+        .loading-curtain {
+            position: fixed; inset: 0; z-index: 100;
+            background: var(--bg-dark);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            gap: 14px; transition: opacity 0.6s ease;
+        }
+        .loading-curtain.hide { opacity: 0; pointer-events: none; }
+        .lotus-spinner {
+            width: 50px; height: 50px; border: 3px solid rgba(246, 200, 95, 0.2);
+            border-top: 3px solid var(--gold); border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 992px) {
+            .sutra-panel, .tier-navigator { display: none; }
+            .level-readout { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas3d"></div>
+
+    <!-- Màn hình nạp dữ liệu -->
+    <div class="loading-curtain" id="loader">
+        <div class="lotus-spinner"></div>
+        <div style="font-size: 13px; letter-spacing: 2px; color: var(--gold);">ĐANG TRẦN THIẾT PHÁP GIỚI HOA TẠNG...</div>
+    </div>
+
+    <!-- Thanh tiêu đề đỉnh -->
+    <div class="header-bar">
+        <div class="main-title">
+            <h1>Hoa Nghiêm Vũ Trụ Quan</h1>
+            <p>Đại Phương Quảng Phật Hoa Nghiêm Kinh (Phẩm Thế Giới Thành Tựu & Hoa Tạng Thế Giới)</p>
+        </div>
+        <div class="level-readout">
+            <div class="level-tier" id="levelTierTag">CẤP ĐỘ KHÔNG GIAN</div>
+            <div class="level-name" id="levelName">Đang khởi tạo...</div>
+        </div>
+    </div>
+
+    <!-- Bảng trích dẫn kinh điển bên trái -->
+    <div class="sutra-panel">
+        <div class="sutra-quote" id="sutraQuote">"Bao nhiêu vi trần trong thế giới / Trong mỗi vi trần thấy các cõi..."</div>
+        <div class="sutra-desc" id="sutraDesc">Mô tả chi tiết cấp bậc cảnh giới.</div>
+        <div class="sutra-meta">
+            <div class="meta-row"><span>Kinh Phẩm:</span><span id="metaChapter">Phẩm Thứ 5</span></div>
+            <div class="meta-row"><span>Pháp Tánh:</span><span id="metaNature">Sự Sự Vô Ngại</span></div>
+            <div class="meta-row"><span>Tôn Hiệu Giáo Chủ:</span><span id="metaBuddha">Tỳ Lô Giá Na Như Lai</span></div>
+        </div>
+    </div>
+
+    <!-- Bảng điều hướng các tầng cõi bên phải -->
+    <div class="tier-navigator">
+        <h4>Trùng Trùng Duyên Khởi</h4>
+        <div id="navList"></div>
+    </div>
+
+    <!-- Bảng điều khiển đáy -->
+    <div class="hud-bottom">
+        <div class="slider-row">
+            <span class="slider-tag">🔬 Vi Trần Nhỏ</span>
+            <input type="range" id="scaleSlider" min="0" max="8" step="0.005" value="3">
+            <span class="slider-tag">🔭 Vô Tận Pháp Giới</span>
+        </div>
+        <div class="buttons-row">
+            <div class="btn-group">
+                <button id="btnAutoPlay" class="active">🔄 Tự Động Quán Chiếu</button>
+                <button id="btnResetView">↻ Trở Về Ta Bà</button>
+            </div>
+            <div class="hint-text">💡 Kéo chuột để xoay 360° | Cuộn chuột để phóng to/thu nhỏ</div>
+        </div>
+    </div>
+
+    <script>
+        /* ======================================================================
+           CƠ SỞ DỮ LIỆU VŨ TRỤ QUAN KINH HOA NGHIÊM (9 CẤP BẬC KHÔNG GIAN)
+           ====================================================================== */
+        const HUA_YEN_COSMOLOGY = [
+            {
+                id: 0,
+                tier: "Cấp 1: Cực Vi Trần",
+                name: "Nhất Vi Trần / Nhất Mao Khổng",
+                quote: "«Bao nhiêu vi trần trong thế giới / Trong mỗi vi trần thấy các cõi / Bửu quang hiện Phật vô lượng số / Cảnh giới tự tại của Như Lai.»",
+                desc: "Cấp độ hạ nguyên tử của vật chất. Đức Phật giác ngộ rằng trong một hạt bụi vi trần hay nơi một lỗ chân lông (chân mao) đều hàm chứa toàn bộ thế giới hải vô tận mà không hề chật hẹp, thể hiện lý 'Vi trần dung sát'.",
+                chapter: "Phẩm Thế Giới Thành Tựu",
+                nature: "Lý Sự Vô Ngại",
+                buddha: "Hiện thân vi trần Phật",
+                color: 0x00ffff,
+                builder: buildMicroParticle
+            },
+            {
+                id: 1,
+                tier: "Cấp 2: Tiểu Thế Giới",
+                name: "Tu Di Sơn & Tứ Đại Bộ Châu",
+                quote: "«Núi Tu Di bằng bốn báu vươn lên giữa biển hương thủy, Tứ đại bộ châu và mặt trời mặt trăng quay quanh...»",
+                desc: "Một đơn vị thế giới căn bản gồm núi chúa Tu Di ở trung tâm, bao quanh bởi 7 vành núi vàng, 7 biển hương thủy, Tứ Đại Bộ Châu (Đông Thắng Thần Châu, Nam Thiệm Bộ Châu - nơi nhân loại cư ngụ, Tây Ngưu Hóa Châu, Bắc Cu Lô Châu).",
+                chapter: "Phẩm Thăng Tu Di Sơn Đảnh",
+                nature: "Sự Vô Ngại",
+                buddha: "Đế Thích / Tứ Thiên Vương",
+                color: 0xffb300,
+                builder: buildMountMeru
+            },
+            {
+                id: 2,
+                tier: "Cấp 3: Đại Thiên Cõi",
+                name: "Thế Giới Ta Bà (Saha World)",
+                quote: "«Một ngàn tiểu thế giới là Tiểu thiên, một ngàn tiểu thiên là Trung thiên, một ngàn trung thiên là Tam thiên đại thiên thế giới...»",
+                desc: "Cõi giáo hóa của Đức Thích Ca Mâu Ni Phật, tương đương với một thiên hà chứa hàng tỉ hệ mặt trời. Trong Kinh Hoa Nghiêm, thế giới Ta Bà là một quốc độ đặc thù nằm trọn trong cấu trúc của Thế giới chủng.",
+                chapter: "Phẩm Như Lai Danh Hiệu",
+                nature: "Thế gian nghiệp hải cảm thành",
+                buddha: "Bổn Sư Thích Ca Mâu Ni Phật",
+                color: 0x4fc3f7,
+                builder: buildSahaGalaxy
+            },
+            {
+                id: 3,
+                tier: "Cấp 4: Tầng Thứ 13",
+                name: "Ta Bà & Cực Lạc (Tầng 13)",
+                quote: "«Quá Phật sát vi trần số thế giới, có thế giới tên Ta Bà... mười ba Phật sát vi trần số bao quanh, Phật chính là đức Tỳ Lô Giá Na.»",
+                desc: "Trong cột trụ 20 tầng thế giới, thế giới Ta Bà nằm ở tầng thứ 13 tính từ dưới lên. Đối xứng ngang hàng ở phương Tây cùng tầng 13 chính là Thế giới Cực Lạc của Đức Phật A Di Đà trang nghiêm thanh tịnh.",
+                chapter: "Phẩm Hoa Tạng Thế Giới (Quyển 8)",
+                nature: "Tạp nhiễm đồng Tịnh độ",
+                buddha: "Tỳ Lô Giá Na & A Di Đà Phật",
+                color: 0xffd54f,
+                builder: buildLevel13Worlds
+            },
+            {
+                id: 4,
+                tier: "Cấp 5: Cột Trụ Thế Giới Chủng",
+                name: "20 Tầng Thế Giới Chủng",
+                quote: "«Có thế giới chủng tên Phổ Chiếu Thập Phương Xí Nhiên Bửu Quang Minh... xếp thành 20 tầng thế giới chồng lên nhau như đài sen báu.»",
+                desc: "Thế giới chủng gồm 20 tầng thế giới xếp chồng trật tự: từ tầng 1 (Tối Thắng Quang Biến Chiếu) lên tầng 13 (Ta Bà) cho đến tầng 20 (Diệu Bửu Diệm). Mỗi tầng lại có vi trần số thế giới vi diệu bao bọc xung quanh.",
+                chapter: "Phẩm Hoa Tạng Thế Giới (Quyển 9)",
+                nature: "Trùng điệp an lập",
+                buddha: "Chư Phật 20 tầng quốc độ",
+                color: 0xab47bc,
+                builder: build20TierSpire
+            },
+            {
+                id: 5,
+                tier: "Cấp 6: Đài Sen Trung Ương",
+                name: "Đại Liên Hoa & Biển Hương Thủy",
+                quote: "«Hương thủy hải ở trung ương tên Vô Biên Diệu Hoa Quang... xuất sanh một đóa đại liên hoa tên Nhứt Thiết Hương Ma Ni Trang Nghiêm...»",
+                desc: "Cột trụ thế giới chủng được nâng đỡ bởi một đóa hoa sen báu khổng lồ tỏa hương thơm ngát. Hoa sen này mọc lên từ đáy biển hương thủy Vô Biên Diệu Hoa Quang lóng lánh bột kim cương và bảo ngọc.",
+                chapter: "Phẩm Hoa Tạng Thế Giới (Quyển 8)",
+                nature: "Thanh tịnh pháp nhĩ",
+                buddha: "Phổ Hiền Bồ Tát gia trì",
+                color: 0xff4081,
+                builder: buildGreatLotus
+            },
+            {
+                id: 6,
+                tier: "Cấp 7: Đại Hải Toàn Thể",
+                name: "Hoa Tạng Thế Giới Hải",
+                quote: "«Hoa Tạng thế giới trang nghiêm này có Tu Di sơn vi trần số phong luân nhiếp trì... Đại luân vi sơn bằng Kim Cang bao bọc giáp vòng.»",
+                desc: "Toàn thể hệ thống vũ trụ Hoa Tạng gồm vô số biển nước thơm, bao bọc bởi rặng núi sắt Kim Cang Luân Sơn kiên cố, đáy nâng đỡ bởi các tầng Phong Luân (vòng gió nguyên thủy) bất hoại.",
+                chapter: "Phẩm Hoa Tạng Thế Giới (Quyển 10)",
+                nature: "Đại Luân Vi kiên cố",
+                buddha: "Pháp Thân Tỳ Lô Giá Na",
+                color: 0x26a69a,
+                builder: buildLotusStoreOcean
+            },
+            {
+                id: 7,
+                tier: "Cấp 8: Thập Phương Sát Hải",
+                name: "Mười Phương Thế Giới Hải",
+                quote: "«Phương đông có biển Ly Cấu Diệm Tạng, phương nam có biển Vô Tận Quang Minh Luân... mười phương vô lượng sát hải đều như thế.»",
+                desc: "Hoa Tạng thế giới hải ở trung tâm không hề cô độc. Xung quanh mười phương trải dài vô lượng vô biên thế giới hải khác (như Ly Cấu Diệm Tạng, Kim Cang Bửu Diệm...), tạo thành cấu trúc biển vũ trụ bao la không ngằn mé.",
+                chapter: "Phẩm Thế Giới Thành Tựu",
+                nature: "Vô biên sát hải",
+                buddha: "Thập Phương Chư Phật",
+                color: 0x7e57c2,
+                builder: buildTenDirectionsSeas
+            },
+            {
+                id: 8,
+                tier: "Cấp 9: Tột Cùng Pháp Giới",
+                name: "Lưới Đế Võng Tỳ Lô Giá Na",
+                quote: "«Ví như lưới báu của trời Đế Thích, ngọc ma ni kết thành, bóng của mỗi hạt châu hiện trong tất cả hạt châu, trùng trùng vô tận...»",
+                desc: "Đỉnh cao triết học Hoa Nghiêm: 'Sự Sự Vô Ngại Pháp Giới'. Toàn thể vũ trụ liên kết trong tấm lưới ánh sáng Đế Võng; mỗi hiện tượng phản chiếu toàn bộ pháp giới, một tức là tất cả, tất cả tức là một.",
+                chapter: "Phẩm Nhập Pháp Giới",
+                nature: "Sự Sự Vô Ngại Tự Tại",
+                buddha: "Thanh Tịnh Pháp Thân Tỳ Lô Giá Na",
+                color: 0xffea00,
+                builder: buildIndraNet
+            }
+        ];
+
+        /* ======================================================================
+           KHỞI TẠO THREE.JS VÀ CÁC THỰC THỂ KHÔNG GIAN
+           ====================================================================== */
+        let scene, camera, renderer;
+        let rootCosmosGroup;
+        let cosmologicalLayers = [];
+        let currentProgress = 3.0; // Bắt đầu tại Tầng 13 Ta Bà
+        let isAutoPlay = true;
+        let pointerDrag = false;
+        let lastPointerPos = { x: 0, y: 0 };
+
+        function initApp() {
+            const container = document.getElementById('canvas3d');
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020409);
+            scene.fog = new THREE.FogExp2(0x020409, 0.006);
+
+            camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 4000);
+            camera.position.set(0, 15, 45);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            container.appendChild(renderer.domElement);
+
+            // Hệ thống ánh sáng
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambient);
+
+            const sunLight = new THREE.DirectionalLight(0xfff4d6, 1.2);
+            sunLight.position.set(20, 40, 30);
+            scene.add(sunLight);
+
+            const underLight = new THREE.DirectionalLight(0x4080ff, 0.5);
+            underLight.position.set(-20, -30, -20);
+            scene.add(underLight);
+
+            // Khối cha chứa mọi cấp độ vũ trụ
+            rootCosmosGroup = new THREE.Group();
+            scene.add(rootCosmosGroup);
+
+            // Xây dựng 9 tầng mô hình vũ trụ
+            HUA_YEN_COSMOLOGY.forEach((level, index) => {
+                const layerGroup = new THREE.Group();
+                layerGroup.userData = { id: level.id, index: index };
+                level.builder(layerGroup, level.color);
+                rootCosmosGroup.add(layerGroup);
+                cosmologicalLayers.push(layerGroup);
+            });
+
+            // Tạo các hạt bụi tinh tú nền không gian
+            buildAmbientStarfield();
+
+            // Thiết lập điều khiển & giao diện
+            setupPointerInteractions(container);
+            buildNavUI();
+            bindEventHandlers();
+            updateCosmicDisplay();
+
+            // Ẩn màn hình nạp
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                loader.classList.add('hide');
+                setTimeout(() => loader.style.display = 'none', 600);
+            }, 500);
+
+            renderLoop();
+        }
+
+        /* ======================================================================
+           CÁC HÀM XÂY DỰNG MÔ HÌNH HÌNH HỌC TỪNG TẦNG (GEOMETRY BUILDERS)
+           ====================================================================== */
+
+        // CẤP 1: Nhất Vi Trần / Chân Lông
+        function buildMicroParticle(group, color) {
+            const count = 400;
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const r = 2 + Math.random() * 3;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                pos[i * 3 + 2] = r * Math.cos(phi);
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const pMat = new THREE.PointsMaterial({
+                color: color, size: 0.12, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending
+            });
+            group.add(new THREE.Points(geo, pMat));
+
+            // Tâm vi trần rực sáng
+            const core = new THREE.Mesh(
+                new THREE.SphereGeometry(0.8, 24, 24),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: color, emissiveIntensity: 0.8, wireframe: true })
+            );
+            group.add(core);
+        }
+
+        // CẤP 2: Núi Tu Di & Tứ Đại Bộ Châu
+        function buildMountMeru(group, color) {
+            // Núi Tu Di hình eo thắt đồng hồ cát
+            const topCone = new THREE.Mesh(
+                new THREE.ConeGeometry(3, 4, 16),
+                new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, wireframe: true })
+            );
+            topCone.position.y = 2;
+            group.add(topCone);
+
+            const botCone = new THREE.Mesh(
+                new THREE.ConeGeometry(3, 4, 16),
+                new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, wireframe: true })
+            );
+            botCone.position.y = -2;
+            botCone.rotation.x = Math.PI;
+            group.add(botCone);
+
+            // Vành đai 7 biển & 7 vòng núi
+            for (let i = 1; i <= 4; i++) {
+                const ring = new THREE.Mesh(
+                    new THREE.RingGeometry(i * 1.5, i * 1.5 + 0.3, 32),
+                    new THREE.MeshBasicMaterial({ color: 0x4fc3f7, side: THREE.DoubleSide, transparent: true, opacity: 0.5 })
+                );
+                ring.rotation.x = Math.PI / 2;
+                group.add(ring);
+            }
+
+            // Tứ Đại Bộ Châu (4 khối ngọc 4 phương)
+            const continents = [
+                { x: 0, z: 6, name: "Nam Thiệm Bộ Châu" },
+                { x: 0, z: -6, name: "Bắc Cu Lô Châu" },
+                { x: 6, z: 0, name: "Đông Thắng Thần Châu" },
+                { x: -6, z: 0, name: "Tây Ngưu Hóa Châu" }
+            ];
+            continents.forEach(c => {
+                const m = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.8, 0.4, 0.8),
+                    new THREE.MeshStandardMaterial({ color: 0x66bb6a })
+                );
+                m.position.set(c.x, -0.2, c.z);
+                group.add(m);
+            });
+        }
+
+        // CẤP 3: Thế Giới Ta Bà (Thiên Hà Tam Thiên Đại Thiên)
+        function buildSahaGalaxy(group, color) {
+            const count = 3000;
+            const pos = new Float32Array(count * 3);
+            const cols = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const arm = i % 3;
+                const r = Math.pow(Math.random(), 0.6) * 12 + 0.5;
+                const theta = (arm * (Math.PI * 2 / 3)) + r * 0.5 + (Math.random() - 0.5) * 0.3;
+                pos[i * 3] = Math.cos(theta) * r;
+                pos[i * 3 + 1] = (Math.random() - 0.5) * (3 - r * 0.2);
+                pos[i * 3 + 2] = Math.sin(theta) * r;
+
+                cols[i * 3] = 0.3 + (1 - r / 12) * 0.7;
+                cols[i * 3 + 1] = 0.7 + (r / 12) * 0.3;
+                cols[i * 3 + 2] = 1.0;
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+            const pMat = new THREE.PointsMaterial({ size: 0.1, vertexColors: true, transparent: true, opacity: 0.85 });
+            group.add(new THREE.Points(geo, pMat));
+
+            // Tâm quang thiên hà
+            const core = new THREE.Mesh(
+                new THREE.SphereGeometry(1.2, 20, 20),
+                new THREE.MeshBasicMaterial({ color: 0xffffff })
+            );
+            group.add(core);
+        }
+
+        // CẤP 4: Ta Bà & Cực Lạc (Tầng Thứ 13)
+        function buildLevel13Worlds(group, color) {
+            // Đĩa đỡ tầng 13
+            const disk = new THREE.Mesh(
+                new THREE.CylinderGeometry(8, 8, 0.2, 32),
+                new THREE.MeshStandardMaterial({ color: 0x1a2634, transparent: true, opacity: 0.6 })
+            );
+            group.add(disk);
+
+            // Thế giới Ta Bà (bên đông)
+            const saha = new THREE.Mesh(
+                new THREE.SphereGeometry(1.4, 24, 24),
+                new THREE.MeshStandardMaterial({ color: 0x42a5f5, roughness: 0.5, wireframe: true })
+            );
+            saha.position.set(-4, 1.2, 0);
+            group.add(saha);
+
+            // Thế giới Cực Lạc của Phật A Di Đà (bên tây - hoàng kim rực rỡ)
+            const sukhavati = new THREE.Mesh(
+                new THREE.SphereGeometry(1.6, 24, 24),
+                new THREE.MeshStandardMaterial({ color: 0xffd54f, emissive: 0xffa000, emissiveIntensity: 0.4 })
+            );
+            sukhavati.position.set(4, 1.2, 0);
+            group.add(sukhavati);
+
+            // Vòng hào quang nối liền hai cõi
+            const bridgeGeo = new THREE.RingGeometry(3.8, 4.2, 32);
+            const bridge = new THREE.Mesh(bridgeGeo, new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.4 }));
+            bridge.rotation.x = Math.PI / 2;
+            group.add(bridge);
+        }
+
+        // CẤP 5: Cột Trụ 20 Tầng Thế Giới Chủng
+        function build20TierSpire(group, color) {
+            const tiers = 20;
+            const totalHeight = 18;
+            for (let i = 0; i < tiers; i++) {
+                const y = (i / (tiers - 1)) * totalHeight - (totalHeight / 2);
+                const radius = 6 - Math.abs(i - 10) * 0.18;
+                const isTier13 = (i === 12); // Tầng 13 Ta Bà
+
+                const disc = new THREE.Mesh(
+                    new THREE.CylinderGeometry(radius, radius, 0.15, 24),
+                    new THREE.MeshStandardMaterial({
+                        color: isTier13 ? 0xffea00 : color,
+                        emissive: isTier13 ? 0xff9900 : 0x220044,
+                        emissiveIntensity: isTier13 ? 0.6 : 0.2,
+                        transparent: true, opacity: 0.8
+                    })
+                );
+                disc.position.y = y;
+                group.add(disc);
+
+                // Các cõi vi trần bao quanh mỗi tầng
+                const orb = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.2, 8, 8),
+                    new THREE.MeshBasicMaterial({ color: isTier13 ? 0xffffff : 0x80d8ff })
+                );
+                orb.position.set(radius + 0.6, y, 0);
+                group.add(orb);
+            }
+        }
+
+        // CẤP 6: Đại Liên Hoa & Biển Hương Thủy
+        function buildGreatLotus(group, color) {
+            // Mặt biển hương thủy phẳng lặng
+            const ocean = new THREE.Mesh(
+                new THREE.CircleGeometry(14, 48),
+                new THREE.MeshStandardMaterial({ color: 0x004d40, roughness: 0.2, metalness: 0.6, side: THREE.DoubleSide })
+            );
+            ocean.rotation.x = -Math.PI / 2;
+            ocean.position.y = -2;
+            group.add(ocean);
+
+            // Cánh đại liên hoa bung nở
+            const petalCount = 16;
+            for (let i = 0; i < petalCount; i++) {
+                const angle = (i / petalCount) * Math.PI * 2;
+                const petal = new THREE.Mesh(
+                    new THREE.ConeGeometry(1.6, 5, 5),
+                    new THREE.MeshStandardMaterial({ color: 0xff4081, roughness: 0.5 })
+                );
+                petal.position.set(Math.cos(angle) * 5, -0.5, Math.sin(angle) * 5);
+                petal.rotation.z = Math.cos(angle) * 0.7;
+                petal.rotation.x = Math.sin(angle) * 0.7;
+                group.add(petal);
+            }
+
+            // Đài sen nhụy vàng ở trung tâm
+            const center = new THREE.Mesh(
+                new THREE.CylinderGeometry(3.5, 3.5, 1, 24),
+                new THREE.MeshStandardMaterial({ color: 0xffd54f, emissive: 0xff8f00, emissiveIntensity: 0.3 })
+            );
+            center.position.y = -0.5;
+            group.add(center);
+        }
+
+        // CẤP 7: Hoa Tạng Thế Giới Hải
+        function buildLotusStoreOcean(group, color) {
+            // Rặng núi sắt Đại Luân Vi Sơn bao quanh
+            const rim = new THREE.Mesh(
+                new THREE.TorusGeometry(15, 1.2, 16, 48),
+                new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.8 })
+            );
+            rim.rotation.x = Math.PI / 2;
+            group.add(rim);
+
+            // Kim Cang Địa (Nền đất kim cương)
+            const base = new THREE.Mesh(
+                new THREE.CylinderGeometry(14.8, 14.8, 0.4, 40),
+                new THREE.MeshStandardMaterial({ color: 0x00695c, transparent: true, opacity: 0.6, wireframe: true })
+            );
+            base.position.y = -0.4;
+            group.add(base);
+
+            // Vô số thế giới chủng như những đốm sáng trong biển
+            const dots = 1200;
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(dots * 3);
+            for (let i = 0; i < dots; i++) {
+                const r = Math.random() * 13;
+                const a = Math.random() * Math.PI * 2;
+                pos[i * 3] = Math.cos(a) * r;
+                pos[i * 3 + 1] = (Math.random() - 0.5) * 1.5;
+                pos[i * 3 + 2] = Math.sin(a) * r;
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            group.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.15, color: 0xfff59d })));
+        }
+
+        // CẤP 8: Mười Phương Thế Giới Hải
+        function buildTenDirectionsSeas(group, color) {
+            // Hoa tạng ở giữa
+            const central = new THREE.Mesh(
+                new THREE.SphereGeometry(2.5, 16, 16),
+                new THREE.MeshStandardMaterial({ color: 0x00e5ff, emissive: 0x00838f, emissiveIntensity: 0.5 })
+            );
+            group.add(central);
+
+            // 10 khối sát hải bao quanh 10 phương (Đông, Nam, Tây, Bắc, 4 góc, Trên, Dưới)
+            const directions = [
+                { x: 10, y: 0, z: 0 }, { x: -10, y: 0, z: 0 },
+                { x: 0, y: 0, z: 10 }, { x: 0, y: 0, z: -10 },
+                { x: 7, y: 0, z: 7 }, { x: -7, y: 0, z: 7 },
+                { x: 7, y: 0, z: -7 }, { x: -7, y: 0, z: -7 },
+                { x: 0, y: 9, z: 0 }, { x: 0, y: -9, z: 0 }
+            ];
+            directions.forEach((d) => {
+                const sea = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.6, 14, 14),
+                    new THREE.MeshStandardMaterial({ color: color, wireframe: true })
+                );
+                sea.position.set(d.x, d.y, d.z);
+                group.add(sea);
+
+                // Đường truyền quang minh liên kết
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, 0, 0), new THREE.Vector3(d.x, d.y, d.z)
+                ]);
+                group.add(new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.3 })));
+            });
+        }
+
+        // CẤP 9: Lưới Đế Võng Tỳ Lô Giá Na
+        function buildIndraNet(group, color) {
+            const count = 40;
+            const nodes = [];
+            for (let i = 0; i < count; i++) {
+                const p = new THREE.Vector3(
+                    (Math.random() - 0.5) * 22,
+                    (Math.random() - 0.5) * 16,
+                    (Math.random() - 0.5) * 22
+                );
+                nodes.push(p);
+
+                // Hạt ngọc ma ni phản chiếu ánh sáng
+                const pearl = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.4, 12, 12),
+                    new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: color, emissiveIntensity: 0.6 })
+                );
+                pearl.position.copy(p);
+                group.add(pearl);
+            }
+
+            // Sợi tơ ánh sáng nối mạng lưới trùng trùng
+            const lineMat = new THREE.LineBasicMaterial({ color: 0xffea00, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending });
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    if (nodes[i].distanceTo(nodes[j]) < 7) {
+                        const lGeo = new THREE.BufferGeometry().setFromPoints([nodes[i], nodes[j]]);
+                        group.add(new THREE.Line(lGeo, lineMat));
+                    }
+                }
+            }
+        }
+
+        // Bầu trời sao vô tận nền
+        function buildAmbientStarfield() {
+            const count = 2000;
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                pos[i * 3] = (Math.random() - 0.5) * 600;
+                pos[i * 3 + 1] = (Math.random() - 0.5) * 600;
+                pos[i * 3 + 2] = (Math.random() - 0.5) * 600;
+            }
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const mat = new THREE.PointsMaterial({ size: 1.2, color: 0x64748b, transparent: true, opacity: 0.4 });
+            scene.add(new THREE.Points(geo, mat));
+        }
+
+        /* ======================================================================
+           LOGIC ĐIỀU KHIỂN CHUỘT THUẦN (NATIVE POINTER CONTROLS)
+           ====================================================================== */
+        function setupPointerInteractions(dom) {
+            dom.addEventListener('pointerdown', (e) => {
+                pointerDrag = true;
+                lastPointerPos = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('pointermove', (e) => {
+                if (!pointerDrag) return;
+                const dx = e.clientX - lastPointerPos.x;
+                const dy = e.clientY - lastPointerPos.y;
+
+                rootCosmosGroup.rotation.y += dx * 0.005;
+                rootCosmosGroup.rotation.x += dy * 0.004;
+
+                lastPointerPos = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('pointerup', () => { pointerDrag = false; });
+            window.addEventListener('pointercancel', () => { pointerDrag = false; });
+
+            // Lăn chuột để thay đổi thang đo vũ trụ trực tiếp
+            dom.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                isAutoPlay = false;
+                document.getElementById('btnAutoPlay').classList.remove('active');
+
+                currentProgress = Math.max(0, Math.min(8, currentProgress + e.deltaY * 0.003));
+                document.getElementById('scaleSlider').value = currentProgress;
+                updateCosmicDisplay();
+            }, { passive: false });
+        }
+
+        /* ======================================================================
+           CẬP NHẬT GIAO DIỆN & THANG ĐO LOGARIT
+           ====================================================================== */
+        function updateCosmicDisplay() {
+            const activeIndex = Math.min(8, Math.max(0, Math.round(currentProgress)));
+            const data = HUA_YEN_COSMOLOGY[activeIndex];
+
+            // Cập nhật Header
+            document.getElementById('levelTierTag').innerText = data.tier;
+            document.getElementById('levelName').innerText = data.name;
+
+            // Cập nhật Sutra Panel
+            document.getElementById('sutraQuote').innerText = data.quote;
+            document.getElementById('sutraDesc').innerText = data.desc;
+            document.getElementById('metaChapter').innerText = data.chapter;
+            document.getElementById('metaNature').innerText = data.nature;
+            document.getElementById('metaBuddha').innerText = data.buddha;
+
+            // Đánh dấu mục đang chọn ở Navigator
+            document.querySelectorAll('.nav-item').forEach((item, idx) => {
+                item.classList.toggle('active', idx === activeIndex);
+            });
+
+            // Thuật toán ẩn hiện & biến đổi kích thước ma trận (Visibility & Scale Interpolation)
+            cosmologicalLayers.forEach((layer, idx) => {
+                const diff = idx - currentProgress;
+                const absDiff = Math.abs(diff);
+
+                if (absDiff < 1.6) {
+                    layer.visible = true;
+                    // Phóng to thu nhỏ mượt mà
+                    const scaleFactor = Math.pow(2.2, -diff);
+                    layer.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+                    // Làm mờ dần khi trượt xa
+                    const opacity = Math.max(0, 1 - absDiff / 1.6);
+                    layer.traverse((child) => {
+                        if (child.material) {
+                            child.material.transparent = true;
+                            child.material.opacity = (child.material.userData.originalOpacity || 1) * opacity;
+                        }
+                    });
+                } else {
+                    layer.visible = false;
+                }
+            });
+        }
+
+        function buildNavUI() {
+            const list = document.getElementById('navList');
+            list.innerHTML = '';
+            HUA_YEN_COSMOLOGY.forEach((level, idx) => {
+                const item = document.createElement('div');
+                item.className = 'nav-item';
+                item.innerHTML = `<span class="nav-dot"></span><span>${level.name}</span>`;
+                item.addEventListener('click', () => {
+                    isAutoPlay = false;
+                    document.getElementById('btnAutoPlay').classList.remove('active');
+                    currentProgress = idx;
+                    document.getElementById('scaleSlider').value = idx;
+                    updateCosmicDisplay();
+                });
+                list.appendChild(item);
+            });
+        }
+
+        function bindEventHandlers() {
+            const slider = document.getElementById('scaleSlider');
+            slider.addEventListener('input', (e) => {
+                isAutoPlay = false;
+                document.getElementById('btnAutoPlay').classList.remove('active');
+                currentProgress = parseFloat(e.target.value);
+                updateCosmicDisplay();
+            });
+
+            const btnAuto = document.getElementById('btnAutoPlay');
+            btnAuto.addEventListener('click', () => {
+                isAutoPlay = !isAutoPlay;
+                btnAuto.classList.toggle('active', isAutoPlay);
+            });
+
+            document.getElementById('btnResetView').addEventListener('click', () => {
+                isAutoPlay = false;
+                btnAuto.classList.remove('active');
+                currentProgress = 3.0; // Tầng 13 Ta Bà
+                slider.value = 3.0;
+                rootCosmosGroup.rotation.set(0, 0, 0);
+                updateCosmicDisplay();
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        /* ======================================================================
+           VÒNG LẶP RENDER HOẠT HỌA (ANIMATION LOOP)
+           ====================================================================== */
+        let autoDirection = 1;
+        function renderLoop() {
+            requestAnimationFrame(renderLoop);
+
+            // Quá trình tự động zoom lướt qua các tầng vũ trụ
+            if (isAutoPlay) {
+                currentProgress += 0.0035 * autoDirection;
+                if (currentProgress >= 8.0) {
+                    currentProgress = 8.0;
+                    autoDirection = -1;
+                } else if (currentProgress <= 0.0) {
+                    currentProgress = 0.0;
+                    autoDirection = 1;
+                }
+                document.getElementById('scaleSlider').value = currentProgress;
+                updateCosmicDisplay();
+            }
+
+            // Tự động xoay nhẹ nhàng không gian để tạo chiều sâu 3D
+            rootCosmosGroup.rotation.y += 0.0015;
+
+            // Xoay riêng các tầng
+            cosmologicalLayers.forEach((layer, i) => {
+                if (layer.visible) {
+                    layer.rotation.y += 0.002 * ((i % 2 === 0) ? 1 : -1);
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

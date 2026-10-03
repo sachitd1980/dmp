@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Thước Đo Vũ Trụ - Scale of the Universe</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Sci-Fi & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --cyan-glow: #00f0ff;
+      --violet-glow: #bd00ff;
+      --amber-glow: #ffb700;
+    }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: #030712;
+      color: #f1f5f9;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-sci-fi {
+      font-family: 'Orbitron', monospace;
+    }
+    .font-tech {
+      font-family: 'Rajdhani', sans-serif;
+    }
+    /* Thanh cuộn slider tùy chỉnh */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #00f0ff;
+      box-shadow: 0 0 14px #00f0ff, 0 0 24px rgba(0, 240, 255, 0.6);
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    /* Hiệu ứng kính mờ Sci-Fi Glassmorphism */
+    .sci-fi-glass {
+      background: rgba(8, 14, 29, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(0, 240, 255, 0.22);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(0, 240, 255, 0.08);
+    }
+    .sci-fi-glass-active {
+      border-color: rgba(0, 240, 255, 0.7);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+    }
+    /* Radar Scan Line hiệu ứng góc nhìn khoa học */
+    .radar-line {
+      background: linear-gradient(180deg, rgba(0,240,255,0) 0%, rgba(0,240,255,0.15) 50%, rgba(0,240,255,0) 100%);
+      animation: scan 6s linear infinite;
+    }
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(1000%); }
+    }
+    /* Thanh hiển thị audio waveform */
+    .wave-bar {
+      transition: height 0.08s ease;
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden flex flex-col justify-between">
+
+  <canvas id="universeCanvas" class="absolute inset-0 w-full h-full z-0 cursor-grab active:cursor-grabbing"></canvas>
+  <div class="pointer-events-none absolute inset-0 radar-line opacity-30 z-0"></div>
+
+  <header class="relative z-10 w-full p-3 sm:p-5 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+    <!-- Tiêu đề & Logo -->
+    <div class="pointer-events-auto sci-fi-glass px-4 py-2 rounded-xl flex items-center gap-3">
+      <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 animate-ping"></div>
+      <div>
+        <h1 class="font-sci-fi text-sm sm:text-lg font-bold tracking-wider text-cyan-300 drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]">
+          THƯỚC ĐO VŨ TRỤ
+        </h1>
+        <p class="text-[10px] sm:text-xs text-slate-400 tracking-widest font-tech uppercase">Scale of the Universe Explorer</p>
+      </div>
+    </div>
+
+    <!-- Màn hình đo lường chỉ số Khoa học hiện tại -->
+    <div class="pointer-events-auto sci-fi-glass px-5 py-2 rounded-xl flex items-center gap-4 text-center">
+      <div>
+        <div class="text-[10px] text-cyan-400 font-tech uppercase tracking-widest">Thang Đo Lũy Thừa</div>
+        <div id="hudExponent" class="font-sci-fi text-base sm:text-2xl font-extrabold text-white text-glow">
+          10<sup class="text-cyan-300">0</sup> m
+        </div>
+      </div>
+      <div class="h-8 w-[1px] bg-cyan-500/30"></div>
+      <div>
+        <div class="text-[10px] text-slate-400 font-tech uppercase tracking-widest">Kích Thước Ước Tính</div>
+        <div id="hudHumanMetric" class="font-tech text-xs sm:text-base font-semibold text-cyan-200">
+          1.7 Mét
+        </div>
+      </div>
+    </div>
+
+    <!-- Bộ điều khiển phụ trợ (Âm thanh, Chế độ xem) -->
+    <div class="pointer-events-auto flex items-center gap-2">
+      <button id="soundBtn" class="sci-fi-glass hover:bg-cyan-950/40 text-cyan-300 px-3 py-2 rounded-xl flex items-center gap-2 transition" title="Bật/Tắt Âm Thanh Vũ Trụ">
+        <svg id="soundIconOn" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+        <svg id="soundIconOff" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path></svg>
+        <div class="hidden sm:flex items-end gap-[2px] h-4 w-6" id="audioVisualizer">
+          <span class="wave-bar w-1 bg-cyan-400 h-1"></span>
+          <span class="wave-bar w-1 bg-cyan-400 h-2"></span>
+          <span class="wave-bar w-1 bg-cyan-400 h-1"></span>
+          <span class="wave-bar w-1 bg-cyan-400 h-3"></span>
+        </div>
+      </button>
+
+      <button id="infoToggleBtn" class="sci-fi-glass hover:bg-cyan-950/40 text-cyan-300 p-2 sm:px-3 sm:py-2 rounded-xl flex items-center gap-1.5 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span class="hidden sm:inline font-tech text-sm">Hồ Sơ Khoa Học</span>
+      </button>
+    </div>
+  </header>
+
+  <aside id="infoPanel" class="fixed top-20 right-4 sm:right-6 w-80 sm:w-96 max-h-[75vh] z-20 sci-fi-glass rounded-2xl p-4 sm:p-5 flex flex-col gap-3 shadow-2xl transition-all duration-300 ease-out overflow-y-auto">
+    <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2">
+      <div class="flex items-center gap-2">
+        <span id="infoBadge" class="px-2 py-0.5 rounded text-[10px] font-sci-fi font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">HẠ NGUYÊN TỬ</span>
+        <span id="infoOrder" class="text-xs text-slate-400 font-tech">Cấp độ 1/12</span>
+      </div>
+      <button id="closeInfoBtn" class="text-slate-400 hover:text-white p-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <!-- Tên & Mô tả đối tượng -->
+    <div>
+      <h2 id="infoTitle" class="font-sci-fi text-lg sm:text-xl font-bold text-white tracking-wide text-cyan-200">Hạt Ảo & Bọt Lượng Tử</h2>
+      <div id="infoSub" class="text-xs font-tech text-cyan-400 uppercase tracking-wider mb-2">Thang đo Planck (10⁻³⁵ m)</div>
+      <p id="infoDesc" class="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+        Ở khoảng cách nhỏ nhất của vũ trụ, không gian không còn phẳng lặng mà sôi sục như một lớp bọt lượng tử hỗn loạn. Các cặp hạt và phản hạt ảo liên tục sinh ra và triệt tiêu lẫn nhau trong thời gian phần triệu tỷ giây.
+      </p>
+    </div>
+
+    <!-- Thông số vật lý bổ sung -->
+    <div class="grid grid-cols-2 gap-2 bg-slate-950/50 p-2.5 rounded-xl border border-cyan-500/20 text-xs font-tech">
+      <div>
+        <div class="text-slate-400 text-[10px]">TỔNG THỂ KÍCH THƯỚC:</div>
+        <div id="infoScaleVal" class="text-cyan-300 font-bold">≈ 1.6 × 10⁻³⁵ m</div>
+      </div>
+      <div>
+        <div class="text-slate-400 text-[10px]">LĨNH VỰC NGHIÊN CỨU:</div>
+        <div id="infoField" class="text-cyan-300 font-bold">Cơ Học Lượng Tử</div>
+      </div>
+    </div>
+
+    <!-- Góc 'Đố Bạn Biết' -->
+    <div class="bg-cyan-950/20 border-l-2 border-cyan-400 p-2.5 rounded-r-xl">
+      <div class="text-[10px] font-bold text-cyan-400 font-sci-fi flex items-center gap-1">
+        <span>💡 BẠN CÓ BIẾT?</span>
+      </div>
+      <p id="infoFact" class="text-xs text-slate-300 mt-1 italic leading-relaxed">
+        Nếu một nguyên tử được phóng to bằng kích thước toàn bộ vũ trụ quan sát được, thì thang Planck sẽ to cỡ một cái cây thông thường!
+      </p>
+    </div>
+  </aside>
+
+  <footer class="relative z-10 w-full p-3 sm:p-5 flex flex-col items-center gap-3 pointer-events-none">
+    
+    <!-- Thanh trượt thang đo vũ trụ -->
+    <div class="w-full max-w-4xl pointer-events-auto sci-fi-glass px-4 sm:px-6 py-3 rounded-2xl flex flex-col gap-2">
+      <div class="flex items-center justify-between text-[11px] sm:text-xs font-sci-fi text-slate-400">
+        <span class="text-violet-400">10⁻³⁵m (Lượng Tử)</span>
+        <span class="text-amber-400 font-bold">10⁰m (Con Người)</span>
+        <span class="text-cyan-400">10²⁶m (Vũ Trụ)</span>
+      </div>
+
+      <!-- Slider input -->
+      <div class="relative flex items-center py-1">
+        <input id="scaleSlider" type="range" min="-35" max="26" step="0.05" value="0" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer border border-cyan-500/20">
+      </div>
+
+      <!-- Các mốc đánh dấu nhanh (Quick Jump Pills) -->
+      <div class="flex items-center justify-between overflow-x-auto gap-1 text-[10px] font-tech text-slate-400 py-1 scrollbar-none">
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="-35">Bọt Lượng Tử</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="-18">Quark</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="-15">Hạt Nhân</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="-10">Nguyên Tử</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="-9">ADN</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="-6">Tế Bào</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold" data-exp="0">Con Người</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="7">Trái Đất</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="12">Hệ Mặt Trời</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="21">Dải Ngân Hà</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="24">Laniakea</button>
+        <button class="jump-btn hover:text-cyan-300 transition shrink-0 px-2 py-0.5 rounded bg-slate-900/60" data-exp="26">Vũ Trụ</button>
+      </div>
+    </div>
+
+    <!-- Bảng điều khiển Auto Tour & Tốc độ -->
+    <div class="pointer-events-auto flex flex-wrap items-center justify-center gap-2 sm:gap-3 sci-fi-glass px-4 py-2 rounded-2xl">
+      <!-- Nút Play/Pause Auto Tour -->
+      <button id="playPauseBtn" class="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-sci-fi text-xs font-bold px-4 py-2 rounded-xl transition shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+        <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="pauseIcon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        <span id="playBtnText">AUTO-TOUR (BẮT ĐẦU)</span>
+      </button>
+
+      <!-- Nút Đảo Chiều Phóng To / Thu Nhỏ -->
+      <button id="reverseBtn" class="flex items-center gap-1.5 hover:bg-cyan-950/40 text-cyan-300 font-tech text-xs sm:text-sm px-3 py-2 rounded-xl border border-cyan-500/20 transition">
+        <svg class="w-4 h-4 transition-transform duration-300" id="dirIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
+        <span id="dirText">Hướng: Phóng Đại (+)</span>
+      </button>
+
+      <!-- Lựa chọn Tốc Độ -->
+      <div class="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-cyan-500/20 font-tech text-xs text-slate-400">
+        <span class="px-1 text-[10px] text-slate-500">TỐC ĐỘ:</span>
+        <button class="speed-btn px-2 py-1 rounded hover:text-white transition" data-speed="0.5">0.5x</button>
+        <button class="speed-btn px-2 py-1 rounded bg-cyan-500/30 text-cyan-300 font-bold hover:text-white transition" data-speed="1.0">1x</button>
+        <button class="speed-btn px-2 py-1 rounded hover:text-white transition" data-speed="2.5">2.5x</button>
+        <button class="speed-btn px-2 py-1 rounded hover:text-white transition" data-speed="5.0">5x</button>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const UNIVERSE_LEVELS = [
+      {
+        exponent: -35,
+        name: "Hạt Ảo & Bọt Lượng Tử",
+        category: "THANG PLANCK",
+        field: "Hấp Dẫn Lượng Tử",
+        metric: "1.6 × 10⁻³⁵ Mét",
+        desc: "Ở giới hạn nhỏ nhất của vật lý (độ dài Planck), cấu trúc không-thời gian bị xé rách thành các bọt sóng lượng tử hỗn loạn. Các cặp hạt và phản hạt ảo liên tục sinh ra rồi triệt tiêu chớp nhoáng từ chân không năng lượng.",
+        fact: "Chân không lượng tử thực ra không hề trống rỗng; nó sôi sục với năng lượng điểm không (Zero-point energy) có thể tạo ra lực hút Casimir đo được trong phòng thí nghiệm!",
+        color: "#e066ff"
+      },
+      {
+        exponent: -18,
+        name: "Hạt Quark & Dây Năng Lượng",
+        category: "HẠT CƠ BẢN",
+        field: "Mô Hình Chuẩn & Lý Thuyết Dây",
+        metric: "10⁻¹⁸ Mét (1 Atomet)",
+        desc: "Quark là những thành phần cơ bản cấu tạo nên proton và neutron. Theo lý thuyết Dây (String Theory), sâu bên trong mỗi hạt cơ bản không phải là điểm vật chất vô hướng mà là một vòng dây năng lượng 1 chiều đang dao động.",
+        fact: "Quark không bao giờ có thể tồn tại cô lập trong tự nhiên; lực tương tác mạnh (Strong Force) giữ chặt chúng lại qua các hạt gluon trong hiện tượng giam hãm màu (Color confinement).",
+        color: "#00f0ff"
+      },
+      {
+        exponent: -15,
+        name: "Hạt Nhân Nguyên Tử",
+        category: "HẠ NGUYÊN TỬ",
+        field: "Vật Lý Hạt Nhân",
+        metric: "1.75 × 10⁻¹⁵ Mét (1.75 Femtomet)",
+        desc: "Hạt nhân nằm ở trung tâm của nguyên tử, tập trung hơn 99.9% tổng khối lượng nhưng chỉ chiếm một phần mười nghìn tỷ thể tích của nguyên tử. Lực tương tác mạnh liên kết chặt chẽ các proton mang điện tích dương và neutron trung hòa.",
+        fact: "Nếu hạt nhân có kích thước bằng một hạt đậu nhỏ nằm giữa sân vận động bóng đá, thì các electron ngoài cùng sẽ bay lượn ở tít hàng ghế khán đài cao nhất!",
+        color: "#ff5252"
+      },
+      {
+        exponent: -10,
+        name: "Nguyên Tử & Đám Mây Electron",
+        category: "NGUYÊN TỬ",
+        field: "Vật Lý Nguyên Tử & Hóa Học",
+        metric: "10⁻¹⁰ Mét (0.1 Nanomet / 1 Angstrom)",
+        desc: "Mỗi nguyên tử bao gồm một hạt nhân dương được bao quanh bởi đám mây xác suất của các electron. Đây là khối gạch nền tảng của mọi vật chất quen thuộc trong vũ trụ.",
+        fact: "Vật chất rắn ta chạm vào thực chất là 99.9999999% khoảng trống. Cảm giác 'cứng' khi bạn chạm vào bàn ghế chỉ là do lực đẩy điện từ giữa các lớp electron ngoài cùng!",
+        color: "#00e5ff"
+      },
+      {
+        exponent: -9,
+        name: "Phân Tử & Chuỗi Xoắn ADN",
+        category: "SINH HỌC PHÂN TỬ",
+        field: "Di Truyền Học & Sinh Hóa",
+        metric: "2 × 10⁻⁹ Mét (2 Nanomet)",
+        desc: "Đại phân tử Axit Deoxyribonucleic (ADN) mang mật mã chỉ dẫn di truyền cho sự phát triển và hoạt động của mọi sinh vật sống. Cấu trúc xoắn kép được ghép bởi bốn bazơ nitơ: Adenine, Thymine, Guanine và Cytosine.",
+        fact: "Nếu tháo xoắn và nối liền toàn bộ sợi ADN trong tất cả các tế bào của một cơ thể người trưởng thành, chuỗi dây này sẽ dài tới 10 tỷ dặm - đủ vươn từ Trái Đất tới Diêm Vương Tinh và quay trở lại!",
+        color: "#00ff88"
+      },
+      {
+        exponent: -6,
+        name: "Tế Bào Sống (Hồng Cầu & Nhân)",
+        category: "TẾ BÀO HỌC",
+        field: "Sinh Học Tế Bào",
+        metric: "7 × 10⁻⁶ Mét (7 Micromet)",
+        desc: "Đơn vị cấu trúc cơ bản của sự sống. Tế bào hồng cầu vận chuyển oxy qua các mao mạch nhỏ hẹp, cùng hàng tỷ tế bào chuyên biệt tạo nên các cơ quan phức tạp với những bộ máy phân tử tinh vi như ti thể và riboxom.",
+        fact: "Mỗi giây trôi qua, cơ thể bạn tạo ra và tiêu hủy khoảng 2 đến 3 triệu tế bào hồng cầu để liên tục làm mới dòng máu nuôi dưỡng các tế bào khác.",
+        color: "#ff3366"
+      },
+      {
+        exponent: 0,
+        name: "Con Người & Thế Giới Vĩ Mô",
+        category: "VẬT THỂ SỐNG",
+        field: "Thế Giới Con Người",
+        metric: "1.7 Mét",
+        desc: "Thang đo cơ bản mà giác quan con người trực tiếp cảm nhận. Với chiều cao trung bình khoảng 1.7 mét, một con người chứa khoảng 37 nghìn tỷ tế bào và nằm chính giữa ranh giới kỳ diệu của thế giới lượng tử siêu vi và vũ trụ bao la.",
+        fact: "Về mặt lũy thừa logarit, kích thước con người nằm đúng khoảng giữa của toàn bộ dải kích thước từ thang Planck hạ nguyên tử (10⁻³⁵m) đến tận cùng vũ trụ quan sát được (10²⁶m)!",
+        color: "#ffb700"
+      },
+      {
+        exponent: 7,
+        name: "Hành Tinh Trái Đất",
+        category: "HÀNH TINH",
+        field: "Địa Cầu Học & Khí Quyển",
+        metric: "1.27 × 10⁷ Mét (12,742 Kilomet)",
+        desc: "Hành tinh thứ ba tính từ Mặt Trời, ngôi nhà xanh độc nhất trong hệ Mặt Trời với bầu khí quyển chứa oxy, lớp từ trường bảo vệ và các đại dương nước lỏng cho phép sự sống phát triển thịnh vượng suốt 3.8 tỷ năm.",
+        fact: "Bầu khí quyển bảo vệ sự sống của Trái Đất mỏng như vỏ của một quả táo so với tỷ lệ đường kính của toàn bộ hành tinh.",
+        color: "#4facfe"
+      },
+      {
+        exponent: 12,
+        name: "Hệ Mặt Trời",
+        category: "HỆ HÀNH TINH",
+        field: "Thiên Văn Học Thái Dương Hệ",
+        metric: "1.5 × 10¹² Mét (10 Đơn Vị Thiên Văn AU)",
+        desc: "Hệ thống hấp dẫn bao quanh Mặt Trời - một ngôi sao dãy chính loại G chứa 99.86% khối lượng của cả hệ, cùng 8 hành tinh quay theo các quỹ đạo elip gần tròn, vành đai tiểu hành tinh và mây Oort phía ngoài.",
+        fact: "Ánh sáng từ Mặt Trời mất 8 phút 20 giây để tới được Trái Đất, nhưng phải mất hơn 4.5 giờ để đi tới sao Hải Vương ở rìa ngoài của các hành tinh chính!",
+        color: "#ffaa00"
+      },
+      {
+        exponent: 21,
+        name: "Dải Ngân Hà (Milky Way)",
+        category: "THIÊN HÀ",
+        field: "Thiên Văn Dải Ngân Hà",
+        metric: "10²¹ Mét (100,000 Năm Ánh Sáng)",
+        desc: "Thiên hà xoắn ốc có thanh chắn chứa từ 100 đến 400 tỷ ngôi sao. Hệ Mặt Trời của chúng ta nằm ở nhánh Orion cách tâm thiên hà khoảng 26,000 năm ánh sáng, nơi có lỗ đen siêu trọng Sagittarius A* ngự trị.",
+        fact: "Hệ Mặt Trời quay quanh tâm dải Ngân Hà với vận tốc kinh hoàng 828,000 km/h, nhưng vẫn phải mất tới 230 triệu năm để hoàn thành một vòng 'Năm Thiên Hà'!",
+        color: "#b026ff"
+      },
+      {
+        exponent: 24,
+        name: "Siêu Cụm Thiên Hà Laniakea",
+        category: "CẤU TRÚC VĨ MÔ",
+        field: "Vũ Trụ Học Vĩ Mô",
+        metric: "5 × 10²⁴ Mét (520 Triệu Năm Ánh Sáng)",
+        desc: "Tổ hợp khổng lồ gồm hơn 100,000 thiên hà kết nối bởi các dòng sông hấp dẫn vô hình. Từ 'Laniakea' trong tiếng Hawaii có nghĩa là 'Thiên đường bao la vô tận'. Toàn bộ các thiên hà đang cùng trôi dạt về tâm điểm Great Attractor.",
+        fact: "Dải Ngân Hà rộng lớn của chúng ta chỉ là một đốm sáng nhỏ li ti ở vùng ngoại ô xa xôi của siêu cụm Laniakea.",
+        color: "#6a11cb"
+      },
+      {
+        exponent: 26,
+        name: "Vũ Trụ Quan Sát Được",
+        category: "TẬN CÙNG VŨ TRỤ",
+        field: "Vũ Trụ Học Lý Thuyết",
+        metric: "8.8 × 10²⁶ Mét (93 Tỷ Năm Ánh Sáng)",
+        desc: "Toàn bộ không-thời gian mà ánh sáng có thời gian truyền đến chúng ta kể từ vụ nổ Big Bang 13.8 tỷ năm trước. Nó hiện ra như một mạng lưới vũ trụ (Cosmic Web) của các sợi vật chất tối đan xen, bao bọc bởi bức xạ nền vi ba vũ trụ (CMB).",
+        fact: "Do sự giãn nở gia tốc của không-thời gian, đường kính của vũ trụ quan sát được là 93 tỷ năm ánh sáng, lớn hơn rất nhiều so với con số 13.8 tỷ năm tuổi của nó!",
+        color: "#00f0ff"
+      }
+    ];
+
+    class CosmicSoundSynthesizer {
+      constructor() {
+        this.ctx = null;
+        this.isPlaying = false;
+        this.droneOsc1 = null;
+        this.droneOsc2 = null;
+        this.filter = null;
+        this.gainNode = null;
+        this.noiseNode = null;
+        this.noiseGain = null;
+      }
+
+      init() {
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+
+        // Bộ khuếch đại âm lượng chung
+        this.gainNode = this.ctx.createGain();
+        this.gainNode.gain.setValueAtTime(0.001, this.ctx.currentTime);
+        this.gainNode.connect(this.ctx.destination);
+
+        // Bộ lọc tần số động (Low-pass)
+        this.filter = this.ctx.createBiquadFilter();
+        this.filter.type = 'lowpass';
+        this.filter.frequency.setValueAtTime(300, this.ctx.currentTime);
+        this.filter.connect(this.gainNode);
+
+        // Dao động Drone trầm 1
+        this.droneOsc1 = this.ctx.createOscillator();
+        this.droneOsc1.type = 'sine';
+        this.droneOsc1.frequency.setValueAtTime(65, this.ctx.currentTime);
+        this.droneOsc1.connect(this.filter);
+        this.droneOsc1.start();
+
+        // Dao động Harmonics 2 (Triangle)
+        this.droneOsc2 = this.ctx.createOscillator();
+        this.droneOsc2.type = 'triangle';
+        this.droneOsc2.frequency.setValueAtTime(130, this.ctx.currentTime);
+        this.droneOsc2.connect(this.filter);
+        this.droneOsc2.start();
+
+        // Tạo nguồn White Noise cho hiệu ứng bọt lượng tử
+        const bufferSize = this.ctx.sampleRate * 2;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          output[i] = Math.random() * 2 - 1;
+        }
+        this.noiseNode = this.ctx.createBufferSource();
+        this.noiseNode.buffer = noiseBuffer;
+        this.noiseNode.loop = true;
+
+        this.noiseGain = this.ctx.createGain();
+        this.noiseGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        this.noiseNode.connect(this.noiseGain);
+        this.noiseGain.connect(this.gainNode);
+        this.noiseNode.start();
+      }
+
+      toggle() {
+        if (!this.ctx) this.init();
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+
+        this.isPlaying = !this.isPlaying;
+        const now = this.ctx.currentTime;
+        if (this.isPlaying) {
+          this.gainNode.gain.cancelScheduledValues(now);
+          this.gainNode.gain.linearRampToValueAtTime(0.18, now + 0.5);
+        } else {
+          this.gainNode.gain.cancelScheduledValues(now);
+          this.gainNode.gain.linearRampToValueAtTime(0.0001, now + 0.3);
+        }
+        return this.isPlaying;
+      }
+
+      updatePitch(exp) {
+        if (!this.ctx || !this.isPlaying) return;
+        const now = this.ctx.currentTime;
+        // Chuẩn hóa exponent từ -35 đến +26 về dải [0, 1]
+        const normalized = (exp - (-35)) / (26 - (-35));
+        
+        // Khi ở vũ trụ vĩ mô (+26): bass cực sâu (35Hz); khi ở lượng tử (-35): âm thanh cao sắc nét (280Hz)
+        const targetFreq1 = 35 + (1 - normalized) * 260;
+        const targetFreq2 = targetFreq1 * 1.5;
+        const filterCutoff = 100 + (1 - normalized) * 1200;
+
+        this.droneOsc1.frequency.setTargetAtTime(targetFreq1, now, 0.1);
+        this.droneOsc2.frequency.setTargetAtTime(targetFreq2, now, 0.1);
+        this.filter.frequency.setTargetAtTime(filterCutoff, now, 0.1);
+
+        // Tiếng hiss lượng tử xuất hiện rõ khi exp < -15
+        if (exp < -15) {
+          const noiseLevel = Math.min(0.06, (Math.abs(exp) - 15) * 0.003);
+          this.noiseGain.gain.setTargetAtTime(noiseLevel, now, 0.1);
+        } else {
+          this.noiseGain.gain.setTargetAtTime(0, now, 0.1);
+        }
+      }
+    }
+
+    const canvas = document.getElementById('universeCanvas');
+    const ctx = canvas.getContext('2d');
+    const audioSynth = new CosmicSoundSynthesizer();
+
+    // DOM Elements
+    const hudExponent = document.getElementById('hudExponent');
+    const hudHumanMetric = document.getElementById('hudHumanMetric');
+    const scaleSlider = document.getElementById('scaleSlider');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const playBtnText = document.getElementById('playBtnText');
+    const reverseBtn = document.getElementById('reverseBtn');
+    const dirIcon = document.getElementById('dirIcon');
+    const dirText = document.getElementById('dirText');
+    const soundBtn = document.getElementById('soundBtn');
+    const soundIconOn = document.getElementById('soundIconOn');
+    const soundIconOff = document.getElementById('soundIconOff');
+    const audioVisualizer = document.getElementById('audioVisualizer');
+    const waveBars = document.querySelectorAll('.wave-bar');
+    const infoPanel = document.getElementById('infoPanel');
+    const infoToggleBtn = document.getElementById('infoToggleBtn');
+    const closeInfoBtn = document.getElementById('closeInfoBtn');
+
+    // Panel content DOM
+    const infoBadge = document.getElementById('infoBadge');
+    const infoOrder = document.getElementById('infoOrder');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoSub = document.getElementById('infoSub');
+    const infoDesc = document.getElementById('infoDesc');
+    const infoScaleVal = document.getElementById('infoScaleVal');
+    const infoField = document.getElementById('infoField');
+    const infoFact = document.getElementById('infoFact');
+
+    let currentExp = 0.0;        // Lũy thừa hiển thị thực tế
+    let targetExp = 0.0;         // Lũy thừa mục tiêu hướng tới (smooth interpolation)
+    let isAutoTour = false;      // Chế độ tự động chạy
+    let tourDirection = 1;       // 1: Phóng đại ra vũ trụ, -1: Thu nhỏ về lượng tử
+    let tourSpeedMultiplier = 1.0;
+    let baseSpeed = 0.04;        // Tốc độ thay đổi exponent mỗi khung hình
+    let currentLevelIndex = 6;   // Vị trí mốc gần nhất (mặc định: Con Người)
+    let animationTime = 0;       // Thời gian trôi để tính toán chuyển động hạt
+    let isDragging = false;
+    let lastMouseY = 0;
+
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    const starField = [];
+    for (let i = 0; i < 240; i++) {
+      starField.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        radius: Math.random() * 1.5 + 0.3,
+        alpha: Math.random() * 0.8 + 0.2,
+        twinkleSpeed: Math.random() * 0.04 + 0.01,
+        color: ['#ffffff', '#8ae6ff', '#f3d9ff', '#ffedd5'][Math.floor(Math.random() * 4)]
+      });
+    }
+
+    const quantumParticles = [];
+    for (let i = 0; i < 80; i++) {
+      quantumParticles.push({
+        x: (Math.random() - 0.5) * 600,
+        y: (Math.random() - 0.5) * 600,
+        life: Math.random(),
+        speed: Math.random() * 0.02 + 0.01,
+        maxRadius: Math.random() * 8 + 3,
+        color: Math.random() > 0.5 ? '#00f0ff' : '#bd00ff'
+      });
+    }
+
+    function getNearestLevel(exp) {
+      let nearest = UNIVERSE_LEVELS[0];
+      let minDiff = Math.abs(exp - nearest.exponent);
+      let idx = 0;
+      for (let i = 1; i < UNIVERSE_LEVELS.length; i++) {
+        const diff = Math.abs(exp - UNIVERSE_LEVELS[i].exponent);
+        if (diff < minDiff) {
+          minDiff = diff;
+          nearest = UNIVERSE_LEVELS[i];
+          idx = i;
+        }
+      }
+      return { level: nearest, index: idx };
+    }
+
+    function updateHUDInfo(exp) {
+      const { level, index } = getNearestLevel(exp);
+      currentLevelIndex = index;
+
+      // Cập nhật Exponent Text
+      const sign = exp >= 0 ? '+' : '';
+      hudExponent.innerHTML = `10<sup class="text-cyan-300 font-bold">${exp.toFixed(1)}</sup> m`;
+      hudHumanMetric.textContent = level.metric;
+
+      // Cập nhật Bảng Thông Tin (HUD Card)
+      infoBadge.textContent = level.category;
+      infoOrder.textContent = `Mốc ${index + 1}/12`;
+      infoTitle.textContent = level.name;
+      infoSub.textContent = `Thang Đo 10^${level.exponent} m`;
+      infoDesc.textContent = level.desc;
+      infoScaleVal.textContent = level.metric;
+      infoField.textContent = level.field;
+      infoFact.textContent = level.fact;
+
+      // Đánh dấu active trên quick jump pills
+      document.querySelectorAll('.jump-btn').forEach(btn => {
+        const bExp = parseFloat(btn.dataset.exp);
+        if (Math.abs(bExp - level.exponent) < 1.0) {
+          btn.classList.add('sci-fi-glass-active', 'text-cyan-300');
+        } else {
+          btn.classList.remove('sci-fi-glass-active', 'text-cyan-300');
+        }
+      });
+    }
+
+    function drawSciFiGrid(cx, cy, radius, opacity) {
+      if (opacity <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = opacity * 0.35;
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1;
+
+      // Vòng tròn định vị (Reticle)
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Vạch chia độ góc
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 1.15, 0, Math.PI * 2);
+      ctx.setLineDash([4, 8]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Tia chữ thập
+      ctx.beginPath();
+      ctx.moveTo(cx - radius * 1.25, cy);
+      ctx.lineTo(cx - radius * 0.8, cy);
+      ctx.moveTo(cx + radius * 0.8, cy);
+      ctx.lineTo(cx + radius * 1.25, cy);
+      ctx.moveTo(cx, cy - radius * 1.25);
+      ctx.lineTo(cx, cy - radius * 0.8);
+      ctx.moveTo(cx, cy + radius * 0.8);
+      ctx.lineTo(cx, cy + radius * 1.25);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function renderQuantumFoam(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Lưới không-thời gian bị uốn éo
+      const gridSize = 35 * scale;
+      if (gridSize > 5 && gridSize < 180) {
+        ctx.strokeStyle = 'rgba(189, 0, 255, 0.25)';
+        ctx.lineWidth = 1;
+        const count = 7;
+        for (let i = -count; i <= count; i++) {
+          ctx.beginPath();
+          for (let j = -count; j <= count; j++) {
+            const warpX = Math.sin(t * 3 + j * 0.8) * 10 * scale;
+            const warpY = Math.cos(t * 3 + i * 0.8) * 10 * scale;
+            const px = cx + i * gridSize + warpX;
+            const py = cy + j * gridSize + warpY;
+            if (j === -count) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+      }
+
+      // Các bọt lượng tử sinh-diệt
+      quantumParticles.forEach(p => {
+        p.life += p.speed;
+        if (p.life > 1) {
+          p.life = 0;
+          p.x = (Math.random() - 0.5) * 450 * scale;
+          p.y = (Math.random() - 0.5) * 450 * scale;
+        }
+        const currentR = Math.sin(p.life * Math.PI) * p.maxRadius * scale;
+        if (currentR > 0.5) {
+          const grad = ctx.createRadialGradient(cx + p.x, cy + p.y, 0, cx + p.x, cy + p.y, currentR);
+          grad.addColorStop(0, p.color);
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(cx + p.x, cy + p.y, currentR, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Tia điện nhỏ kết nối cặp hạt ảo
+          if (p.life > 0.3 && p.life < 0.7) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.moveTo(cx + p.x, cy + p.y);
+            ctx.lineTo(cx + p.x + Math.sin(t * 10) * 15 * scale, cy + p.y + Math.cos(t * 10) * 15 * scale);
+            ctx.stroke();
+          }
+        }
+      });
+
+      // Lõi năng lượng trung tâm
+      const r = 50 * scale;
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      coreGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+      coreGrad.addColorStop(0.4, 'rgba(189, 0, 255, 0.6)');
+      coreGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function renderQuarks(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const triangleR = 90 * scale;
+      const quarks = [
+        { angle: t * 1.5, color: '#ff3366', label: 'u (Up)' },
+        { angle: t * 1.5 + (2 * Math.PI / 3), color: '#00f0ff', label: 'u (Up)' },
+        { angle: t * 1.5 + (4 * Math.PI / 3), color: '#39ff14', label: 'd (Down)' }
+      ];
+
+      // Dây năng lượng Gluon rung động liên kết các Quark
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = Math.max(1.5, 2.5 * scale);
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const q1 = quarks[i];
+        const q2 = quarks[(i + 1) % 3];
+        const x1 = cx + Math.cos(q1.angle) * triangleR;
+        const y1 = cy + Math.sin(q1.angle) * triangleR;
+        const x2 = cx + Math.cos(q2.angle) * triangleR;
+        const y2 = cy + Math.sin(q2.angle) * triangleR;
+
+        // Vẽ dây dao động hình sin
+        const midX = (x1 + x2) / 2 + Math.sin(t * 8 + i) * 14 * scale;
+        const midY = (y1 + y2) / 2 + Math.cos(t * 8 + i) * 14 * scale;
+        ctx.moveTo(x1, y1);
+        ctx.quadraticCurveTo(midX, midY, x2, y2);
+      }
+      ctx.stroke();
+
+      // Vẽ từng hạt Quark
+      quarks.forEach(q => {
+        const qx = cx + Math.cos(q.angle) * triangleR;
+        const qy = cy + Math.sin(q.angle) * triangleR;
+        const qr = 22 * scale;
+
+        const grad = ctx.createRadialGradient(qx, qy, 0, qx, qy, qr);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.5, q.color);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(qx, qy, qr, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Vòng năng lượng dao động quanh Quark
+        ctx.strokeStyle = q.color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(qx, qy, qr * 1.4 + Math.sin(t * 6) * 3 * scale, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    }
+
+    function renderNucleus(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Đám mây xác suất mờ ảo của Electron xung quanh
+      const cloudR = 170 * scale;
+      const cloudGrad = ctx.createRadialGradient(cx, cy, 30 * scale, cx, cy, cloudR);
+      cloudGrad.addColorStop(0, 'rgba(0, 240, 255, 0.45)');
+      cloudGrad.addColorStop(0.6, 'rgba(0, 100, 255, 0.15)');
+      cloudGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = cloudGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, cloudR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cụm Proton và Neutron đan xen
+      const nucleons = [
+        { dx: -18, dy: -14, isProton: true },
+        { dx: 18, dy: -12, isProton: false },
+        { dx: -8, dy: 18, isProton: true },
+        { dx: 16, dy: 16, isProton: false },
+        { dx: 0, dy: -2, isProton: true },
+        { dx: -24, dy: 6, isProton: false },
+        { dx: 26, dy: 0, isProton: true }
+      ];
+
+      nucleons.forEach((n, idx) => {
+        // Dao động liên kết do lực mạnh
+        const jitterX = Math.sin(t * 5 + idx * 1.2) * 3 * scale;
+        const jitterY = Math.cos(t * 5 + idx * 1.2) * 3 * scale;
+        const nx = cx + (n.dx * scale) + jitterX;
+        const ny = cy + (n.dy * scale) + jitterY;
+        const nr = 18 * scale;
+
+        const color = n.isProton ? '#ff4d4d' : '#00c3ff';
+        const grad = ctx.createRadialGradient(nx - nr * 0.3, ny - nr * 0.3, 0, nx, ny, nr);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.4, color);
+        grad.addColorStop(1, '#051026');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(nx, ny, nr, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.restore();
+    }
+
+    function renderAtom(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Hạt nhân trung tâm phát sáng
+      const coreR = 16 * scale;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR * 2.5);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.4, '#ff9900');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreR * 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Các quỹ đạo electron elip nghiêng 3D
+      const orbits = [
+        { rx: 110 * scale, ry: 45 * scale, rot: Math.PI / 4, speed: 4.0 },
+        { rx: 110 * scale, ry: 45 * scale, rot: -Math.PI / 4, speed: 3.5 },
+        { rx: 110 * scale, ry: 45 * scale, rot: Math.PI / 2, speed: 4.5 }
+      ];
+
+      orbits.forEach(orb => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(orb.rot);
+
+        // Vòng quỹ đạo phát sáng
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+        ctx.lineWidth = Math.max(1, 1.8 * scale);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, orb.rx, orb.ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Hạt Electron đang bay quanh
+        const angle = t * orb.speed;
+        const ex = Math.cos(angle) * orb.rx;
+        const ey = Math.sin(angle) * orb.ry;
+
+        const eGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, 8 * scale);
+        eGrad.addColorStop(0, '#ffffff');
+        eGrad.addColorStop(0.5, '#00f0ff');
+        eGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = eGrad;
+        ctx.beginPath();
+        ctx.arc(ex, ey, 8 * scale, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    function renderDNA(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const steps = 24;
+      const length = 320 * scale;
+      const strandRadius = 45 * scale;
+      const stepY = length / steps;
+      const startY = cy - length / 2;
+
+      for (let i = 0; i <= steps; i++) {
+        const y = startY + i * stepY;
+        const angle = (i * 0.4) + t * 2;
+        const x1 = cx + Math.cos(angle) * strandRadius;
+        const x2 = cx - Math.cos(angle) * strandRadius;
+        const z = Math.sin(angle); // Độ sâu 3D
+
+        // Cầu nối bazơ nitơ (A-T / G-C)
+        const baseColor = (i % 2 === 0) ? '#00f0ff' : '#ff3366';
+        ctx.strokeStyle = baseColor;
+        ctx.lineWidth = Math.max(1, 2.5 * scale * (z * 0.3 + 0.7));
+        ctx.beginPath();
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.stroke();
+
+        // Hai điểm nút phốt phát trên sợi xoắn
+        const r = 5.5 * scale * (z * 0.3 + 0.7);
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x1, y, r, 0, Math.PI * 2);
+        ctx.arc(x2, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function renderCell(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const cellR = 120 * scale;
+
+      // Màng sinh chất tế bào với dao động uyển chuyển
+      ctx.fillStyle = 'rgba(255, 60, 100, 0.2)';
+      ctx.strokeStyle = '#ff3366';
+      ctx.lineWidth = Math.max(1.5, 3 * scale);
+      ctx.beginPath();
+      for (let a = 0; a < Math.PI * 2; a += 0.15) {
+        const deform = Math.sin(a * 5 + t * 2) * 5 * scale;
+        const x = cx + Math.cos(a) * (cellR + deform);
+        const y = cy + Math.sin(a) * (cellR + deform);
+        if (a === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Nhân tế bào (Nucleus) phát sáng
+      const nucR = 40 * scale;
+      const nucGrad = ctx.createRadialGradient(cx + 10 * scale, cy - 10 * scale, 0, cx, cy, nucR);
+      nucGrad.addColorStop(0, '#ffebee');
+      nucGrad.addColorStop(0.6, '#9c27b0');
+      nucGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = nucGrad;
+      ctx.beginPath();
+      ctx.arc(cx + 8 * scale, cy - 6 * scale, nucR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Các bào quan Ti Thể (Mitochondria) hình hạt đậu
+      const organelles = [
+        { ox: -50, oy: -40, rot: 0.6 },
+        { ox: 55, oy: 40, rot: -0.4 },
+        { ox: -30, oy: 60, rot: 1.2 }
+      ];
+      organelles.forEach(org => {
+        ctx.save();
+        ctx.translate(cx + org.ox * scale, cy + org.oy * scale);
+        ctx.rotate(org.rot);
+        ctx.fillStyle = '#ff9800';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 16 * scale, 8 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      ctx.restore();
+    }
+
+    function renderHuman(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const h = 180 * scale;
+      const topY = cy - h / 2;
+
+      // Vòng hào quang sinh học Vitruvian
+      ctx.strokeStyle = 'rgba(255, 183, 0, 0.45)';
+      ctx.lineWidth = Math.max(1, 1.5 * scale);
+      ctx.beginPath();
+      ctx.arc(cx, cy, h * 0.58, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Thước đo vạch chuẩn chiều cao 1.7m
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1.2;
+      const barX = cx + 80 * scale;
+      ctx.beginPath();
+      ctx.moveTo(barX, topY);
+      ctx.lineTo(barX, topY + h);
+      ctx.moveTo(barX - 8, topY);
+      ctx.lineTo(barX + 8, topY);
+      ctx.moveTo(barX - 8, topY + h);
+      ctx.lineTo(barX + 8, topY);
+      ctx.stroke();
+
+      // Nhãn kích thước thước đo
+      if (scale > 0.4) {
+        ctx.fillStyle = '#00f0ff';
+        ctx.font = `${Math.floor(12 * Math.min(scale, 1.5))}px Orbitron`;
+        ctx.fillText('1.70 m', barX + 12, cy);
+      }
+
+      // Hình bóng người phát sáng dạng Sci-Fi Hologram
+      ctx.strokeStyle = '#ffb700';
+      ctx.fillStyle = 'rgba(255, 183, 0, 0.15)';
+      ctx.lineWidth = Math.max(1.5, 3 * scale);
+
+      // Đầu
+      ctx.beginPath();
+      ctx.arc(cx, topY + 16 * scale, 14 * scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Thân mình & Cột sống
+      ctx.beginPath();
+      ctx.moveTo(cx, topY + 30 * scale);
+      ctx.lineTo(cx, topY + 100 * scale);
+      // Vai & Tay
+      ctx.moveTo(cx - 38 * scale, topY + 45 * scale);
+      ctx.lineTo(cx + 38 * scale, topY + 45 * scale);
+      ctx.lineTo(cx + 46 * scale, topY + 95 * scale);
+      ctx.moveTo(cx - 38 * scale, topY + 45 * scale);
+      ctx.lineTo(cx - 46 * scale, topY + 95 * scale);
+      // Hông & Chân
+      ctx.moveTo(cx, topY + 100 * scale);
+      ctx.lineTo(cx - 22 * scale, topY + 175 * scale);
+      ctx.moveTo(cx, topY + 100 * scale);
+      ctx.lineTo(cx + 22 * scale, topY + 175 * scale);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function renderEarth(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const r = 90 * scale;
+
+      // Quầng sáng Bầu khí quyển Trái Đất (Atmospheric Glow)
+      const atmoGrad = ctx.createRadialGradient(cx, cy, r * 0.9, cx, cy, r * 1.35);
+      atmoGrad.addColorStop(0, 'rgba(0, 180, 255, 0.7)');
+      atmoGrad.addColorStop(0.6, 'rgba(0, 140, 255, 0.25)');
+      atmoGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = atmoGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 1.35, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Quả cầu đại dương xanh
+      const globeGrad = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, 5, cx, cy, r);
+      globeGrad.addColorStop(0, '#38ef7d');
+      globeGrad.addColorStop(0.3, '#11998e');
+      globeGrad.addColorStop(0.7, '#0f3460');
+      globeGrad.addColorStop(1, '#051329');
+      ctx.fillStyle = globeGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Các dải mây trắng chuyển động
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      for (let i = 0; i < 4; i++) {
+        const cloudY = cy + (i - 1.5) * (r * 0.45);
+        const cloudShift = Math.sin(t * 0.8 + i) * 15 * scale;
+        ctx.beginPath();
+        ctx.ellipse(cx + cloudShift, cloudY, r * 0.65, 8 * scale, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Mặt Trăng quay quanh quỹ đạo
+      const moonDist = r * 1.8;
+      const moonAngle = t * 0.7;
+      const mx = cx + Math.cos(moonAngle) * moonDist;
+      const my = cy + Math.sin(moonAngle) * (moonDist * 0.45);
+      const mr = 8 * scale;
+
+      // Quỹ đạo trăng
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.setLineDash([3, 5]);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, moonDist, moonDist * 0.45, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Mặt Trăng
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath();
+      ctx.arc(mx, my, mr, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function renderSolarSystem(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Mặt Trời trung tâm phát sáng chói lọi
+      const sunR = 26 * scale;
+      const sunGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, sunR * 3);
+      sunGrad.addColorStop(0, '#ffffff');
+      sunGrad.addColorStop(0.3, '#ffaa00');
+      sunGrad.addColorStop(0.7, '#ff3300');
+      sunGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, sunR * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Danh sách các hành tinh quay quanh
+      const planets = [
+        { dist: 45 * scale, size: 3.5 * scale, color: '#a0aec0', speed: 2.5, name: 'Sao Thủy' },
+        { dist: 65 * scale, size: 5.5 * scale, color: '#ecc94b', speed: 1.8, name: 'Sao Kim' },
+        { dist: 90 * scale, size: 6.0 * scale, color: '#4299e1', speed: 1.3, name: 'Trái Đất' },
+        { dist: 115 * scale, size: 4.5 * scale, color: '#f56565', speed: 1.0, name: 'Sao Hỏa' },
+        { dist: 160 * scale, size: 12.0 * scale, color: '#ed8936', speed: 0.6, name: 'Sao Mộc' },
+        { dist: 210 * scale, size: 9.5 * scale, color: '#d69e2e', speed: 0.4, hasRing: true, name: 'Sao Thổ' }
+      ];
+
+      planets.forEach(p => {
+        // Vòng quỹ đạo
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, p.dist, p.dist * 0.75, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Tọa độ hành tinh
+        const angle = t * p.speed;
+        const px = cx + Math.cos(angle) * p.dist;
+        const py = cy + Math.sin(angle) * (p.dist * 0.75);
+
+        // Vẽ hành tinh
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(px, py, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Vẽ vành đai (ví dụ Sao Thổ)
+        if (p.hasRing) {
+          ctx.strokeStyle = 'rgba(214, 158, 46, 0.8)';
+          ctx.lineWidth = 2 * scale;
+          ctx.beginPath();
+          ctx.ellipse(px, py, p.size * 2.2, p.size * 0.8, Math.PI / 6, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      });
+
+      ctx.restore();
+    }
+
+    function renderMilkyWay(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const arms = 2;
+      const particlesPerArm = 280;
+      const maxR = 190 * scale;
+
+      // Lõi thiên hà sáng chói
+      const coreR = 30 * scale;
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR * 2.2);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.3, '#ffea79');
+      coreGrad.addColorStop(0.7, '#a855f7');
+      coreGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreR * 2.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Hai nhánh xoắn ốc Logarithmic Spiral
+      for (let arm = 0; arm < arms; arm++) {
+        const armOffset = arm * Math.PI;
+        for (let i = 0; i < particlesPerArm; i++) {
+          const frac = i / particlesPerArm;
+          const theta = frac * Math.PI * 3.8 + armOffset + (t * 0.3);
+          const r = frac * maxR;
+          
+          // Thêm độ phân tán ngẫu nhiên hình học
+          const spread = (Math.sin(i * 99) * 18 + Math.cos(i * 33) * 12) * scale * frac;
+          const px = cx + Math.cos(theta) * (r + spread);
+          const py = cy + Math.sin(theta) * ((r + spread) * 0.65); // Nghiêng góc phối cảnh
+
+          const pSize = Math.max(0.6, (1.8 - frac * 0.8) * scale);
+          const pAlpha = (1 - frac * 0.6) * 0.85;
+
+          ctx.fillStyle = frac < 0.3 ? '#ffe066' : (frac < 0.7 ? '#67e8f9' : '#c084fc');
+          ctx.globalAlpha = alpha * pAlpha;
+          ctx.beginPath();
+          ctx.arc(px, py, pSize, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function renderLaniakea(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const flowLines = 36;
+      ctx.lineWidth = Math.max(0.8, 1.2 * scale);
+
+      for (let i = 0; i < flowLines; i++) {
+        const startAngle = (i / flowLines) * Math.PI * 2;
+        const length = (160 + Math.sin(i * 3) * 40) * scale;
+        
+        ctx.strokeStyle = `rgba(168, 85, 247, ${0.15 + (i % 3) * 0.1})`;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+
+        // Đường dòng chảy hấp dẫn uốn lượn về Great Attractor
+        const midAngle = startAngle + 0.5;
+        const midR = length * 0.55;
+        const endX = cx + Math.cos(startAngle) * length;
+        const endY = cy + Math.sin(startAngle) * (length * 0.8);
+        const midX = cx + Math.cos(midAngle) * midR;
+        const midY = cy + Math.sin(midAngle) * (midR * 0.8);
+
+        ctx.quadraticCurveTo(midX, midY, endX, endY);
+        ctx.stroke();
+
+        // Các thiên hà đốm sáng nằm dọc theo sợi dây hấp dẫn
+        const dotProg = (t * 0.4 + i * 0.1) % 1.0;
+        const dotX = cx + (endX - cx) * dotProg;
+        const dotY = cy + (endY - cy) * dotProg;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 1.6 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Tâm điểm Great Attractor
+      const coreR = 25 * scale;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+      grad.addColorStop(0.5, 'rgba(192, 132, 252, 0.4)');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function renderCosmicWeb(cx, cy, scale, alpha, t) {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const boundaryR = 190 * scale;
+
+      // Biên giới bức xạ nền vi ba CMB (Cosmic Microwave Background Glow)
+      const cmbGrad = ctx.createRadialGradient(cx, cy, boundaryR * 0.85, cx, cy, boundaryR * 1.05);
+      cmbGrad.addColorStop(0, 'transparent');
+      cmbGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.4)');
+      cmbGrad.addColorStop(0.8, 'rgba(255, 80, 0, 0.35)');
+      cmbGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = cmbGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, boundaryR * 1.05, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Mạng lưới các sợi Cosmic Web đan xen
+      const nodes = [
+        { x: cx - 70 * scale, y: cy - 60 * scale },
+        { x: cx + 60 * scale, y: cy - 70 * scale },
+        { x: cx + 80 * scale, y: cy + 50 * scale },
+        { x: cx - 60 * scale, y: cy + 70 * scale },
+        { x: cx + 10 * scale, y: cy + 10 * scale },
+        { x: cx - 120 * scale, y: cy - 10 * scale },
+        { x: cx + 120 * scale, y: cy + 10 * scale }
+      ];
+
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
+      ctx.lineWidth = Math.max(0.8, 1.5 * scale);
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.stroke();
+        }
+      }
+
+      // Các nút tụ siêu đám thiên hà
+      nodes.forEach(n => {
+        const nodeGrad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, 14 * scale);
+        nodeGrad.addColorStop(0, '#ffffff');
+        nodeGrad.addColorStop(0.4, '#00f0ff');
+        nodeGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = nodeGrad;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 14 * scale, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Viền bong bóng quan sát được
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 8]);
+      ctx.beginPath();
+      ctx.arc(cx, cy, boundaryR, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.restore();
+    }
+
+    function renderFrame() {
+      animationTime += 0.016;
+
+      // 1. Tự động chạy Auto-Tour với cơ chế Ping-Pong hai chiều
+      if (isAutoTour) {
+        targetExp += tourDirection * baseSpeed * tourSpeedMultiplier;
+
+        // Đảo chiều mượt mà khi chạm 2 đầu giới hạn
+        if (targetExp >= 26.0) {
+          targetExp = 26.0;
+          tourDirection = -1;
+          updateDirectionUI();
+        } else if (targetExp <= -35.0) {
+          targetExp = -35.0;
+          tourDirection = 1;
+          updateDirectionUI();
+        }
+      }
+
+      // 2. Nội suy mượt mà Exponent (Smooth Exponential Damping)
+      currentExp += (targetExp - currentExp) * 0.12;
+
+      // Cập nhật Slider và HUD nếu có sự thay đổi
+      if (Math.abs(parseFloat(scaleSlider.value) - currentExp) > 0.02) {
+        scaleSlider.value = currentExp;
+      }
+      updateHUDInfo(currentExp);
+      audioSynth.updatePitch(currentExp);
+
+      // Hiệu ứng Visualizer Waveform ngẫu nhiên nhẹ khi âm thanh đang bật
+      if (audioSynth.isPlaying) {
+        waveBars.forEach((bar, idx) => {
+          const h = 4 + Math.sin(animationTime * 8 + idx) * 8 + Math.random() * 4;
+          bar.style.height = `${Math.max(2, h)}px`;
+        });
+      }
+
+      // 3. Xóa và chuẩn bị nền Canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+
+      // Vẽ trường sao lấp lánh (Starfield)
+      starField.forEach(s => {
+        const tw = Math.sin(animationTime * 3 * s.twinkleSpeed * 100) * 0.3 + 0.7;
+        ctx.fillStyle = s.color;
+        ctx.globalAlpha = s.alpha * tw;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 4. Vẽ từng đối tượng theo thang đo với hàm trọng số liên tục
+      const renderers = [
+        { exp: -35, fn: renderQuantumFoam },
+        { exp: -18, fn: renderQuarks },
+        { exp: -15, fn: renderNucleus },
+        { exp: -10, fn: renderAtom },
+        { exp: -9,  fn: renderDNA },
+        { exp: -6,  fn: renderCell },
+        { exp: 0,   fn: renderHuman },
+        { exp: 7,   fn: renderEarth },
+        { exp: 12,  fn: renderSolarSystem },
+        { exp: 21,  fn: renderMilkyWay },
+        { exp: 24,  fn: renderLaniakea },
+        { exp: 26,  fn: renderCosmicWeb }
+      ];
+
+      renderers.forEach(obj => {
+        const delta = currentExp - obj.exp;
+        // Vật thể hiển thị trong khoảng cách +/- 4.5 bậc độ lớn
+        if (Math.abs(delta) < 4.5) {
+          // Tính độ mờ: Càng gần mốc thì càng rõ nhất (dạng sóng Cosine)
+          const alpha = Math.pow(Math.cos((delta / 4.5) * (Math.PI / 2)), 2);
+          
+          // Tỷ lệ phóng đại: Khi zoom sâu hơn mốc (delta < 0), vật thể phóng to; ngược lại thu nhỏ
+          const visualScale = Math.pow(10, -delta * 0.32);
+
+          // Vẽ đối tượng
+          obj.fn(cx, cy, visualScale, alpha, animationTime);
+
+          // Vẽ thước ngắm Sci-Fi nếu đang nằm ở trung tâm tiêu điểm
+          if (alpha > 0.45) {
+            drawSciFiGrid(cx, cy, 140 * Math.min(visualScale, 2.0), alpha * 0.6);
+          }
+        }
+      });
+
+      requestAnimationFrame(renderFrame);
+    }
+
+    function updateDirectionUI() {
+      if (tourDirection === 1) {
+        dirIcon.style.transform = 'rotate(0deg)';
+        dirText.textContent = 'Hướng: Phóng Đại (+)';
+      } else {
+        dirIcon.style.transform = 'rotate(180deg)';
+        dirText.textContent = 'Hướng: Thu Nhỏ (-)';
+      }
+    }
+
+    function toggleAutoTour() {
+      isAutoTour = !isAutoTour;
+      if (isAutoTour) {
+        playIcon.classList.add('hidden');
+        pauseIcon.classList.remove('hidden');
+        playBtnText.textContent = 'TẠM DỪNG TOUR';
+        playPauseBtn.classList.replace('bg-cyan-500', 'bg-amber-400');
+      } else {
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = 'AUTO-TOUR (BẮT ĐẦU)';
+        playPauseBtn.classList.replace('bg-amber-400', 'bg-cyan-500');
+      }
+    }
+
+    // Slider tương tác
+    scaleSlider.addEventListener('input', (e) => {
+      targetExp = parseFloat(e.target.value);
+      isAutoTour = false;
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = 'AUTO-TOUR (BẮT ĐẦU)';
+      playPauseBtn.classList.replace('bg-amber-400', 'bg-cyan-500');
+    });
+
+    // Nút Play / Pause
+    playPauseBtn.addEventListener('click', toggleAutoTour);
+
+    // Nút Đảo Chiều
+    reverseBtn.addEventListener('click', () => {
+      tourDirection *= -1;
+      updateDirectionUI();
+    });
+
+    // Lựa chọn tốc độ
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => {
+          b.classList.remove('bg-cyan-500/30', 'text-cyan-300', 'font-bold');
+        });
+        btn.classList.add('bg-cyan-500/30', 'text-cyan-300', 'font-bold');
+        tourSpeedMultiplier = parseFloat(btn.dataset.speed);
+      });
+    });
+
+    // Các nút nhảy nhanh (Quick Jump)
+    document.querySelectorAll('.jump-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        targetExp = parseFloat(btn.dataset.exp);
+        isAutoTour = false;
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = 'AUTO-TOUR (BẮT ĐẦU)';
+        playPauseBtn.classList.replace('bg-amber-400', 'bg-cyan-500');
+      });
+    });
+
+    // Nút Âm Thanh Bật / Tắt
+    soundBtn.addEventListener('click', () => {
+      const active = audioSynth.toggle();
+      if (active) {
+        soundIconOn.classList.remove('hidden');
+        soundIconOff.classList.add('hidden');
+      } else {
+        soundIconOn.classList.add('hidden');
+        soundIconOff.classList.remove('hidden');
+      }
+    });
+
+    // Bật tắt Drawer Hồ Sơ Khoa Học
+    infoToggleBtn.addEventListener('click', () => {
+      infoPanel.classList.toggle('translate-x-[120%]');
+    });
+    closeInfoBtn.addEventListener('click', () => {
+      infoPanel.classList.add('translate-x-[120%]');
+    });
+
+    // Cuộn chuột trực tiếp trên Canvas để Zoom In/Out
+    window.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomStep = e.deltaY * -0.005;
+      targetExp = Math.max(-35, Math.min(26, targetExp + zoomStep));
+      isAutoTour = false;
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = 'AUTO-TOUR (BẮT ĐẦU)';
+      playPauseBtn.classList.replace('bg-amber-400', 'bg-cyan-500');
+    }, { passive: false });
+
+    // Kéo thả chuột / Chạm vuốt trên màn hình cảm ứng để điều khiển thang đo
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      lastMouseY = e.clientY;
+    });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaY = lastMouseY - e.clientY;
+      lastMouseY = e.clientY;
+      targetExp = Math.max(-35, Math.min(26, targetExp + deltaY * 0.08));
+      isAutoTour = false;
+      playIcon.classList.remove('hidden');
+      pauseIcon.classList.add('hidden');
+      playBtnText.textContent = 'AUTO-TOUR (BẮT ĐẦU)';
+      playPauseBtn.classList.replace('bg-amber-400', 'bg-cyan-500');
+    });
+
+    // Hỗ trợ Touch di động
+    let touchStartY = 0;
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+    canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1) {
+        const deltaY = touchStartY - e.touches[0].clientY;
+        touchStartY = e.touches[0].clientY;
+        targetExp = Math.max(-35, Math.min(26, targetExp + deltaY * 0.06));
+        isAutoTour = false;
+        playIcon.classList.remove('hidden');
+        pauseIcon.classList.add('hidden');
+        playBtnText.textContent = 'AUTO-TOUR (BẮT ĐẦU)';
+        playPauseBtn.classList.replace('bg-amber-400', 'bg-cyan-500');
+      }
+    }, { passive: true });
+
+    updateHUDInfo(0);
+    requestAnimationFrame(renderFrame);
+  </script>
+</body>
+</html>

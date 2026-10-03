@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Powers of Ten — Hành trình từ Hạt ảo đến Rìa Vũ trụ</title>
+<!-- Nạp thư viện Three.js bản r128 ổn định nhất từ CDN chuẩn -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+    :root {
+        --bg: #000308;
+        --accent: #6ec6ff;
+        --accent-warm: #ffb86c;
+        --text: #d8e6f2;
+        --muted: #6a7c92;
+        --border: #1a2634;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+        height: 100%; overflow: hidden;
+        font-family: 'Segoe UI', -apple-system, sans-serif;
+        background: var(--bg); color: var(--text);
+    }
+    #canvas3d { position: fixed; inset: 0; z-index: 1; }
+    #canvas3d canvas { display: block; width: 100%; height: 100%; }
+
+    /* ===== THANH THÔNG TIN ĐỈNH MÀN HÌNH (HUD TOP) ===== */
+    .topbar {
+        position: fixed; top: 0; left: 0; right: 0;
+        z-index: 10; padding: 18px 26px;
+        display: flex; justify-content: space-between; align-items: flex-start;
+        pointer-events: none;
+    }
+    .scale-readout {
+        font-family: 'Courier New', monospace;
+        pointer-events: auto;
+    }
+    .scale-label {
+        font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+        color: var(--muted); margin-bottom: 4px;
+    }
+    .scale-value {
+        font-size: 26px; font-weight: 700; color: var(--accent);
+        text-shadow: 0 0 20px rgba(110, 198, 255, 0.5);
+        line-height: 1;
+    }
+    .scale-unit { font-size: 14px; color: var(--muted); margin-left: 6px; }
+
+    .level-name {
+        font-size: 20px; font-weight: 600; letter-spacing: 3px;
+        text-transform: uppercase; text-align: right;
+        color: var(--accent-warm);
+        text-shadow: 0 0 24px rgba(255, 184, 108, 0.6);
+        pointer-events: auto;
+    }
+    .level-sub {
+        font-size: 11px; color: var(--muted); letter-spacing: 1px;
+        margin-top: 6px; text-align: right;
+    }
+
+    /* ===== BẢNG ĐIỀU KHIỂN ĐÁY MÀN HÌNH ===== */
+    .controls {
+        position: fixed; bottom: 24px; left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        background: rgba(10, 16, 24, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 20px;
+        display: flex; align-items: center; gap: 16px;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    }
+    .controls button {
+        background: transparent; color: var(--text);
+        border: 1px solid var(--border);
+        padding: 8px 14px; border-radius: 8px;
+        font-family: inherit; font-size: 12px; font-weight: 600;
+        letter-spacing: 1px; cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .controls button:hover {
+        border-color: var(--accent); color: var(--accent);
+        box-shadow: 0 0 16px rgba(110, 198, 255, 0.3);
+    }
+    .controls button.playing {
+        background: var(--accent); color: #000;
+        border-color: var(--accent);
+    }
+    .controls .divider {
+        width: 1px; height: 22px; background: var(--border);
+    }
+    .speed-display {
+        font-family: monospace;
+        font-size: 12px; color: var(--muted);
+        min-width: 50px; text-align: center;
+    }
+
+    /* ===== THANH TIẾN TRÌNH THANG ĐO (TIMELINE) ===== */
+    .timeline {
+        position: fixed; bottom: 85px; left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        width: min(90vw, 850px);
+    }
+    .timeline-track {
+        height: 4px; background: rgba(26, 38, 52, 0.7);
+        border-radius: 2px; position: relative;
+        overflow: hidden;
+    }
+    .timeline-fill {
+        height: 100%; background: linear-gradient(90deg, var(--accent) 0%, var(--accent-warm) 100%);
+        width: 0%; transition: width 0.1s linear;
+        box-shadow: 0 0 12px rgba(110, 198, 255, 0.8);
+    }
+    .timeline-markers {
+        position: absolute; top: -20px; left: 0; right: 0;
+        font-size: 9px; color: var(--muted);
+        display: flex; justify-content: space-between;
+        pointer-events: none;
+    }
+
+    /* ===== DANH MỤC CÁC TẦNG BÊN PHẢI (LEGEND) ===== */
+    .legend {
+        position: fixed; right: 20px; top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        background: rgba(10, 16, 24, 0.88);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-size: 11px;
+        max-width: 220px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    .legend h4 {
+        font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+        color: var(--muted); margin-bottom: 8px;
+        padding-bottom: 6px; border-bottom: 1px solid var(--border);
+    }
+    .legend-item {
+        display: flex; align-items: center; gap: 8px;
+        padding: 4px 6px; color: var(--muted);
+        border-radius: 4px; cursor: pointer;
+        transition: all 0.2s;
+    }
+    .legend-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .legend-item.active { color: var(--accent); font-weight: bold; }
+    .legend-item .swatch {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ===== BẢNG CHI TIẾT VẬT THỂ BÊN TRÁI ===== */
+    .info {
+        position: fixed; left: 26px; top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        max-width: 280px;
+        background: rgba(10, 16, 24, 0.88);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        font-size: 11px; line-height: 1.6;
+        color: var(--muted);
+    }
+    .info h3 {
+        font-size: 13px; color: var(--text);
+        font-weight: 600; margin-bottom: 8px;
+    }
+    .info .metric {
+        display: flex; justify-content: space-between;
+        padding: 3px 0;
+        border-bottom: 1px dashed rgba(26, 38, 52, 0.6);
+    }
+    .info .metric:last-child { border-bottom: none; }
+    .info .metric span:last-child { color: var(--accent); font-weight: 600; }
+
+    /* ===== MÀN HÌNH CHỜ (LOADING SCREEN) ===== */
+    .loading {
+        position: fixed; inset: 0; z-index: 100;
+        background: var(--bg);
+        display: flex; align-items: center; justify-content: center;
+        color: var(--accent); font-size: 13px;
+        letter-spacing: 3px; text-transform: uppercase;
+        transition: opacity 0.5s ease;
+        pointer-events: auto;
+    }
+    .loading.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    @media (max-width: 900px) {
+        .info, .legend { display: none; }
+        .controls { gap: 8px; padding: 8px 12px; }
+        .controls button { padding: 6px 10px; font-size: 10px; }
+    }
+</style>
+</head>
+<body>
+
+<div id="canvas3d"></div>
+
+<div class="topbar">
+    <div class="scale-readout">
+        <div class="scale-label">Kích thước hiện tại</div>
+        <div>
+            <span class="scale-value" id="scaleValue">10⁻¹⁸</span>
+            <span class="scale-unit">mét</span>
+        </div>
+    </div>
+    <div>
+        <div class="level-name" id="levelName">HẠT ẢO</div>
+        <div class="level-sub" id="levelSub">Quantum Foam</div>
+    </div>
+</div>
+
+<div class="info" id="infoBox">
+    <h3 id="infoTitle">Hạt ảo</h3>
+    <div class="metric"><span>Kích thước</span><span id="infoSize">10⁻¹⁸ m</span></div>
+    <div class="metric"><span>Thang đo</span><span id="infoScale">Planck</span></div>
+    <div class="metric"><span>Đối tượng</span><span id="infoObjects">~10⁹</span></div>
+    <div id="infoDesc" style="margin-top: 10px; font-size: 11px;"></div>
+</div>
+
+<div class="legend" id="legendBox">
+    <h4>Thang bậc vũ trụ</h4>
+    <div id="legendItems"></div>
+</div>
+
+<div class="timeline">
+    <div class="timeline-markers">
+        <span>10⁻¹⁸</span>
+        <span>10⁻¹⁰</span>
+        <span>10⁰</span>
+        <span>10¹⁰</span>
+        <span>10²⁰</span>
+        <span>10²⁷ m</span>
+    </div>
+    <div class="timeline-track">
+        <div class="timeline-fill" id="timelineFill"></div>
+    </div>
+</div>
+
+<div class="controls">
+    <button id="btnReverse" title="Đảo chiều zoom">◀◀ Đảo chiều</button>
+    <button id="btnPlay" class="playing" title="Tạm dừng hoặc chạy tiếp">⏸ Tạm dừng</button>
+    <div class="divider"></div>
+    <button id="btnSlower" title="Giảm tốc độ zoom">−</button>
+    <div class="speed-display" id="speedDisplay">1.0×</div>
+    <button id="btnFaster" title="Tăng tốc độ zoom">+</button>
+    <div class="divider"></div>
+    <button id="btnReset" title="Trở về điểm bắt đầu">↻ Reset</button>
+</div>
+
+<!-- Lớp phủ màn hình chờ khởi tạo -->
+<div class="loading" id="loading">Đang khởi tạo vũ trụ...</div>
+
+<script>
+/* ======================================================================
+   CƠ SỞ DỮ LIỆU CÁC TẦNG QUY MÔ (TỪ HẠT LƯỢNG TỬ ĐẾN RÌA VŨ TRỤ)
+   ====================================================================== */
+const LEVELS = [
+    { exp: -18, name: 'HẠT ẢO',       en: 'Quantum Foam',        color: 0xa060ff, obj: '~10⁹ hạt/cm³', sizeLabel: '10⁻¹⁸ m', desc: 'Bọt lượng tử — thăng giáng năng lượng tại thang Planck. Không-thời gian sôi sục.' },
+    { exp: -15, name: 'HẠT QUARK',     en: 'Quark Scale',         color: 0x8a5fff, obj: '6 loại quark', sizeLabel: '10⁻¹⁵ m', desc: 'Quark — thành phần cơ bản của proton và neutron, liên kết bởi gluon.' },
+    { exp: -14, name: 'HẠT NHÂN',      en: 'Atomic Nucleus',      color: 0xff5577, obj: 'proton + neutron', sizeLabel: '10⁻¹⁴ m', desc: 'Hạt nhân nguyên tử — liên kết bởi tương tác hạt nhân mạnh.' },
+    { exp: -10, name: 'NGUYÊN TỬ',    en: 'Atom',                color: 0xffaa44, obj: '~10²³ hạt/mol', sizeLabel: '10⁻¹⁰ m', desc: 'Nguyên tử — hạt nhân bao quanh bởi các lớp mây electron xác suất.' },
+    { exp: -9,  name: 'PHÂN TỬ ADN',  en: 'DNA Molecule',        color: 0xffdd44, obj: 'protein, ADN', sizeLabel: '10⁻⁹ m', desc: 'Phân tử sinh học — chuỗi xoắn kép lưu trữ thông tin di truyền.' },
+    { exp: -7,  name: 'VIRUS',        en: 'Virus',               color: 0xaaff66, obj: '~10⁸ loại', sizeLabel: '10⁻⁷ m', desc: 'Virus — cấu trúc capsid protein bao bọc lõi vật liệu di truyền.' },
+    { exp: -6,  name: 'VI KHUẨN',     en: 'Bacteria',            color: 0x66ff99, obj: '~10¹⁴ vi khuẩn', sizeLabel: '10⁻⁶ m', desc: 'Tế bào nhân sơ — dạng sống đơn bào thích nghi cao độ.' },
+    { exp: -5,  name: 'TẾ BÀO NGƯỜI', en: 'Human Cell',          color: 0x66ddff, obj: '~10¹⁴ tế bào', sizeLabel: '10⁻⁵ m', desc: 'Tế bào nhân thực hoàn chỉnh với nhân và hệ thống bào quan.' },
+    { exp: -3,  name: 'CƠ QUAN SINH HỌC', en: 'Organ',           color: 0x66ccff, obj: '~80 cơ quan', sizeLabel: '10⁻³ m', desc: 'Mô cơ quan chuyên biệt hóa thực hiện chức năng sinh lý học.' },
+    { exp: 0,   name: 'CƠ THỂ NGƯỜI', en: 'Human Body',          color: 0x88eeff, obj: '~8 tỷ người', sizeLabel: '10⁰ m', desc: 'Thực thể nhận thức trung tâm trong thang bậc quan sát.' },
+    { exp: 3,   name: 'THÀNH PHỐ / ĐÔ THỊ', en: 'City / Mountain', color: 0x88ddcc, obj: '~10⁶ đô thị', sizeLabel: '10³ m', desc: 'Hạ tầng phẳng và các mạng lưới dân sinh của nền văn minh.' },
+    { exp: 6,   name: 'LỤC ĐỊA',      en: 'Continent',           color: 0x66dd88, obj: '7 lục địa', sizeLabel: '10⁶ m', desc: 'Các mảng kiến tạo quyển thạch dịch chuyển liên tục.' },
+    { exp: 7,   name: 'HÀNH TINH TRÁI ĐẤT', en: 'Earth',         color: 0x44bbff, obj: '1 hành tinh', sizeLabel: '10⁷ m', desc: 'Cái nôi sinh học duy nhất đã biết trong vũ trụ khả kiến.' },
+    { exp: 9,   name: 'HỆ MẶT TRỜI',  en: 'Solar System',        color: 0xffcc44, obj: '8 hành tinh', sizeLabel: '10⁹ m', desc: 'Hệ quỹ đạo được ràng buộc bởi trường hấp dẫn của Mặt Trời.' },
+    { exp: 14,  name: 'TINH VÂN VŨ TRỤ', en: 'Nebula',           color: 0xff88cc, obj: '~10⁴ tinh vân', sizeLabel: '10¹⁴ m', desc: 'Vườn ươm sao cấu thành từ bụi và khí hydro ion hóa.' },
+    { exp: 18,  name: 'DẢI NGÂN HÀ',  en: 'Milky Way',           color: 0xcc88ff, obj: '~200 tỷ sao', sizeLabel: '10¹⁸ m', desc: 'Cấu trúc xoắn ốc khổng lồ quay quanh siêu hố đen trung tâm.' },
+    { exp: 21,  name: 'CỤM THIÊN HÀ', en: 'Galaxy Cluster',      color: 0xaa66ff, obj: '~1000 thiên hà', sizeLabel: '10²¹ m', desc: 'Tập hợp hàng ngàn thiên hà liên kết bằng lực hấp dẫn.' },
+    { exp: 24,  name: 'SIÊU CỤM THIÊN HÀ', en: 'Supercluster',   color: 0x8866ff, obj: '~10⁵ thiên hà', sizeLabel: '10²⁴ m', desc: 'Mạng lưới sợi dệt vũ trụ quy mô hàng trăm triệu năm ánh sáng.' },
+    { exp: 26,  name: 'VŨ TRỤ KHẢ KIẾN', en: 'Observable Universe', color: 0x6644ff, obj: '~2×10¹² thiên hà', sizeLabel: '10²⁶ m', desc: 'Biên độ bức xạ nền vũ trụ (CMB) có thể đo đạc bằng ánh sáng.' },
+    { exp: 27,  name: 'RÌA CHÂN TRỜI', en: 'Cosmic Horizon',     color: 0x4422ff, obj: 'Đa vũ trụ', sizeLabel: '10²⁷ m', desc: 'Biên giới nhận thức tối hậu vượt ngoài tốc độ ánh sáng.' }
+];
+
+/* Biến trạng thái toàn cục */
+let scene, camera, renderer, clock;
+let rootGroup;
+let currentExp = -18;
+let direction = 1;
+let isPlaying = true;
+let speedMultiplier = 1.0;
+const MIN_EXP = -18;
+const MAX_EXP = 27;
+const levelGroups = [];
+
+/* ======================================================================
+   HÀM DỰNG HÌNH HỌC AN TOÀN ĐA PHIÊN BẢN (TRÁNH LỖI HÌNH CON NHỘNG)
+   ====================================================================== */
+function createCapsuleGeometry(radius, length) {
+    if (typeof THREE.CapsuleGeometry === 'function') {
+        return new THREE.CapsuleGeometry(radius, length, 8, 16);
+    }
+    // Dùng hình trụ cylinder thay thế nếu phiên bản thư viện chưa có CapsuleGeometry
+    return new THREE.CylinderGeometry(radius, radius, length, 16);
+}
+
+/* ======================================================================
+   KHỞI TẠO KHÔNG GIAN 3D
+   ====================================================================== */
+function init() {
+    try {
+        const container = document.getElementById('canvas3d');
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000308);
+        scene.fog = new THREE.FogExp2(0x000308, 0.008);
+
+        camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 5000);
+        camera.position.set(0, 0, 8);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(w, h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        clock = new THREE.Clock();
+
+        // Hệ thống chiếu sáng
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+        dirLight.position.set(5, 8, 5);
+        scene.add(dirLight);
+
+        // Khối gốc chứa mọi tầng thang đo
+        rootGroup = new THREE.Group();
+        scene.add(rootGroup);
+
+        // Xây dựng mô hình 3D cho từng tầng
+        LEVELS.forEach((lvl, i) => {
+            const g = buildLevel(lvl, i);
+            levelGroups.push(g);
+            rootGroup.add(g);
+        });
+
+        // Thiết lập bộ điều khiển chuột & giao diện
+        setupPointerControls(renderer.domElement);
+        bindUI();
+        updateUI();
+
+        // Tắt màn hình chờ tải
+        dismissLoading();
+
+        // Bắt đầu vòng lặp đồ họa
+        animateLoop();
+    } catch (err) {
+        console.error("Lỗi khởi tạo hệ thống:", err);
+        dismissLoading();
+    }
+}
+
+function dismissLoading() {
+    const loader = document.getElementById('loading');
+    if (loader) {
+        loader.classList.add('hidden');
+        setTimeout(() => { loader.style.display = 'none'; }, 600);
+    }
+}
+
+/* ======================================================================
+   BỘ ĐIỀU KHIỂN CHUỘT THUẦN (KHÔNG CẦN THƯ VIỆN ORBITCONTROLS BÊN NGOÀI)
+   ====================================================================== */
+function setupPointerControls(domElement) {
+    let isDragging = false;
+    let prevPos = { x: 0, y: 0 };
+    domElement.style.touchAction = 'none';
+
+    domElement.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        prevPos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - prevPos.x;
+        const dy = e.clientY - prevPos.y;
+
+        rootGroup.rotation.y += dx * 0.005;
+        rootGroup.rotation.x += dy * 0.005;
+
+        prevPos = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('pointerup', () => { isDragging = false; });
+    window.addEventListener('pointercancel', () => { isDragging = false; });
+
+    // Lăn chuột để zoom camera ra xa / lại gần
+    domElement.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        camera.position.z = Math.max(3, Math.min(22, camera.position.z + e.deltaY * 0.01));
+    }, { passive: false });
+}
+
+/* ======================================================================
+   XÂY DỰNG MÔ HÌNH HÌNH HỌC TỪNG TẦNG
+   ====================================================================== */
+function buildLevel(lvl, index) {
+    const group = new THREE.Group();
+    group.userData = lvl;
+
+    switch (lvl.en) {
+        case 'Quantum Foam': {
+            const count = 180;
+            const geo = new THREE.SphereGeometry(0.06, 8, 6);
+            const mat = new THREE.MeshBasicMaterial({ color: lvl.color, transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending });
+            const mesh = new THREE.InstancedMesh(geo, mat, count);
+            const dummy = new THREE.Object3D();
+            const positions = [];
+            for (let i = 0; i < count; i++) {
+                const p = new THREE.Vector3((Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
+                positions.push(p);
+                dummy.position.copy(p);
+                dummy.scale.setScalar(0.5 + Math.random());
+                dummy.updateMatrix();
+                mesh.setMatrixAt(i, dummy.matrix);
+            }
+            mesh.userData.positions = positions;
+            group.add(mesh);
+            break;
+        }
+        case 'Quark Scale': {
+            const colors = [0xff5577, 0x55ff88, 0x5599ff];
+            colors.forEach((col, i) => {
+                const m = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 12), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.5 }));
+                m.position.set(Math.cos(i * 2.1) * 1.5, Math.sin(i * 2.1) * 1.5, 0);
+                group.add(m);
+            });
+            break;
+        }
+        case 'Atomic Nucleus': {
+            for (let i = 0; i < 20; i++) {
+                const isP = i % 2 === 0;
+                const col = isP ? 0xff3355 : 0x5599ff;
+                const m = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.3 }));
+                m.position.set((Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5);
+                group.add(m);
+            }
+            break;
+        }
+        case 'Atom': {
+            group.add(new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshStandardMaterial({ color: 0xff4466, emissive: 0xff2244, emissiveIntensity: 0.6 })));
+            const orbitColors = [0x44aaff, 0x44ffaa, 0xffff44];
+            for (let i = 0; i < 3; i++) {
+                const orbit = new THREE.Mesh(new THREE.TorusGeometry(1.8 + i * 0.4, 0.02, 8, 48), new THREE.MeshBasicMaterial({ color: orbitColors[i], transparent: true, opacity: 0.4 }));
+                orbit.rotation.x = i * 1.1;
+                orbit.rotation.y = i * 0.7;
+                group.add(orbit);
+            }
+            break;
+        }
+        case 'DNA Molecule': {
+            for (let i = 0; i < 35; i++) {
+                const y = i * 0.22 - 3.8;
+                const a = i * 0.35;
+                const p1 = new THREE.Vector3(Math.cos(a) * 1.2, y, Math.sin(a) * 1.2);
+                const p2 = new THREE.Vector3(Math.cos(a + Math.PI) * 1.2, y, Math.sin(a + Math.PI) * 1.2);
+
+                const s1 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), new THREE.MeshStandardMaterial({ color: 0xff5577 }));
+                s1.position.copy(p1);
+                const s2 = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), new THREE.MeshStandardMaterial({ color: 0x44aaff }));
+                s2.position.copy(p2);
+                group.add(s1, s2);
+
+                if (i % 2 === 0) {
+                    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([p1, p2]), new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 }));
+                    group.add(line);
+                }
+            }
+            break;
+        }
+        case 'Virus': {
+            const shell = new THREE.Mesh(new THREE.IcosahedronGeometry(1.4, 1), new THREE.MeshStandardMaterial({ color: 0x66dd66, flatShading: true, roughness: 0.5 }));
+            group.add(shell);
+            break;
+        }
+        case 'Bacteria': {
+            const body = new THREE.Mesh(createCapsuleGeometry(0.65, 1.6), new THREE.MeshStandardMaterial({ color: 0x66ff99, roughness: 0.4, transparent: true, opacity: 0.85 }));
+            body.rotation.z = Math.PI / 2;
+            group.add(body);
+            break;
+        }
+        case 'Human Cell': {
+            const membrane = new THREE.Mesh(new THREE.SphereGeometry(2.0, 24, 20), new THREE.MeshStandardMaterial({ color: 0x66ccff, transparent: true, opacity: 0.25, roughness: 0.2 }));
+            const nucleus = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), new THREE.MeshStandardMaterial({ color: 0xaa44ff, emissive: 0x6611aa, emissiveIntensity: 0.4 }));
+            group.add(membrane, nucleus);
+            break;
+        }
+        case 'Organ': {
+            const heart = new THREE.Mesh(new THREE.SphereGeometry(1.0, 16, 16), new THREE.MeshStandardMaterial({ color: 0xdd2244, roughness: 0.5 }));
+            heart.scale.set(1.1, 1.4, 0.9);
+            group.add(heart);
+            break;
+        }
+        case 'Human Body': {
+            const mat = new THREE.MeshStandardMaterial({ color: 0xffcc99, roughness: 0.7 });
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), mat);
+            head.position.y = 1.9;
+            const torso = new THREE.Mesh(createCapsuleGeometry(0.45, 1.3), mat);
+            torso.position.y = 0.7;
+            group.add(head, torso);
+            break;
+        }
+        case 'City / Mountain': {
+            const bMat = new THREE.MeshStandardMaterial({ color: 0x7799bb });
+            for (let i = 0; i < 35; i++) {
+                const h = 0.6 + Math.random() * 2.5;
+                const b = new THREE.Mesh(new THREE.BoxGeometry(0.4, h, 0.4), bMat);
+                b.position.set((Math.random() - 0.5) * 5, h / 2 - 0.5, (Math.random() - 0.5) * 5);
+                group.add(b);
+            }
+            break;
+        }
+        case 'Continent':
+        case 'Earth': {
+            const sphere = new THREE.Mesh(new THREE.SphereGeometry(1.8, 32, 24), new THREE.MeshStandardMaterial({ color: 0x1e66aa, roughness: 0.8 }));
+            const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.95, 24, 20), new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.2, wireframe: true }));
+            group.add(sphere, atmo);
+            break;
+        }
+        case 'Solar System': {
+            const sun = new THREE.Mesh(new THREE.SphereGeometry(0.65, 20, 20), new THREE.MeshBasicMaterial({ color: 0xffcc22 }));
+            group.add(sun);
+            const dists = [1.2, 1.8, 2.6, 3.4, 4.3];
+            dists.forEach(d => {
+                const ring = new THREE.Mesh(new THREE.TorusGeometry(d, 0.015, 6, 48), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 }));
+                ring.rotation.x = Math.PI / 2;
+                group.add(ring);
+            });
+            break;
+        }
+        case 'Nebula': {
+            for (let i = 0; i < 3; i++) {
+                const cloud = new THREE.Mesh(new THREE.SphereGeometry(2.0 + i * 0.4, 16, 16), new THREE.MeshBasicMaterial({ color: 0xff66cc, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending }));
+                group.add(cloud);
+            }
+            break;
+        }
+        case 'Milky Way':
+        case 'Galaxy Cluster':
+        case 'Supercluster':
+        case 'Observable Universe':
+        case 'Cosmic Horizon': {
+            const count = 2500;
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const r = Math.pow(Math.random(), 0.5) * 5.5;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                pos[i * 3 + 2] = r * Math.cos(phi);
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            group.add(new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.05, color: lvl.color, transparent: true, opacity: 0.85 })));
+            break;
+        }
+    }
+
+    group.visible = (index === 0);
+    return group;
+}
+
+/* ======================================================================
+   CẬP NHẬT GIAO DIỆN & VÒNG LẶP DIỄN HOẠT
+   ====================================================================== */
+function getCurrentLevel() {
+    let closest = LEVELS[0];
+    let minDiff = Infinity;
+    LEVELS.forEach(lvl => {
+        const diff = Math.abs(lvl.exp - currentExp);
+        if (diff < minDiff) { minDiff = diff; closest = lvl; }
+    });
+    return closest;
+}
+
+function superscript(n) {
+    const map = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+    return String(n).split('').map(c => map[c] || c).join('');
+}
+
+function updateUI() {
+    const lvl = getCurrentLevel();
+    const exp = Math.round(currentExp);
+    document.getElementById('scaleValue').textContent = '10' + superscript(exp);
+    document.getElementById('levelName').textContent = lvl.name;
+    document.getElementById('levelSub').textContent = lvl.en;
+
+    document.getElementById('infoTitle').textContent = lvl.name;
+    document.getElementById('infoSize').textContent = lvl.sizeLabel;
+    document.getElementById('infoScale').textContent = '10' + superscript(lvl.exp) + ' m';
+    document.getElementById('infoObjects').textContent = lvl.obj;
+    document.getElementById('infoDesc').textContent = lvl.desc;
+
+    const pct = ((currentExp - MIN_EXP) / (MAX_EXP - MIN_EXP)) * 100;
+    document.getElementById('timelineFill').style.width = pct + '%';
+
+    document.querySelectorAll('.legend-item').forEach((el, i) => {
+        el.classList.toggle('active', LEVELS[i] === lvl);
+    });
+
+    levelGroups.forEach((g) => {
+        const lvlG = g.userData;
+        const dist = Math.abs(lvlG.exp - currentExp);
+        if (dist < 3.5) {
+            g.visible = true;
+            const opacity = Math.max(0, 1 - dist / 3.5);
+            g.traverse(obj => {
+                if (obj.material) {
+                    obj.material.transparent = true;
+                    obj.material.opacity = (obj.material.userData.baseOpacity || 1) * opacity;
+                }
+            });
+            const scale = Math.pow(1.8, (lvlG.exp - currentExp) * 0.15);
+            g.scale.setScalar(Math.max(0.08, Math.min(4.5, scale)));
+        } else {
+            g.visible = false;
+        }
+    });
+}
+
+function bindUI() {
+    const box = document.getElementById('legendItems');
+    box.innerHTML = '';
+    LEVELS.forEach((lvl) => {
+        const div = document.createElement('div');
+        div.className = 'legend-item';
+        div.innerHTML = `<div class="swatch" style="background:#${lvl.color.toString(16).padStart(6, '0')}"></div>
+                         <span>10${superscript(lvl.exp)} · ${lvl.name}</span>`;
+        div.addEventListener('click', () => {
+            currentExp = lvl.exp;
+            updateUI();
+        });
+        box.appendChild(div);
+    });
+
+    document.getElementById('btnPlay').addEventListener('click', (e) => {
+        isPlaying = !isPlaying;
+        e.currentTarget.classList.toggle('playing', isPlaying);
+        e.currentTarget.textContent = isPlaying ? '⏸ Tạm dừng' : '▶ Tiếp tục';
+    });
+
+    document.getElementById('btnReverse').addEventListener('click', () => { direction = -direction; });
+
+    document.getElementById('btnSlower').addEventListener('click', () => {
+        speedMultiplier = Math.max(0.1, speedMultiplier * 0.5);
+        document.getElementById('speedDisplay').textContent = speedMultiplier.toFixed(1) + '×';
+    });
+
+    document.getElementById('btnFaster').addEventListener('click', () => {
+        speedMultiplier = Math.min(8, speedMultiplier * 2);
+        document.getElementById('speedDisplay').textContent = speedMultiplier.toFixed(1) + '×';
+    });
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+        currentExp = MIN_EXP;
+        direction = 1;
+        updateUI();
+    });
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+}
+
+function animateLoop() {
+    requestAnimationFrame(animateLoop);
+    const delta = clock.getDelta();
+
+    if (isPlaying) {
+        currentExp += direction * 0.6 * speedMultiplier * delta;
+        if (currentExp >= MAX_EXP) { currentExp = MAX_EXP; direction = -1; }
+        else if (currentExp <= MIN_EXP) { currentExp = MIN_EXP; direction = 1; }
+        updateUI();
+    }
+
+    // Tự động xoay nhẹ góc nhìn
+    rootGroup.rotation.y += 0.002;
+
+    renderer.render(scene, camera);
+}
+
+// Khởi chạy khi tài liệu tải xong
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
