@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<script id="lumi-getcssvar">
+window.getCssVar = window.getCssVar || function(name) {
+  try {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  } catch (e) { return ''; }
+};
+</script>
+
+<script id="lumi-canvas-guard">
+(function() {
+  if (window.__lumiCanvasGuard) return;
+  window.__lumiCanvasGuard = true;
+  var MAX_PX = 4096;
+  try {
+    var CP = HTMLCanvasElement.prototype;
+    var BOX = {width: 'clientWidth', height: 'clientHeight'}, D = {};
+    Object.keys(BOX).forEach(function(p) {
+      D[p] = Object.getOwnPropertyDescriptor(CP, p);
+    });
+    var tracking = function(el, p) {
+      var box = el[BOX[p]];
+      return !el.style[p] && box > 0 && box === D[p].get.call(el) &&
+          box === el['__lumiLast' + p];
+    };
+    var MAX = {width: 'maxWidth', height: 'maxHeight'};
+    var PAD = {width: ['paddingLeft', 'paddingRight'],
+               height: ['paddingTop', 'paddingBottom']};
+    var avail = function(el, p) {
+      var pe = el.parentElement;
+      if (!pe) return 0;
+      var cs = getComputedStyle(pe);
+      return pe[BOX[p]] - parseFloat(cs[PAD[p][0]]) -
+          parseFloat(cs[PAD[p][1]]);
+    };
+    Object.keys(BOX).forEach(function(p) {
+      var d = D[p];
+      if (!d || !d.set || !d.get) return;
+      Object.defineProperty(CP, p, {
+        configurable: true, enumerable: d.enumerable, get: d.get,
+        set: function(v) {
+          var n = +v, box = this[BOX[p]];
+          if (n > MAX_PX) n = MAX_PX;
+          if (n > box && tracking(this, p)) {
+            var el = this, pins = {};
+            Object.keys(BOX).forEach(function(q) {
+              if (tracking(el, q)) pins[q] = avail(el, q) ||
+                  el['__lumiBox' + q];
+            });
+            Object.keys(pins).forEach(function(q) {
+              el.style[q] = '100%';
+              el.style[MAX[q]] = pins[q] + 'px';
+            });
+            n = box;
+          }
+          this['__lumiBox' + p] = box;
+          this['__lumiLast' + p] = n;
+          d.set.call(this, isNaN(n) ? v : n);
+        }
+      });
+    });
+  } catch (e) {}
+})();
+</script>
+
+<style id="lumi-runtime">
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ital,wght@0,300..700;1,300..700&family=Google+Sans+Code:ital,wght,MONO@0,300..700,0..1;1,300..700,0..1&display=swap');
+
+:root {
+  --body-bg: transparent;
+  --ff-sans: 'Google Sans Flex', 'Google Sans Text', 'Google Sans', sans-serif;
+  --ff-mono: 'Google Sans Code', 'Google Sans Mono', monospace;
+  --lumi-sys-spacing--xs: 4px;
+  --lumi-sys-spacing--s: 8px;
+  --lumi-sys-spacing--m: 12px;
+  --lumi-sys-spacing--l: 16px;
+  --lumi-sys-shape--small: 8px;
+  --lumi-sys-shape--medium: 12px;
+  --lumi-sys-shape--large: 16px;
+  --lumi-sys-color--surface: #0f0f12;
+  --lumi-sys-color--surface-dim: #16161c;
+  --lumi-sys-color--surface-bright: #20202a;
+  --lumi-sys-color--on-surface: #f0f0f5;
+  --lumi-sys-color--on-surface-variant: rgba(255, 255, 255, 0.65);
+  --lumi-sys-color--accent-fixed: #00adb5;
+  --lumi-sys-color--stroke-default: #2d2d3a;
+  --lumi-sys-color--chart-series-1: #ff9f43;
+  --lumi-sys-color--chart-series-2: #00adb5;
+  --lumi-sys-color--chart-series-3: #2ed573;
+}
+
+html, body {
+  background: #0f0f12 !important;
+  color: var(--lumi-sys-color--on-surface) !important;
+  margin: 0; padding: 0; width: 100%; height: 100%;
+  font-family: var(--ff-sans);
+  overflow-y: auto;
+}
+
+.widget-container {
+  display: flex; flex-direction: column; gap: 12px; padding: 12px; max-width: 1200px; margin: 0 auto; box-sizing: border-box;
+}
+
+.header-card {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  padding: 12px 18px; background: var(--lumi-sys-color--surface-dim); border-radius: var(--lumi-sys-shape--medium);
+  border: 1px solid var(--lumi-sys-color--stroke-default);
+}
+.header-titles h2 { margin: 0; font-size: 18px; font-weight: 700; color: #00adb5; letter-spacing: 0.5px; }
+.header-titles p { margin: 3px 0 0 0; font-size: 12px; color: var(--lumi-sys-color--on-surface-variant); }
+
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+.lumi-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 14px;
+  font-family: var(--ff-sans); font-size: 12px; font-weight: 600; border-radius: 999px;
+  border: 1px solid var(--lumi-sys-color--stroke-default); cursor: pointer; transition: all 0.2s ease;
+  background-color: var(--lumi-sys-color--surface-bright); color: var(--lumi-sys-color--on-surface);
+}
+.lumi-btn:hover { background-color: #2a2a38; border-color: #00adb5; color: #00fff5; }
+.lumi-btn.active { background-color: #00adb5; color: #0f0f12; border-color: #00adb5; }
+
+.viewport-wrapper {
+  position: relative; width: 100%; height: 440px; border-radius: var(--lumi-sys-shape--medium);
+  background: #121216; border: 1px solid var(--lumi-sys-color--stroke-default); overflow: hidden;
+}
+
+.canvas-viewport { width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.canvas-viewport:active { cursor: grabbing; }
+
+.hud-overlay {
+  position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 6px; pointer-events: none;
+}
+.hud-badge {
+  background: rgba(22, 22, 28, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 12px; border-radius: 6px; font-size: 11px; font-family: var(--ff-mono);
+}
+
+.camera-toolbar {
+  position: absolute; bottom: 12px; right: 12px; display: flex; gap: 6px; background: rgba(22, 22, 28, 0.85);
+  backdrop-filter: blur(8px); padding: 4px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+}
+.cam-btn {
+  background: transparent; border: none; color: #aaa; padding: 4px 10px; font-size: 11px; cursor: pointer; border-radius: 12px; transition: 0.2s;
+}
+.cam-btn.active, .cam-btn:hover { background: #00adb5; color: #111; font-weight: bold; }
+
+.telemetry-deck { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.telemetry-card {
+  background: var(--lumi-sys-color--surface-dim); border: 1px solid var(--lumi-sys-color--stroke-default);
+  border-radius: var(--lumi-sys-shape--small); padding: 10px 14px; display: flex; flex-direction: column; gap: 4px;
+}
+.telemetry-head { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
+.telemetry-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.telemetry-metrics { display: flex; justify-content: space-between; font-family: var(--ff-mono); font-size: 11px; color: var(--lumi-sys-color--on-surface-variant); }
+
+.control-deck {
+  display: flex; flex-direction: column; gap: 12px; padding: 14px; background: var(--lumi-sys-color--surface-dim);
+  border-radius: var(--lumi-sys-shape--medium); border: 1px solid var(--lumi-sys-color--stroke-default);
+}
+.control-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 20px; }
+.control-row { display: flex; flex-direction: column; gap: 4px; }
+.control-label { font-size: 12px; font-weight: 500; display: flex; justify-content: space-between; }
+
+.options-row { display: flex; flex-wrap: wrap; gap: 16px; padding-top: 8px; border-top: 1px solid var(--lumi-sys-color--stroke-default); }
+.checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; }
+.checkbox-label input { cursor: pointer; accent-color: #00adb5; }
+
+.lumi-slider-container { display: flex; align-items: center; gap: 12px; width: 100%; }
+.lumi-slider {
+  appearance: none; width: 100%; height: 36px; background: transparent; cursor: pointer; margin: 0;
+}
+.lumi-slider:focus { outline: none; }
+.lumi-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  --thumb-center: calc(12px + (100% - 24px) * (var(--progress, 50%) / 100%));
+  background: linear-gradient(to right, #00adb5 0%, #00adb5 var(--thumb-center), var(--lumi-sys-color--stroke-default) var(--thumb-center), var(--lumi-sys-color--stroke-default) 100%);
+  border-radius: 999px;
+}
+.lumi-slider::-webkit-slider-thumb {
+  appearance: none; width: 24px; height: 24px; border-radius: 50%;
+  background-color: #ffffff; border: 2px solid #00adb5;
+  margin-top: -10px; cursor: pointer; transition: transform 0.1s;
+}
+.lumi-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.lumi-slider-value {
+  display: flex; align-items: center; justify-content: center; min-width: 44px; height: 26px;
+  background-color: var(--lumi-sys-color--surface-bright); border-radius: 6px; font-family: var(--ff-mono); font-size: 11px;
+}
+
+/* CHART CONTAINER */
+.chart-card {
+  background: var(--lumi-sys-color--surface-dim); border: 1px solid var(--lumi-sys-color--stroke-default);
+  border-radius: var(--lumi-sys-shape--medium); padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;
+}
+.chart-header { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold; }
+.chart-legend { display: flex; gap: 14px; font-size: 11px; font-family: var(--ff-mono); }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+#energyChart { width: 100%; height: 120px; background: #121216; border-radius: 6px; }
+</style>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Vật Lý 3D Đẳng Cấp</title>
+
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+
+<script id="lumi-os-theme-init">
+(function() {
+  function syncBody() {
+    var dt = document.documentElement.getAttribute('data-theme');
+    if (document.body && (dt === 'dark' || dt === 'light')) document.body.classList.toggle('dark-mode', dt === 'dark');
+  }
+  new MutationObserver(syncBody).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.addEventListener('DOMContentLoaded', syncBody);
+})();
+</script>
+</head>
+<body>
+  <div class="widget-container">
+    <!-- HEADER -->
+    <div class="header-card">
+      <div class="header-titles">
+        <h2>Mô Phỏng Vật Lý 3D Cực Hạn</h2>
+        <p>Hệ lò xo ống 3D + Thanh nối động học + Vệt quỹ đạo & Biểu đồ cơ năng</p>
+      </div>
+      <div class="header-actions">
+        <button id="playPauseBtn" class="lumi-btn active" type="button">⏸ Tạm dừng</button>
+        <button id="slowMoBtn" class="lumi-btn" type="button">🐢 Chậm 0.2x</button>
+        <button id="kickBtn" class="lumi-btn" type="button">💥 Tác động lực</button>
+        <button id="resetBtn" class="lumi-btn" type="button">🔄 Đặt lại</button>
+      </div>
+    </div>
+
+    <!-- 3D VIEWPORT -->
+    <div class="viewport-wrapper">
+      <div id="viewport" class="canvas-viewport"></div>
+
+      <!-- HUD OVERLAY -->
+      <div class="hud-overlay">
+        <div class="hud-badge"><span style="color:#ff9f43">Ek:</span> <span id="hud-ek">0.00 J</span></div>
+        <div class="hud-badge"><span style="color:#00adb5">Ep:</span> <span id="hud-ep">0.00 J</span></div>
+        <div class="hud-badge"><span style="color:#2ed573">E total:</span> <span id="hud-et">0.00 J</span></div>
+      </div>
+
+      <!-- CAMERA CONTROL TOOLBAR -->
+      <div class="camera-toolbar">
+        <button class="cam-btn active" data-cam="orbit">Góc Tự Do</button>
+        <button class="cam-btn" data-cam="front">Chính Diện</button>
+        <button class="cam-btn" data-cam="top">Nhìn Từ Trên</button>
+        <button class="cam-btn" data-cam="m1">Follow M1</button>
+        <button class="cam-btn" data-cam="m2">Follow M2</button>
+      </div>
+    </div>
+
+    <!-- TELEMETRY DECK -->
+    <div class="telemetry-deck">
+      <div class="telemetry-card">
+        <div class="telemetry-head" style="color: #ff9f43;">
+          <span class="telemetry-dot" style="background: #ff9f43;"></span> Quả cầu 1 (Nối Lò xo)
+        </div>
+        <div class="telemetry-metrics">
+          <span>Vị trí: <span id="t-pos1">0.0, 0.0, 0.0</span></span>
+          <span>Vận tốc: <span id="t-vel1" style="color:#fff; font-weight:bold;">0.0</span> m/s</span>
+        </div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-head" style="color: #00adb5;">
+          <span class="telemetry-dot" style="background: #00adb5;"></span> Quả cầu 2 (Nối Thanh cứng)
+        </div>
+        <div class="telemetry-metrics">
+          <span>Vị trí: <span id="t-pos2">0.0, 0.0, 0.0</span></span>
+          <span>Vận tốc: <span id="t-vel2" style="color:#fff; font-weight:bold;">0.0</span> m/s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTROL SLIDERS -->
+    <div class="control-deck">
+      <div class="control-grid">
+        <div class="control-row">
+          <div class="control-label"><span>Trọng lực (g)</span></div>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-g" class="lumi-slider" data-key="g" min="0" max="3" step="0.1" value="1.0">
+            <div id="slider-g-val" class="lumi-slider-value">1.0</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label"><span>Độ cứng lò xo (k)</span></div>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-k" class="lumi-slider" data-key="k" min="0.01" max="0.3" step="0.01" value="0.08">
+            <div id="slider-k-val" class="lumi-slider-value">0.08</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label"><span>Khối lượng M1 (kg)</span></div>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-m1" class="lumi-slider" data-key="m1" min="0.2" max="5.0" step="0.1" value="1.0">
+            <div id="slider-m1-val" class="lumi-slider-value">1.0</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label"><span>Khối lượng M2 (kg)</span></div>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-m2" class="lumi-slider" data-key="m2" min="0.2" max="5.0" step="0.1" value="1.0">
+            <div id="slider-m2-val" class="lumi-slider-value">1.0</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label"><span>Ma sát không khí (Damping)</span></div>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-damp" class="lumi-slider" data-key="damp" min="0" max="0.1" step="0.005" value="0.005">
+            <div id="slider-damp-val" class="lumi-slider-value">0.005</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-label"><span>Độ dài vệt (điểm)</span></div>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-trail" class="lumi-slider" data-key="trailLen" min="20" max="400" step="20" value="150">
+            <div id="slider-trail-val" class="lumi-slider-value">150</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOGGLES -->
+      <div class="options-row">
+        <label class="checkbox-label">
+          <input type="checkbox" id="checkTrail" checked> Bật Vệt Đường Đi 3D
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="checkVectors" checked> Bật Vector Vận Tốc
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="checkGrid" checked> Hiển thị Lưới Sàn
+        </label>
+      </div>
+    </div>
+
+    <!-- LIVE ENERGY CHART -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span style="color: #00adb5;">BIỂU ĐỒ BẢO TOÀN CƠ NĂNG 3D</span>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#ff9f43;"></div>Động năng (Ek)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#00adb5;"></div>Thế năng (Ep)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#2ed573;"></div>Cơ năng (Et)</div>
+        </div>
+      </div>
+      <canvas id="energyChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // --- STATE SIMULATION ---
+    const state = {
+      g: 1.0, k: 0.08, m1: 1.0, m2: 1.0, damp: 0.005,
+      trailLen: 150, showTrail: true, showVectors: true, showGrid: true,
+      isPaused: false, isSlowMo: false, cameraMode: 'orbit'
+    };
+
+    let engine, world, body1, body2, anchorBody;
+    let scene, camera, renderer, controls;
+    let mesh1, mesh2, anchorMesh, rodMesh, gridHelper;
+    let springTubeMesh = null;
+    let arrow1, arrow2;
+    let springConstraint, rodConstraint;
+
+    // Buffers cho vệt đường đi 3D
+    let trail1Points = [], trail2Points = [];
+    let trail1Line, trail2Line;
+
+    const restSpringLength = 4.0;
+    const rodLength = 4.5;
+
+    // --- INITIALIZE 3D PHYSICS & THREE.JS ---
+    function init3DPhysics() {
+      const viewport = document.getElementById('viewport');
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x121216);
+
+      camera = new THREE.PerspectiveCamera(45, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
+      camera.position.set(0, 3, 22);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      viewport.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      // Lights
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambient);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      dirLight.position.set(8, 20, 10);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 1024;
+      dirLight.shadow.mapSize.height = 1024;
+      scene.add(dirLight);
+
+      const pointLight = new THREE.PointLight(0x00adb5, 0.5, 20);
+      pointLight.position.set(0, 5, 0);
+      scene.add(pointLight);
+
+      // Sàn lưới (Grid)
+      gridHelper = new THREE.GridHelper(30, 30, 0x00adb5, 0x2d2d3a);
+      gridHelper.position.y = -8;
+      scene.add(gridHelper);
+
+      // CANNON PHYSICS
+      world = new CANNON.World();
+      world.gravity.set(0, -9.81 * state.g, 0);
+      world.solver.iterations = 25;
+
+      // Anchor Point
+      anchorBody = new CANNON.Body({ mass: 0 });
+      anchorBody.position.set(0, 6, 0);
+      world.addBody(anchorBody);
+
+      const anchorGeo = new THREE.SphereGeometry(0.35, 24, 24);
+      const anchorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.8, roughness: 0.2 });
+      anchorMesh = new THREE.Mesh(anchorGeo, anchorMat);
+      anchorMesh.position.copy(anchorBody.position);
+      scene.add(anchorMesh);
+
+      // Body 1 (Cam)
+      const shape1 = new CANNON.Sphere(0.8);
+      body1 = new CANNON.Body({ mass: state.m1, shape: shape1, linearDamping: state.damp, angularDamping: state.damp });
+      body1.position.set(2.5, 3.0, 1.0);
+      world.addBody(body1);
+
+      const mat1 = new THREE.MeshStandardMaterial({ color: 0xff9f43, metalness: 0.3, roughness: 0.3 });
+      mesh1 = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), mat1);
+      mesh1.castShadow = true;
+      scene.add(mesh1);
+
+      // Body 2 (Cyan)
+      const shape2 = new CANNON.Sphere(0.8);
+      body2 = new CANNON.Body({ mass: state.m2, shape: shape2, linearDamping: state.damp, angularDamping: state.damp });
+      body2.position.set(5.0, -1.0, 2.5);
+      world.addBody(body2);
+
+      const mat2 = new THREE.MeshStandardMaterial({ color: 0x00adb5, metalness: 0.3, roughness: 0.3 });
+      mesh2 = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), mat2);
+      mesh2.castShadow = true;
+      scene.add(mesh2);
+
+      // Lò xo Cannon Constraint
+      springConstraint = new CANNON.Spring(anchorBody, body1, {
+        restLength: restSpringLength,
+        stiffness: state.k * 1200,
+        damping: 2.0
+      });
+
+      world.addEventListener("preStep", () => {
+        springConstraint.applyForce();
+      });
+
+      // Distance Constraint (Thanh cứng)
+      rodConstraint = new CANNON.DistanceConstraint(body1, body2, rodLength);
+      world.addConstraint(rodConstraint);
+
+      // Thanh cứng 3D Mesh
+      const rodGeo = new THREE.CylinderGeometry(0.08, 0.08, 1, 16);
+      rodGeo.translate(0, 0.5, 0);
+      const rodMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.8, roughness: 0.2 });
+      rodMesh = new THREE.Mesh(rodGeo, rodMat);
+      rodMesh.castShadow = true;
+      scene.add(rodMesh);
+
+      // Arrow Helpers (Vector Vận Tốc)
+      arrow1 = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(), 1, 0xff9f43, 0.3, 0.2);
+      arrow2 = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(), 1, 0x00adb5, 0.3, 0.2);
+      scene.add(arrow1);
+      scene.add(arrow2);
+
+      // Tạo đường vệt chuyển động 3D
+      initTrails();
+
+      // Kéo thả chuột 3D
+      setup3DDragging();
+    }
+
+    // --- TẠO LÒ XO 3D KHỐI (3D TUBE SPRING) ---
+    function updateSpringTube(pA, pB) {
+      if (springTubeMesh) scene.remove(springTubeMesh);
+
+      const dir = new THREE.Vector3().subVectors(pB, pA);
+      const len = dir.length();
+      if (len < 0.1) return;
+
+      const coils = 12;
+      const radius = 0.35;
+      const points = [];
+      const steps = 120;
+
+      const axis = new THREE.Vector3(0, 1, 0);
+      const quat = new THREE.Quaternion().setFromUnitVectors(axis, dir.clone().normalize());
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const angle = t * Math.PI * 2 * coils;
+        const pt = new THREE.Vector3(
+          Math.cos(angle) * radius,
+          t * len,
+          Math.sin(angle) * radius
+        );
+        pt.applyQuaternion(quat);
+        pt.add(pA);
+        points.push(pt);
+      }
+
+      const curve = new THREE.CatmullRomCurve3(points);
+      const tubeGeo = new THREE.TubeGeometry(curve, 100, 0.06, 8, false);
+      const tubeMat = new THREE.MeshStandardMaterial({ color: 0xff9f43, metalness: 0.7, roughness: 0.2 });
+
+      springTubeMesh = new THREE.Mesh(tubeGeo, tubeMat);
+      springTubeMesh.castShadow = true;
+      scene.add(springTubeMesh);
+    }
+
+    // --- TẠO VỆT 3D FADING TRAILS ---
+    function initTrails() {
+      const mat1 = new THREE.LineBasicMaterial({ color: 0xff9f43, transparent: true, opacity: 0.75, linewidth: 2 });
+      const mat2 = new THREE.LineBasicMaterial({ color: 0x00adb5, transparent: true, opacity: 0.75, linewidth: 2 });
+
+      trail1Line = new THREE.Line(new THREE.BufferGeometry(), mat1);
+      trail2Line = new THREE.Line(new THREE.BufferGeometry(), mat2);
+
+      scene.add(trail1Line);
+      scene.add(trail2Line);
+    }
+
+    function updateTrails() {
+      if (!state.showTrail) {
+        trail1Line.visible = false;
+        trail2Line.visible = false;
+        trail1Points = [];
+        trail2Points = [];
+        return;
+      }
+
+      trail1Line.visible = true;
+      trail2Line.visible = true;
+
+      trail1Points.push(mesh1.position.clone());
+      trail2Points.push(mesh2.position.clone());
+
+      while (trail1Points.length > state.trailLen) trail1Points.shift();
+      while (trail2Points.length > state.trailLen) trail2Points.shift();
+
+      trail1Line.geometry.setFromPoints(trail1Points);
+      trail2Line.geometry.setFromPoints(trail2Points);
+    }
+
+    // --- CẬP NHẬT THANH CỨNG 3D ---
+    function updateRodVisual(pA, pB) {
+      const dist = pA.distanceTo(pB);
+      rodMesh.position.copy(pA);
+      rodMesh.scale.set(1, dist, 1);
+      rodMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pB.clone().sub(pA).normalize());
+    }
+
+    // --- KÉO THẢ VẬT THỂ 3D ---
+    function setup3DDragging() {
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      let draggedBody = null, dragConstraint = null;
+      const dragPlane = new THREE.Plane();
+      const intersectPoint = new THREE.Vector3();
+      const kinematicBody = new CANNON.Body({ mass: 0, type: CANNON.Body.KINEMATIC });
+      world.addBody(kinematicBody);
+
+      renderer.domElement.addEventListener('pointerdown', (e) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects([mesh1, mesh2]);
+
+        if (intersects.length > 0) {
+          controls.enabled = false;
+          draggedBody = (intersects[0].object === mesh1) ? body1 : body2;
+
+          dragPlane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(dragPlane.normal).negate(), intersects[0].point);
+          kinematicBody.position.copy(intersects[0].point);
+
+          dragConstraint = new CANNON.PointToPointConstraint(
+            draggedBody, new CANNON.Vec3(0,0,0),
+            kinematicBody, new CANNON.Vec3(0,0,0)
+          );
+          world.addConstraint(dragConstraint);
+        }
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (draggedBody) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+          raycaster.setFromCamera(mouse, camera);
+          if (raycaster.ray.intersectPlane(dragPlane, intersectPoint)) {
+            kinematicBody.position.copy(intersectPoint);
+          }
+        }
+      });
+
+      window.addEventListener('pointerup', () => {
+        if (dragConstraint) {
+          world.removeConstraint(dragConstraint);
+          dragConstraint = null;
+        }
+        draggedBody = null;
+        controls.enabled = true;
+      });
+    }
+
+    // --- TÍNH TOÁN VÀ VẼ BIỂU ĐỒ NĂNG LƯỢNG ---
+    const energyCanvas = document.getElementById('energyChart');
+    const energyCtx = energyCanvas.getContext('2d');
+    let energyHistory = [];
+    const maxHistoryPoints = 250;
+
+    function resizeEnergyChart() {
+      energyCanvas.width = energyCanvas.clientWidth;
+      energyCanvas.height = energyCanvas.clientHeight;
+    }
+    window.addEventListener('resize', resizeEnergyChart);
+    resizeEnergyChart();
+
+    function calculateEnergy() {
+      if (!body1 || !body2) return { Ek: 0, Ep: 0, Et: 0 };
+
+      const g = 9.81 * state.g;
+
+      // Động năng
+      const v1Sq = body1.velocity.normSq();
+      const v2Sq = body2.velocity.normSq();
+      const Ek = 0.5 * body1.mass * v1Sq + 0.5 * body2.mass * v2Sq;
+
+      // Thế năng Trọng lực (Mốc y = -8)
+      const h1 = body1.position.y - (-8);
+      const h2 = body2.position.y - (-8);
+      const Ep_grav = body1.mass * g * h1 + body2.mass * g * h2;
+
+      // Thế năng Đàn hồi
+      const currentSpringLen = anchorMesh.position.distanceTo(mesh1.position);
+      const deltaX = currentSpringLen - restSpringLength;
+      const Ep_spring = 0.5 * (state.k * 1200) * Math.pow(deltaX, 2) * 0.01;
+
+      const Ep = Ep_grav + Ep_spring;
+      const Et = Ek + Ep;
+
+      return { Ek, Ep, Et };
+    }
+
+    function renderEnergyChart() {
+      const { Ek, Ep, Et } = calculateEnergy();
+
+      // Update HUD
+      document.getElementById('hud-ek').textContent = Ek.toFixed(2) + ' J';
+      document.getElementById('hud-ep').textContent = Ep.toFixed(2) + ' J';
+      document.getElementById('hud-et').textContent = Et.toFixed(2) + ' J';
+
+      energyHistory.push({ Ek, Ep, Et });
+      if (energyHistory.length > maxHistoryPoints) energyHistory.shift();
+
+      const w = energyCanvas.width;
+      const h = energyCanvas.height;
+
+      energyCtx.clearRect(0, 0, w, h);
+
+      if (energyHistory.length < 2) return;
+
+      let maxE = 20;
+      for (let p of energyHistory) maxE = Math.max(maxE, p.Ek, p.Ep, p.Et);
+      maxE *= 1.15;
+
+      const stepX = w / (maxHistoryPoints - 1);
+
+      // Grid lines
+      energyCtx.strokeStyle = '#22222a';
+      energyCtx.lineWidth = 1;
+      energyCtx.beginPath();
+      for (let i = 1; i <= 3; i++) {
+        let y = h - (h * (i / 4));
+        energyCtx.moveTo(0, y);
+        energyCtx.lineTo(w, y);
+      }
+      energyCtx.stroke();
+
+      function drawPath(key, color) {
+        energyCtx.beginPath();
+        energyCtx.strokeStyle = color;
+        energyCtx.lineWidth = 2;
+
+        for (let i = 0; i < energyHistory.length; i++) {
+          const x = i * stepX;
+          const y = h - (energyHistory[i][key] / maxE) * h;
+          if (i === 0) energyCtx.moveTo(x, y);
+          else energyCtx.lineTo(x, y);
+        }
+        energyCtx.stroke();
+      }
+
+      drawPath('Ek', '#ff9f43');
+      drawPath('Ep', '#00adb5');
+      drawPath('Et', '#2ed573');
+    }
+
+    // --- CAMERA MODES ---
+    function updateCameraMode() {
+      if (state.cameraMode === 'front') {
+        camera.position.set(0, 2, 22);
+        controls.target.set(0, 0, 0);
+      } else if (state.cameraMode === 'top') {
+        camera.position.set(0, 25, 0.1);
+        controls.target.set(0, 0, 0);
+      } else if (state.cameraMode === 'm1') {
+        controls.target.copy(mesh1.position);
+      } else if (state.cameraMode === 'm2') {
+        controls.target.copy(mesh2.position);
+      }
+    }
+
+    // --- MAIN ANIMATION LOOP ---
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (!state.isPaused) {
+        const timeStep = state.isSlowMo ? (1 / 60) * 0.2 : (1 / 60);
+        world.step(timeStep);
+      }
+
+      // Sync Three.js với Cannon.js
+      mesh1.position.copy(body1.position);
+      mesh1.quaternion.copy(body1.quaternion);
+      mesh2.position.copy(body2.position);
+      mesh2.quaternion.copy(body2.quaternion);
+
+      // Cập nhật Visual lò xo, thanh cứng & vệt
+      updateSpringTube(anchorMesh.position, mesh1.position);
+      updateRodVisual(mesh1.position, mesh2.position);
+      updateTrails();
+
+      // Cập nhật Vector Vận tốc
+      if (state.showVectors) {
+        arrow1.visible = true; arrow2.visible = true;
+        
+        const v1 = new THREE.Vector3(body1.velocity.x, body1.velocity.y, body1.velocity.z);
+        const len1 = v1.length();
+        if (len1 > 0.1) {
+          arrow1.position.copy(mesh1.position);
+          arrow1.setDirection(v1.clone().normalize());
+          arrow1.setLength(Math.min(len1 * 0.4, 4));
+        }
+
+        const v2 = new THREE.Vector3(body2.velocity.x, body2.velocity.y, body2.velocity.z);
+        const len2 = v2.length();
+        if (len2 > 0.1) {
+          arrow2.position.copy(mesh2.position);
+          arrow2.setDirection(v2.clone().normalize());
+          arrow2.setLength(Math.min(len2 * 0.4, 4));
+        }
+      } else {
+        arrow1.visible = false; arrow2.visible = false;
+      }
+
+      updateCameraMode();
+      controls.update();
+      renderer.render(scene, camera);
+
+      // Telemetry
+      const v1 = Math.hypot(body1.velocity.x, body1.velocity.y, body1.velocity.z).toFixed(2);
+      const v2 = Math.hypot(body2.velocity.x, body2.velocity.y, body2.velocity.z).toFixed(2);
+
+      document.getElementById('t-pos1').textContent = `${body1.position.x.toFixed(1)}, ${body1.position.y.toFixed(1)}, ${body1.position.z.toFixed(1)}`;
+      document.getElementById('t-vel1').textContent = v1;
+
+      document.getElementById('t-pos2').textContent = `${body2.position.x.toFixed(1)}, ${body2.position.y.toFixed(1)}, ${body2.position.z.toFixed(1)}`;
+      document.getElementById('t-vel2').textContent = v2;
+
+      renderEnergyChart();
+    }
+
+    // --- EVENT HANDLERS ---
+    function updatePhysicsState() {
+      if (!world) return;
+      world.gravity.set(0, -9.81 * state.g, 0);
+      springConstraint.stiffness = state.k * 1200;
+
+      body1.mass = state.m1; body1.updateMassProperties();
+      body1.linearDamping = state.damp; body1.angularDamping = state.damp;
+
+      body2.mass = state.m2; body2.updateMassProperties();
+      body2.linearDamping = state.damp; body2.angularDamping = state.damp;
+
+      gridHelper.visible = state.showGrid;
+    }
+
+    // Sliders
+    document.querySelectorAll('.lumi-slider').forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const key = e.target.dataset.key;
+        state[key] = parseFloat(e.target.value);
+
+        const pct = (e.target.value - e.target.min) / (e.target.max - e.target.min) * 100;
+        e.target.style.setProperty('--progress', pct + '%');
+        document.getElementById(`${e.target.id}-val`).textContent = e.target.value;
+
+        updatePhysicsState();
+      });
+    });
+
+    // Checkboxes
+    document.getElementById('checkTrail').addEventListener('change', (e) => state.showTrail = e.target.checked);
+    document.getElementById('checkVectors').addEventListener('change', (e) => state.showVectors = e.target.checked);
+    document.getElementById('checkGrid').addEventListener('change', (e) => {
+      state.showGrid = e.target.checked;
+      updatePhysicsState();
+    });
+
+    // Action Buttons
+    document.getElementById('playPauseBtn').addEventListener('click', (e) => {
+      state.isPaused = !state.isPaused;
+      e.target.textContent = state.isPaused ? "▶ Tiếp tục" : "⏸ Tạm dừng";
+      e.target.classList.toggle('active', !state.isPaused);
+    });
+
+    document.getElementById('slowMoBtn').addEventListener('click', (e) => {
+      state.isSlowMo = !state.isSlowMo;
+      e.target.classList.toggle('active', state.isSlowMo);
+    });
+
+    document.getElementById('kickBtn').addEventListener('click', () => {
+      const impulse1 = new CANNON.Vec3((Math.random()-0.5)*15, (Math.random()-0.5)*10, (Math.random()-0.5)*15);
+      const impulse2 = new CANNON.Vec3((Math.random()-0.5)*15, (Math.random()-0.5)*10, (Math.random()-0.5)*15);
+      body1.applyImpulse(impulse1, body1.position);
+      body2.applyImpulse(impulse2, body2.position);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      body1.position.set(2.5, 3.0, 1.0);
+      body1.velocity.set(0, 0, 0);
+      body1.angularVelocity.set(0, 0, 0);
+
+      body2.position.set(5.0, -1.0, 2.5);
+      body2.velocity.set(0, 0, 0);
+      body2.angularVelocity.set(0, 0, 0);
+
+      trail1Points = [];
+      trail2Points = [];
+      energyHistory = [];
+
+      camera.position.set(0, 3, 22);
+      controls.target.set(0, 0, 0);
+    });
+
+    // Camera toolbar buttons
+    document.querySelectorAll('.cam-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        state.cameraMode = e.target.dataset.cam;
+        updateCameraMode();
+      });
+    });
+
+    // Resize
+    window.addEventListener('resize', () => {
+      if (!camera || !renderer) return;
+      const viewport = document.getElementById('viewport');
+      camera.aspect = viewport.clientWidth / viewport.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+    });
+
+    // START
+    init3DPhysics();
+    updatePhysicsState();
+    animate();
+  </script>
+
+<script>/* Slider Normalizer */
+(function(){
+  function f(r){
+    if(!r || r.type!=='range') return;
+    var mn=parseFloat(r.min||'0'), mx=parseFloat(r.max||'100'), v=parseFloat(r.value);
+    if(isNaN(v)) v=(mn+mx)/2;
+    var p=mx>mn?((v-mn)/(mx-mn))*100:50;
+    r.style.setProperty('--progress',p+'%');
+  }
+  document.querySelectorAll('.lumi-slider').forEach(f);
+  document.addEventListener('input',function(e){f(e.target);});
+})();
+</script>
+</body>
+</html>
