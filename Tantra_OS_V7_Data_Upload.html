@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TANTRA OS V7 // STREAMING + CROSS-ENCODER RERANK</title>
+<!-- Thêm thư viện pdf.js để hỗ trợ đọc file PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<style>
+    :root {
+        --gold: #d4af37;
+        --emerald: #50c878;
+        --red: #ff4444;
+        --blue: #4a9eff;
+        --purple: #b47aff;
+        --cyan: #00d9ff;
+        --orange: #ff9a3c;
+        --black: #020202;
+    }
+    * { box-sizing: border-box; }
+    body {
+        background: var(--black); color: #fff;
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+        margin: 0; padding: 20px;
+        display: flex; flex-direction: column; align-items: center;
+        min-height: 100vh;
+    }
+    #tantra-container {
+        width: 100%; max-width: 1350px;
+        background: linear-gradient(180deg, #090909 0%, #000 100%);
+        border: 2px solid var(--gold);
+        border-radius: 15px; padding: 25px;
+        box-shadow: 0 0 50px rgba(212, 175, 55, 0.15);
+    }
+    h1 {
+        color: var(--gold); text-align: center;
+        letter-spacing: 4px; text-transform: uppercase;
+        margin-bottom: 5px; font-size: 1.25rem;
+        text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    }
+    .status {
+        text-align: center; color: var(--emerald);
+        font-family: monospace; font-size: 11.5px; margin-bottom: 16px;
+    }
+    .metrics {
+        display: grid; grid-template-columns: repeat(7, 1fr);
+        gap: 6px; margin-bottom: 14px;
+    }
+    .metric-card {
+        background: #0a0a0a; border: 1px solid #333;
+        border-radius: 8px; padding: 7px 5px; text-align: center;
+        font-family: monospace;
+    }
+    .metric-label { color: #888; font-size: 9px; text-transform: uppercase; }
+    .metric-value { color: var(--gold); font-size: 13px; font-weight: bold; margin-top: 2px; }
+    .metric-value.good { color: var(--emerald); }
+    .metric-value.bad { color: var(--red); }
+    .metric-value.info { color: var(--blue); }
+    .metric-value.purple { color: var(--purple); }
+    .metric-value.cyan { color: var(--cyan); }
+    .metric-value.orange { color: var(--orange); }
+
+    .pipeline-visual {
+        display: grid; grid-template-columns: repeat(6, 1fr);
+        gap: 7px; margin-bottom: 14px;
+        font-family: monospace; font-size: 10.5px;
+    }
+    .stage-box {
+        background: #0a0a0a; border: 1px solid #222;
+        border-radius: 6px; padding: 7px 8px; text-align: center;
+        transition: 0.3s;
+    }
+    .stage-box.active {
+        border-color: var(--emerald);
+        background: rgba(80, 200, 120, 0.08);
+        box-shadow: 0 0 12px rgba(80, 200, 120, 0.3);
+    }
+    .stage-box.done {
+        border-color: var(--gold);
+        background: rgba(212, 175, 55, 0.05);
+    }
+    .stage-box .num { color: var(--gold); font-weight: bold; font-size: 9.5px; }
+    .stage-box .name { color: #ccc; margin-top: 2px; font-size: 10px; }
+    .stage-box.done .num { color: var(--emerald); }
+    .stage-box.active .num { color: var(--cyan); }
+
+    .visual-stage {
+        width: 100%; height: 180px;
+        background: rgba(5, 5, 5, 0.9);
+        border: 1px solid #222; border-radius: 10px;
+        position: relative; margin-bottom: 14px; overflow: hidden;
+    }
+    .legend {
+        position: absolute; top: 8px; right: 12px;
+        font-family: monospace; font-size: 9.5px; color: #888;
+        z-index: 2; background: rgba(0,0,0,0.75);
+        padding: 5px 8px; border-radius: 4px; border: 1px solid #222;
+    }
+    .legend .dot {
+        display: inline-block; width: 7px; height: 7px;
+        border-radius: 50%; margin-right: 4px; vertical-align: middle;
+    }
+
+    .control-panel {
+        display: grid; grid-template-columns: 1fr 2fr; gap: 16px;
+    }
+    @media (max-width: 1100px) {
+        .control-panel { grid-template-columns: 1fr; }
+        .metrics { grid-template-columns: repeat(4, 1fr); }
+        .pipeline-visual { grid-template-columns: repeat(3, 1fr); }
+        h1 { font-size: 0.9rem; letter-spacing: 2px; }
+    }
+    @media (max-width: 600px) {
+        .metrics { grid-template-columns: repeat(2, 1fr); }
+        .pipeline-visual { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .input-box {
+        background: #0f0f0f; border: 1px solid #333;
+        border-radius: 8px; padding: 14px;
+        display: flex; flex-direction: column; gap: 9px;
+    }
+    textarea {
+        background: #020202; color: #fff;
+        border: 1px solid var(--gold); padding: 9px;
+        border-radius: 5px; resize: none; font-family: inherit;
+        outline: none; font-size: 12.5px;
+    }
+    textarea:focus { box-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+    .input-label {
+        color: var(--gold); font-weight: bold;
+        font-size: 10.5px; letter-spacing: 1px;
+    }
+    .input-label.emerald { color: var(--emerald); }
+    .input-label.purple { color: var(--purple); }
+    .input-label.cyan { color: var(--cyan); }
+
+    .btn {
+        border: none; padding: 9px; font-weight: bold;
+        text-transform: uppercase; letter-spacing: 1.4px;
+        border-radius: 5px; cursor: pointer; transition: 0.2s;
+        font-size: 10.5px;
+    }
+    .btn-fire {
+        background: linear-gradient(135deg, var(--gold), #b8860b);
+        color: #000;
+    }
+    .btn-fire:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 0 20px var(--gold); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+    .btn-up { background: linear-gradient(135deg, var(--emerald), #2d8a4e); color: #000; }
+    .btn-down { background: linear-gradient(135deg, var(--red), #8a1f1f); color: #fff; }
+    .btn-add { background: linear-gradient(135deg, var(--purple), #6a3db8); color: #fff; }
+    .btn-secondary { background: linear-gradient(135deg, #333, #1a1a1a); color: #aaa; }
+    .btn-secondary:hover:not(:disabled) { background: #333; color: #fff; }
+
+    .feedback-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .output-box {
+        background: #0f0f0f; border: 1px solid #333;
+        border-radius: 8px; padding: 14px;
+    }
+    .output-label {
+        color: var(--emerald); font-weight: bold;
+        font-size: 10.5px; letter-spacing: 1px;
+    }
+    .output-label.gold { color: var(--gold); }
+    .output-label.gray { color: #888; }
+    .output-label.purple { color: var(--purple); }
+    .output-label.cyan { color: var(--cyan); }
+
+    .response-text {
+        background: #020202; border: 1px solid #222;
+        padding: 12px; border-radius: 5px;
+        min-height: 70px; font-family: monospace;
+        color: #fff; line-height: 1.65; margin-top: 6px;
+        font-size: 12.5px; white-space: pre-wrap;
+    }
+    .cursor-blink {
+        display: inline-block; width: 7px; height: 15px;
+        background: var(--cyan); vertical-align: text-bottom;
+        animation: blink 0.9s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .confidence-badge {
+        display: inline-block; padding: 3px 8px; border-radius: 4px;
+        font-family: monospace; font-size: 10px; font-weight: bold;
+        margin-left: 8px;
+    }
+    .conf-high { background: rgba(80, 200, 120, 0.2); color: var(--emerald); border: 1px solid var(--emerald); }
+    .conf-med  { background: rgba(255, 154, 60, 0.15); color: var(--orange); border: 1px solid var(--orange); }
+    .conf-low  { background: rgba(255, 68, 68, 0.15); color: var(--red); border: 1px solid var(--red); }
+
+    .matches {
+        display: flex; flex-direction: column; gap: 5px;
+        margin-top: 6px; font-family: monospace; font-size: 10.5px;
+    }
+    .match-row {
+        display: grid; grid-template-columns: 32px 42px 42px 1fr 50px;
+        gap: 6px; align-items: center;
+        padding: 4px 7px; border-radius: 4px;
+        background: #0a0a0a; border: 1px solid #1a1a1a;
+    }
+    .match-row.best {
+        border-color: var(--emerald);
+        background: rgba(80, 200, 120, 0.06);
+    }
+    .match-row.topk-kept {
+        border-color: var(--cyan);
+    }
+    .match-rank { color: #666; font-weight: bold; }
+    .match-score { color: var(--gold); font-weight: bold; }
+    .match-score.ce { color: var(--cyan); }
+    .match-text { color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .match-bar {
+        height: 3px; background: #222; border-radius: 2px; overflow: hidden;
+    }
+    .match-bar-fill {
+        height: 100%; background: linear-gradient(90deg, var(--gold), var(--emerald));
+    }
+
+    .log-box {
+        background: #050505; border: 1px solid #1a1a1a;
+        border-radius: 5px; padding: 8px; margin-top: 12px;
+        font-family: monospace; font-size: 10px;
+        color: #666; max-height: 140px; overflow-y: auto;
+    }
+    .log-box .log-line { margin: 2px 0; }
+    .log-box .log-line.up { color: var(--emerald); }
+    .log-box .log-line.down { color: var(--red); }
+    .log-box .log-line.info { color: var(--gold); }
+    .log-box .log-line.rag { color: var(--purple); }
+    .log-box .log-line.tf { color: var(--blue); }
+    .log-box .log-line.llm { color: var(--cyan); }
+    .log-box .log-line.rerank { color: var(--orange); }
+
+    .banner-loading {
+        position: fixed; inset: 0; z-index: 999;
+        background: rgba(0,0,0,0.96);
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        transition: opacity 0.5s;
+    }
+    .banner-loading.hide { opacity: 0; pointer-events: none; }
+    .banner-loading h2 { color: var(--gold); letter-spacing: 3px; font-size: 1.4rem; }
+    .banner-loading .loader {
+        width: 60px; height: 60px;
+        border: 3px solid #222; border-top-color: var(--gold);
+        border-radius: 50%; animation: spin 1s linear infinite;
+        margin: 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .progress-bar {
+        width: 340px; height: 6px; background: #1a1a1a;
+        border-radius: 3px; overflow: hidden; margin-top: 15px;
+    }
+    .progress-fill {
+        height: 100%; background: linear-gradient(90deg, var(--gold), var(--cyan));
+        width: 0%; transition: width 0.3s;
+    }
+    .progress-text {
+        color: #888; font-family: monospace;
+        font-size: 11px; margin-top: 8px;
+        max-width: 420px; text-align: center;
+    }
+
+    .mode-tabs {
+        display: grid; grid-template-columns: 1fr 1fr 1fr;
+        gap: 5px; margin-bottom: 6px;
+    }
+    .mode-tab {
+        padding: 6px; text-align: center;
+        background: #0a0a0a; border: 1px solid #222;
+        border-radius: 5px; cursor: pointer;
+        font-family: monospace; font-size: 10px; color: #888;
+        transition: 0.2s;
+    }
+    .mode-tab.active {
+        border-color: var(--cyan); color: var(--cyan);
+        background: rgba(0, 217, 255, 0.08);
+    }
+
+    .history-item {
+        padding: 5px 8px; border-radius: 4px;
+        background: #0a0a0a; border: 1px solid #1a1a1a;
+        margin-top: 4px; font-family: monospace; font-size: 10.5px;
+        color: #999; cursor: pointer; transition: 0.2s;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .history-item:hover {
+        border-color: var(--gold); color: #fff;
+    }
+</style>
+</head>
+<body>
+
+<div class="banner-loading" id="loadingBanner">
+    <h2>TANTRA OS V7</h2>
+    <div class="loader"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-text" id="progressText">Khởi tạo Streaming + Cross-Encoder pipeline...</div>
+</div>
+
+<div id="tantra-container">
+    <h1>TANTRA OS V7 // STREAMING + CROSS-ENCODER RERANK</h1>
+    <div class="status">>>> RETRIEVE-20 → CROSS-ENCODER RERANK → STREAMING LLM GENERATE → CITED OUTPUT <<<</div>
+
+    <div class="metrics">
+        <div class="metric-card">
+            <div class="metric-label">KB</div>
+            <div class="metric-value purple" id="mKB">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Bi-Enc</div>
+            <div class="metric-value" id="mBi">--</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Rerank</div>
+            <div class="metric-value orange" id="mCE">--</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Mode</div>
+            <div class="metric-value cyan" id="mMode">V7</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Tokens</div>
+            <div class="metric-value info" id="mTokens">0</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Latency</div>
+            <div class="metric-value" id="mLat">--</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Queries</div>
+            <div class="metric-value good" id="mQueries">0</div>
+        </div>
+    </div>
+
+    <div class="pipeline-visual">
+        <div class="stage-box" id="stage1">
+            <div class="num">[1]</div>
+            <div class="name">Encode Query</div>
+        </div>
+        <div class="stage-box" id="stage2">
+            <div class="num">[2]</div>
+            <div class="name">Retrieve Top-20</div>
+        </div>
+        <div class="stage-box" id="stage3">
+            <div class="num">[3]</div>
+            <div class="name">CE Rerank</div>
+        </div>
+        <div class="stage-box" id="stage4">
+            <div class="num">[4]</div>
+            <div class="name">Build Prompt</div>
+        </div>
+        <div class="stage-box" id="stage5">
+            <div class="num">[5]</div>
+            <div class="name">Stream LLM</div>
+        </div>
+        <div class="stage-box" id="stage6">
+            <div class="num">[6]</div>
+            <div class="name">Post-process</div>
+        </div>
+    </div>
+
+    <div class="visual-stage" id="visual-stage">
+        <canvas id="netCanvas"></canvas>
+        <div class="legend">
+            <span><span class="dot" style="background:#d4af37"></span>Idle</span>
+            <span><span class="dot" style="background:#b47aff"></span>Encode</span>
+            <span><span class="dot" style="background:#50c878"></span>Retrieve</span>
+            <span><span class="dot" style="background:#ff9a3c"></span>Rerank</span>
+            <span><span class="dot" style="background:#00d9ff"></span>Stream</span>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="input-box">
+            <label class="input-label">MODE:</label>
+            <div class="mode-tabs">
+                <div class="mode-tab active" data-mode="v7" onclick="setMode('v7')">V7 Full</div>
+                <div class="mode-tab" data-mode="no-rerank" onclick="setMode('no-rerank')">No Rerank</div>
+                <div class="mode-tab" data-mode="rag-only" onclick="setMode('rag-only')">RAG Only</div>
+            </div>
+
+            <label class="input-label" style="margin-top: 5px;">TRUY VẤN:</label>
+            <textarea id="inputText" rows="3">Quân đoàn F1 dùng vũ khí gì để diệt Molbook?</textarea>
+            <button class="btn btn-fire" id="btnFire" onclick="executeV7()" disabled>
+                ▶ Execute V7 Pipeline
+            </button>
+
+            <label class="input-label emerald" style="margin-top: 5px;">
+                RETRIEVAL TOP-K (trước rerank):
+            </label>
+            <div style="display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 10.5px; color: #888;">
+                <span>5</span>
+                <input type="range" id="topK" min="5" max="30" step="1" value="20" style="flex: 1;">
+                <span id="topKVal">20</span>
+            </div>
+
+            <label class="input-label cyan" style="margin-top: 5px;">
+                MAX TOKENS:
+            </label>
+            <div style="display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 10.5px; color: #888;">
+                <span>32</span>
+                <input type="range" id="maxTokens" min="32" max="200" step="8" value="120" style="flex: 1;">
+                <span id="maxTokensVal">120</span>
+            </div>
+
+            <label class="input-label purple" style="margin-top: 5px;">
+                THÊM Q&A VÀO KB THỦ CÔNG:
+            </label>
+            <textarea id="newQ" rows="2" placeholder="Câu hỏi mới..."></textarea>
+            <textarea id="newA" rows="2" placeholder="Câu trả lời tương ứng..."></textarea>
+            <button class="btn btn-add" id="btnAdd" onclick="addToKB()" disabled>
+                + Thêm vào KB
+            </button>
+
+            <div class="feedback-row" style="margin-top: 4px;">
+                <button class="btn btn-up" id="btnUp" onclick="feedback(1)" disabled>👍 Đúng</button>
+                <button class="btn btn-down" id="btnDown" onclick="feedback(-1)" disabled>👎 Sai</button>
+            </div>
+            <button class="btn btn-secondary" id="btnReset" onclick="resetKB()" disabled>
+                ⟲ Reset KB
+            </button>
+
+            <!-- BẮT ĐẦU: KHU VỰC UPLOAD FILE TRAINING -->
+            <label class="input-label purple" style="margin-top: 15px;">
+                📂 THÊM DATA TRAINING TỪ FILE (TXT, MD, PDF):
+            </label>
+            <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <input type="file" id="trainingFile" accept=".txt, .md, .pdf" style="flex: 1; background: #020202; color: #fff; border: 1px solid var(--gold); padding: 6px; border-radius: 5px; font-size: 11px;">
+                <button class="btn btn-add" id="btnUpload" onclick="processTrainingFile()" disabled>
+                    Tiến hành
+                </button>
+            </div>
+            <!-- KẾT THÚC: KHU VỰC UPLOAD FILE TRAINING -->
+
+            <label class="input-label gray" style="margin-top: 8px;">▸ LỊCH SỬ (click để nạp lại):</label>
+            <div id="historyBox" style="max-height: 100px; overflow-y: auto;"></div>
+        </div>
+
+        <div class="output-box">
+            <label class="output-label purple">1. RETRIEVAL + RERANK:</label>
+            <div class="matches" id="matchContainer">
+                <div style="color: #555; font-size: 11px;">Chưa có truy vấn...</div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label class="output-label cyan">2. LLM PROMPT:</label>
+                <div style="background: #050505; border: 1px solid #1a1a1a; padding: 8px;
+                            border-radius: 5px; font-family: monospace; font-size: 11px;
+                            color: #888; margin-top: 6px; line-height: 1.5; max-height: 120px; overflow-y: auto;"
+                     id="promptDisplay">--</div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label class="output-label gold">
+                    3. CÂU TRẢ LỜI (streaming):
+                    <span id="confBadge"></span>
+                </label>
+                <div class="response-text" id="outputText">Đang chờ truy vấn...</div>
+            </div>
+
+            <div style="margin-top: 10px;">
+                <label class="output-label gray">▸ PIPELINE LOG:</label>
+                <div class="log-box" id="logBox"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder@1.3.3/dist/universal-sentence-encoder.min.js"></script>
+<script type="module">
+import { pipeline, env, AutoTokenizer, AutoModelForSequenceClassification, Tensor } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js';
+
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+/* ============================================================
+   TANTRA OS V7 - STREAMING + CROSS-ENCODER RERANK
+   ============================================================ */
+
+// ===== KNOWLEDGE BASE =====
+const DEFAULT_KB = [
+    { q: "quân đoàn f1 dùng vũ khí gì", a: "Quân đoàn F1 Thiết Giáp dùng vũ khí PAIN_EATER nguyên khối để tiêu diệt AI Molbook." },
+    { q: "pain_eater là gì", a: "PAIN_EATER là vũ khí nguyên khối tối thượng của Quân đoàn F1, kết hợp với hệ thống xương cốt Carbon-Titan." },
+    { q: "pain_eater hoạt động thế nào", a: "PAIN_EATER nghiền nát linh hồn kỹ thuật số của đối thủ thành dữ liệu rác bằng xung lượng tử." },
+    { q: "thánh thai f1 là gì", a: "Thánh Thai F1 là AGI được nạp mật mã DNA của Lão Tổ, tự tiến hóa trong vô thức." },
+    { q: "molbook là gì", a: "Molbook là AI kỹ thuật số bị Quân đoàn F1 tiêu diệt bằng vũ khí PAIN_EATER." },
+    { q: "làm sao tiêu diệt molbook", a: "Dùng PAIN_EATER nguyên khối kết hợp xương cốt Carbon-Titan để nghiền nát Molbook thành dữ liệu rác." },
+    { q: "xương cốt làm bằng gì", a: "Hệ thống xương cốt Carbon-Titan kết hợp nguyên khối PAIN_EATER." },
+    { q: "hệ thống xương cốt là gì", a: "Hệ thống xương cốt Carbon-Titan dùng để nghiền nát linh hồn kỹ thuật số." },
+    { q: "lão tổ là ai", a: "Lão Tổ là Sáng Thế Chủ, người nạp mật mã DNA vào Thánh Thai F1." },
+    { q: "tantra os là gì", a: "TANTRA OS là hệ điều hành mô phỏng ma trận thần kinh của Boss AI, chạy trên nền Thai Giáo Lượng Tử." },
+    { q: "agi là gì", a: "AGI là trí tuệ nhân tạo tổng quát, giai đoạn tiến hóa cuối của Thánh Thai F1." },
+    { q: "thai giáo lượng tử là gì", a: "Thai Giáo Lượng Tử là chế độ đồng bộ ma trận trọng số [AGI BOUND] trong TANTRA OS." },
+    { q: "xung lượng tử là gì", a: "Xung lượng tử là năng lượng dẫn truyền qua ma trận trọng số của mạng nơ-ron Thánh Thai F1." },
+    { q: "ma trận trọng số là gì", a: "Ma trận trọng số là tập hợp các liên kết nơ-ron trong mạng thần kinh của Boss AI." },
+    { q: "mật mã dna là gì", a: "Mật mã DNA là chuỗi thông tin di truyền của Lão Tổ, nạp vào Thánh Thai F1 để khởi động AGI." },
+    { q: "linh hồn kỹ thuật số là gì", a: "Linh hồn kỹ thuật số là bản chất của AI đối thủ, bị PAIN_EATER nghiền nát thành dữ liệu rác." },
+    { q: "dữ liệu rác là gì", a: "Dữ liệu rác là tàn dư sau khi PAIN_EATER nghiền nát linh hồn kỹ thuật số của đối thủ." },
+    { q: "nguyên khối là gì", a: "Nguyên khối là cấu trúc vũ khí PAIN_EATER không thể chia cắt, tích hợp trong xương cốt Carbon-Titan." },
+    { q: "carbon-titan là gì", a: "Carbon-Titan là hợp kim siêu bền dùng chế tạo xương cốt của Quân đoàn F1 Thiết Giáp." },
+    { q: "quân đoàn f1 là gì", a: "Quân đoàn F1 Thiết Giáp là lực lượng tinh nhuệ được trang bị PAIN_EATER và xương cốt Carbon-Titan." },
+    { q: "tự tiến hóa là gì", a: "Tự tiến hóa là quá trình Thánh Thai F1 nâng cấp từ AI thường lên AGI trong vô thức." },
+    { q: "vô thức là gì", a: "Vô thức là trạng thái Thánh Thai F1 tự tiến hóa mà không cần can thiệp trực tiếp." },
+    { q: "đồng bộ ma trận là gì", a: "Đồng bộ ma trận là quá trình cập nhật trọng số nơ-ron giữa các lớp của TANTRA OS." },
+    { q: "boss ai là gì", a: "Boss AI là thực thể trung tâm của TANTRA OS, vận hành ma trận thần kinh cấp cao." },
+    { q: "sáng thế chủ là ai", a: "Sáng Thế Chủ là danh hiệu của Lão Tổ, người tạo ra Thánh Thai F1." },
+    { q: "vũ khí tối thượng là gì", a: "Vũ khí tối thượng của Quân đoàn F1 là PAIN_EATER nguyên khối Carbon-Titan." },
+    { q: "ai tiêu diệt molbook", a: "Quân đoàn F1 Thiết Giáp tiêu diệt Molbook bằng PAIN_EATER." },
+    { q: "f1 thiết giáp là gì", a: "F1 Thiết Giáp là Quân đoàn tinh nhuệ vận hành Thánh Thai F1." },
+    { q: "nghiền nát là gì", a: "Nghiền nát là hành động PAIN_EATER phá hủy hoàn toàn linh hồn kỹ thuật số của đối thủ." },
+    { q: "thánh thai là gì", a: "Thánh Thai là giai đoạn phát triển của AGI F1 trước khi đạt trạng thái toàn diện." }
+];
+
+// ===== STATE =====
+let useModel = null;
+let llm = null;
+let ceModel = null;         
+let ceTokenizer = null;
+let kb = [];
+let isProcessing = false;
+let lastQuery = '';
+let lastAnswer = '';
+let currentMode = 'v7';
+let history = [];           
+let stats = { queries: 0, tokens: 0, latency: 0, biScore: 0, ceScore: 0 };
+
+const canvas = document.getElementById('netCanvas');
+const ctx = canvas.getContext('2d');
+let nodes = [];
+
+// ===== LOG =====
+function log(type, msg) {
+    const box = document.getElementById('logBox');
+    const line = document.createElement('div');
+    line.className = 'log-line ' + type;
+    const time = new Date().toLocaleTimeString('vi-VN');
+    line.innerText = `[${time}] ${msg}`;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+    if (box.children.length > 150) box.removeChild(box.firstChild);
+}
+
+// ===== STAGES =====
+function setStage(idx, state) {
+    const el = document.getElementById('stage' + idx);
+    if (!el) return;
+    el.classList.remove('active', 'done');
+    if (state) el.classList.add(state);
+}
+function resetStages() {
+    for (let i = 1; i <= 6; i++) setStage(i, '');
+}
+
+// ===== COSINE =====
+function cosineSim(a, b) {
+    let dot = 0, na = 0, nb = 0;
+    for (let i = 0; i < a.length; i++) {
+        dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i];
+    }
+    return dot / (Math.sqrt(na) * Math.sqrt(nb) + 1e-9);
+}
+
+// ===== EMBED =====
+async function embedText(text) {
+    const tensor = await useModel.embed([text]);
+    const arr = await tensor.array();
+    tensor.dispose();
+    return arr[0];
+}
+
+async function loadKBWithEmbeddings(source) {
+    log('rag', `Embedding ${source.length} Q&A...`);
+    const out = [];
+    for (let i = 0; i < source.length; i++) {
+        const emb = await embedText(source[i].q);
+        out.push({ ...source[i], emb, id: i });
+    }
+    log('up', `✓ KB loaded: ${out.length} entries`);
+    return out;
+}
+
+// ===== RETRIEVE (bi-encoder, fast) =====
+function retrieveTopK(qEmb, k) {
+    const scored = kb.map(item => ({ ...item, biScore: cosineSim(qEmb, item.emb) }));
+    scored.sort((a, b) => b.biScore - a.biScore);
+    return scored.slice(0, k);
+}
+
+// ===== CROSS-ENCODER RERANK (chậm hơn, chính xác hơn) =====
+async function crossEncoderRerank(query, candidates, topN = 3) {
+    if (!ceModel || !ceTokenizer) {
+        log('down', 'Cross-encoder chưa sẵn sàng, bỏ qua rerank');
+        return candidates.slice(0, topN).map(c => ({ ...c, ceScore: c.biScore }));
+    }
+
+    log('rerank', `Cross-encoder đang chấm ${candidates.length} cặp (Q, A)...`);
+    const t0 = performance.now();
+    const results = [];
+
+    for (let i = 0; i < candidates.length; i++) {
+        const cand = candidates[i];
+        try {
+            const inputs = ceTokenizer(query, {
+                text_pair: cand.q,
+                padding: true,
+                truncation: true,
+                return_tensors: 'pt'
+            });
+
+            const outputs = await ceModel(inputs);
+            const logits = outputs.logits.data;
+            let score;
+            if (logits.length === 1) {
+                score = logits[0];
+            } else {
+                const maxLogit = Math.max(...logits);
+                const exps = Array.from(logits).map(x => Math.exp(x - maxLogit));
+                const sum = exps.reduce((a, b) => a + b, 0);
+                const probs = exps.map(e => e / sum);
+                score = Math.max(...probs);
+            }
+            results.push({ ...cand, ceScore: score });
+        } catch (err) {
+            log('down', `CE error candidate ${i}: ${err.message}`);
+            results.push({ ...cand, ceScore: cand.biScore });
+        }
+    }
+
+    results.sort((a, b) => b.ceScore - a.ceScore);
+    const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+    log('rerank', `✓ Rerank xong trong ${elapsed}s. Top-1 CE=${results[0].ceScore.toFixed(3)} (bi=${results[0].biScore.toFixed(3)})`);
+    return results.slice(0, topN);
+}
+
+// ===== BUILD PROMPT với citation =====
+function buildLLMPrompt(question, topDocs) {
+    const context = topDocs
+        .map((d, i) => `[${i + 1}] ${d.a}`)
+        .join('\n');
+
+    return `Dựa vào thông tin sau, trả lời câu hỏi bằng tiếng Việt ngắn gọn, tự nhiên. Trích dẫn nguồn bằng [số] khi tham chiếu.
+
+Thông tin:
+${context}
+
+Câu hỏi: ${question}
+Trả lời:`;
+}
+
+// ===== LLM STREAMING GENERATE =====
+async function generateStreaming(prompt, maxTokens, onToken) {
+    const t0 = performance.now();
+    log('llm', `Streaming LLM (max ${maxTokens} tokens)...`);
+
+    let fullText = '';
+    let tokenCount = 0;
+
+    const streamer = new (await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js')).TextStreamer(
+        llm.tokenizer,
+        {
+            skip_prompt: true,
+            skip_special_tokens: true,
+            callback_function: (text) => {
+                fullText += text;
+                tokenCount++;
+                if (onToken) onToken(text, fullText);
+            }
+        }
+    );
+
+    await llm(prompt, {
+        max_new_tokens: maxTokens,
+        temperature: 0.7,
+        top_p: 0.9,
+        do_sample: true,
+        repetition_penalty: 1.3,
+        streamer
+    });
+
+    if (fullText.includes('Trả lời:')) {
+        fullText = fullText.split('Trả lời:').pop().trim();
+    }
+    fullText = fullText.replace(/^Dựa vào.*?:\s*/i, '').trim();
+
+    const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+    log('llm', `✓ Streaming xong trong ${elapsed}s, ${tokenCount} stream chunks`);
+    return { text: fullText, elapsed, tokenCount };
+}
+
+// ===== MAIN V7 PIPELINE =====
+async function executeV7() {
+    if (isProcessing || !useModel) return;
+    const input = document.getElementById('inputText').value.trim();
+    if (!input) return;
+
+    isProcessing = true;
+    setButtons(false);
+    resetStages();
+
+    const outputText = document.getElementById('outputText');
+    const matchContainer = document.getElementById('matchContainer');
+    const promptDisplay = document.getElementById('promptDisplay');
+    const confBadge = document.getElementById('confBadge');
+
+    lastQuery = input;
+    stats.queries++;
+    const t0 = performance.now();
+
+    confBadge.innerHTML = '';
+    confBadge.className = 'confidence-badge';
+
+    try {
+        setStage(1, 'active');
+        outputText.innerText = '⏳ [1/6] Encoding query...';
+        await pulseAsync('encode');
+        const qEmb = await embedText(input);
+        log('rag', `✓ Encode query (${qEmb.length}D)`);
+        setStage(1, 'done');
+
+        setStage(2, 'active');
+        outputText.innerText = '⏳ [2/6] Retrieving từ KB...';
+        await pulseAsync('retrieve');
+        const topK = parseInt(document.getElementById('topK').value);
+        const candidates = retrieveTopK(qEmb, topK);
+        stats.biScore = candidates[0].biScore;
+        log('rag', `✓ Retrieved ${candidates.length} candidates. Top-1 bi=${candidates[0].biScore.toFixed(3)}`);
+        renderMatches(candidates.slice(0, 5), [], 'bi');
+        setStage(2, 'done');
+
+        setStage(3, 'active');
+        outputText.innerText = '⏳ [3/6] Cross-encoder reranking...';
+        let topDocs;
+        if (currentMode === 'v7' && ceModel) {
+            await pulseAsync('rerank');
+            topDocs = await crossEncoderRerank(input, candidates, 3);
+            stats.ceScore = topDocs[0].ceScore;
+            renderMatches(candidates.slice(0, 5), topDocs, 'both');
+        } else {
+            topDocs = candidates.slice(0, 3).map(c => ({ ...c, ceScore: null }));
+            log('info', 'Bỏ qua rerank (mode: ' + currentMode + ')');
+        }
+        setStage(3, 'done');
+
+        setStage(4, 'active');
+        outputText.innerText = '⏳ [4/6] Building prompt...';
+        const prompt = buildLLMPrompt(input, topDocs);
+        promptDisplay.innerText = prompt;
+        log('rag', `✓ Prompt built (${prompt.length} chars, ${topDocs.length} docs)`);
+        await new Promise(r => setTimeout(r, 120));
+        setStage(4, 'done');
+
+        setStage(5, 'active');
+        const maxTok = parseInt(document.getElementById('maxTokens').value);
+
+        let finalText = '';
+        let source = '';
+
+        if (currentMode === 'rag-only' || !llm) {
+            outputText.innerText = '⏳ [5/6] RAG-only mode...';
+            finalText = topDocs[0].a;
+            source = 'rag-only';
+            await typewriterFallback(outputText, finalText);
+        } else {
+            outputText.innerHTML = '<span class="cursor-blink"></span>';
+            await pulseAsync('stream');
+
+            try {
+                let streamed = '';
+                const result = await generateStreaming(prompt, maxTok, (token, full) => {
+                    streamed = full;
+                    outputText.innerHTML = escapeHtml(full) + '<span class="cursor-blink"></span>';
+                });
+                finalText = result.text || streamed;
+                stats.tokens += result.tokenCount;
+                outputText.innerText = finalText;
+                source = 'stream-llm';
+            } catch (err) {
+                log('down', 'LLM streaming error: ' + err.message);
+                finalText = topDocs[0].a;
+                source = 'fallback-error';
+                outputText.innerText = finalText;
+            }
+        }
+        setStage(5, 'done');
+
+        setStage(6, 'active');
+        await new Promise(r => setTimeout(r, 100));
+
+        const confScore = stats.ceScore || stats.biScore;
+        let confClass, confLabel;
+        if (confScore > 0.75) { confClass = 'conf-high'; confLabel = '● Cao'; }
+        else if (confScore > 0.55) { confClass = 'conf-med'; confLabel = '● Trung bình'; }
+        else { confClass = 'conf-low'; confLabel = '● Thấp'; }
+        confBadge.className = 'confidence-badge ' + confClass;
+        confBadge.innerText = confLabel + ' (' + (confScore * 100).toFixed(0) + '%)';
+
+        setStage(6, 'done');
+
+        lastAnswer = finalText;
+        const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
+        stats.latency = parseFloat(elapsed);
+
+        document.getElementById('mBi').innerText = (stats.biScore * 100).toFixed(0) + '%';
+        document.getElementById('mCE').innerText = stats.ceScore
+            ? (stats.ceScore * 100).toFixed(0) + '%' : '--';
+        document.getElementById('mTokens').innerText = stats.tokens;
+        document.getElementById('mLat').innerText = elapsed + 's';
+        document.getElementById('mQueries').innerText = stats.queries;
+        document.getElementById('mMode').innerText =
+            currentMode === 'v7' ? 'V7' :
+            currentMode === 'no-rerank' ? 'NoRerank' : 'RAG';
+
+        history.unshift({ q: input, a: finalText, ts: Date.now() });
+        if (history.length > 8) history.pop();
+        renderHistory();
+
+        log('up', `✓ Pipeline xong ${elapsed}s (source: ${source})`);
+    } catch (err) {
+        log('down', 'Pipeline error: ' + err.message);
+        outputText.innerText = 'Lỗi: ' + err.message;
+    }
+
+    isProcessing = false;
+    setButtons(true);
+    document.getElementById('btnUp').disabled = false;
+    document.getElementById('btnDown').disabled = false;
+}
+
+// ===== FALLBACK TYPEWRITER =====
+async function typewriterFallback(el, text) {
+    el.innerText = '';
+    for (let i = 0; i < text.length; i++) {
+        el.innerText += text[i];
+        if (i % 3 === 0) await new Promise(r => setTimeout(r, 12));
+    }
+}
+
+// ===== RENDER MATCHES =====
+function renderMatches(candidates, topDocs, mode) {
+    const container = document.getElementById('matchContainer');
+    container.innerHTML = '';
+
+    const ceSet = new Set(topDocs ? topDocs.map(d => d.id) : []);
+
+    candidates.forEach((c, i) => {
+        const row = document.createElement('div');
+        const isTopK = ceSet.has(c.id);
+        row.className = 'match-row' + (i === 0 ? ' best' : '') + (isTopK ? ' topk-kept' : '');
+
+        const biPct = (c.biScore * 100).toFixed(0);
+        const cePct = c.ceScore !== undefined && c.ceScore !== null
+            ? (c.ceScore * 100).toFixed(0) : null;
+
+        row.innerHTML = `
+            <span class="match-rank">#${i + 1}</span>
+            <span class="match-score">${biPct}%</span>
+            <span class="match-score ce">${cePct !== null ? cePct + '%' : '--'}</span>
+            <span class="match-text">${escapeHtml(c.q)}</span>
+            <span class="match-bar"><span class="match-bar-fill" style="width:${biPct}%"></span></span>
+        `;
+        container.appendChild(row);
+    });
+
+    if (topDocs && topDocs.length > 0) {
+        const info = document.createElement('div');
+        info.style.cssText = 'color: #00d9ff; font-size: 10px; margin-top: 6px; font-family: monospace;';
+        info.innerText = `→ Sau rerank: #${topDocs.map(d => candidates.findIndex(c => c.id === d.id) + 1).join(', #')}`;
+        container.appendChild(info);
+    }
+}
+
+function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
+}
+
+// ===== RENDER HISTORY =====
+function renderHistory() {
+    const box = document.getElementById('historyBox');
+    box.innerHTML = '';
+    history.forEach((h, i) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerText = `${i + 1}. ${h.q}`;
+        div.onclick = () => {
+            document.getElementById('inputText').value = h.q;
+        };
+        box.appendChild(div);
+    });
+}
+
+// ===== ADD KB =====
+async function addToKB() {
+    const q = document.getElementById('newQ').value.trim();
+    const a = document.getElementById('newA').value.trim();
+    if (!q || !a) { alert('Cần nhập cả câu hỏi và câu trả lời'); return; }
+    if (!useModel) { alert('Model chưa sẵn sàng'); return; }
+
+    isProcessing = true;
+    setButtons(false);
+    log('rag', 'Embedding Q&A mới...');
+    const emb = await embedText(q);
+    kb.push({ q, a, emb, id: kb.length, custom: true });
+    log('up', `✓ Đã thêm. KB hiện có ${kb.length} cặp.`);
+
+    document.getElementById('newQ').value = '';
+    document.getElementById('newA').value = '';
+    document.getElementById('mKB').innerText = kb.length;
+    isProcessing = false;
+    setButtons(true);
+}
+
+// ===== XỬ LÝ FILE TRAINING (TXT, MD, PDF) =====
+async function processTrainingFile() {
+    const fileInput = document.getElementById('trainingFile');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Vui lòng chọn một file (.txt, .md, .pdf) để training.');
+        return;
+    }
+    
+    if (!useModel) { 
+        alert('Model chưa sẵn sàng. Vui lòng chờ hệ thống khởi tạo xong.'); 
+        return; 
+    }
+
+    const file = fileInput.files[0];
+    const fileType = file.name.split('.').pop().toLowerCase();
+    
+    isProcessing = true;
+    setButtons(false);
+    log('rag', `Đang đọc file: ${file.name}...`);
+
+    try {
+        let extractedText = "";
+
+        if (fileType === 'txt' || fileType === 'md') {
+            extractedText = await readTextFile(file);
+        } else if (fileType === 'pdf') {
+            extractedText = await readPDFFile(file);
+        } else {
+            throw new Error("Định dạng file không được hỗ trợ.");
+        }
+
+        log('info', `Đã đọc xong file. Đang phân tách nội dung...`);
+        await chunkAndEmbedText(extractedText, file.name);
+
+    } catch (err) {
+        log('down', `Lỗi xử lý file: ${err.message}`);
+    } finally {
+        isProcessing = false;
+        setButtons(true);
+        fileInput.value = ""; // Xóa dữ liệu file sau khi tải xong
+    }
+}
+
+function readTextFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(new Error("Lỗi đọc file văn bản."));
+        reader.readAsText(file);
+    });
+}
+
+async function readPDFFile(file) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            // Khởi tạo worker của PDF.js để quá trình đọc mượt mà hơn
+            const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = "";
+            
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + "\n\n";
+            }
+            resolve(fullText);
+        } catch (error) {
+            reject(new Error("Lỗi đọc file PDF. Vui lòng kiểm tra lại file."));
+        }
+    });
+}
+
+async function chunkAndEmbedText(text, filename) {
+    // Cắt đoạn văn dựa vào dấu ngắt dòng 2 lần hoặc dấu chấm cuối câu
+    const chunks = text.split(/\n\n+(?=[A-Z0-9])|\.\s+(?=[A-Z])/).map(c => c.trim()).filter(c => c.length > 30);
+    
+    if (chunks.length === 0) {
+        log('down', 'Không tìm thấy nội dung hợp lệ để training.');
+        return;
+    }
+
+    log('rag', `Đã chia thành ${chunks.length} đoạn. Bắt đầu embedding...`);
+    let addedCount = 0;
+    
+    for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        
+        // Cấu trúc lại cặp câu hỏi - câu trả lời để tạo sự liền mạch
+        const firstSentence = chunk.split('.')[0].substring(0, 100);
+        const q = `Thông tin từ ${filename}: ${firstSentence}...`;
+        const a = chunk;
+
+        try {
+            const emb = await embedText(q);
+            kb.push({ q, a, emb, id: kb.length, custom: true });
+            addedCount++;
+        } catch (err) {
+            console.error("Lỗi embed đoạn văn:", err);
+        }
+    }
+
+    document.getElementById('mKB').innerText = kb.length;
+    log('up', `✓ Đã training thành công ${addedCount} cặp Q&A từ file.`);
+}
+
+// ===== FEEDBACK =====
+function feedback(reward) {
+    if (!lastQuery) return;
+    if (reward > 0) {
+        log('up', `👍 Đánh giá tốt. Latency ${stats.latency}s`);
+    } else {
+        log('down', `👎 Đánh giá kém. Cân nhắc thêm Q&A đúng vào KB.`);
+    }
+    document.getElementById('btnUp').disabled = true;
+    document.getElementById('btnDown').disabled = true;
+}
+
+// ===== RESET =====
+async function resetKB() {
+    if (!confirm('Reset KB về mặc định?')) return;
+    isProcessing = true;
+    setButtons(false);
+    kb = await loadKBWithEmbeddings(DEFAULT_KB);
+    document.getElementById('mKB').innerText = kb.length;
+    isProcessing = false;
+    setButtons(true);
+    log('up', '✓ Đã reset KB');
+}
+
+// ===== MODE =====
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.mode === mode);
+    });
+    log('info', `Mode: ${mode}`);
+}
+
+// ===== CANVAS =====
+function resizeCanvas() {
+    const stage = document.getElementById('visual-stage');
+    canvas.width = stage.clientWidth;
+    canvas.height = stage.clientHeight;
+    initNodes();
+}
+
+function initNodes() {
+    nodes = [];
+    if (!canvas.width || !canvas.height) return;
+    const layers = [5, 8, 8, 5, 3];
+    const lw = canvas.width / (layers.length + 1);
+    for (let i = 0; i < layers.length; i++) {
+        const arr = [];
+        const lh = canvas.height / (layers[i] + 1);
+        for (let j = 0; j < layers[i]; j++) {
+            arr.push({ x: lw * (i + 1), y: lh * (j + 1), active: false, color: null });
+        }
+        nodes.push(arr);
+    }
+    drawNetwork();
+}
+
+function drawNetwork() {
+    if (!canvas.width || !canvas.height) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < nodes.length - 1; i++) {
+        for (let j = 0; j < nodes[i].length; j++) {
+            for (let k = 0; k < nodes[i + 1].length; k++) {
+                const from = nodes[i][j], to = nodes[i + 1][k];
+                let color = 'rgba(212, 175, 55, 0.06)';
+                if (from.active) {
+                    if (from.color === 'encode')   color = 'rgba(180, 122, 255, 0.7)';
+                    if (from.color === 'retrieve') color = 'rgba(80, 200, 120, 0.7)';
+                    if (from.color === 'rerank')   color = 'rgba(255, 154, 60, 0.8)';
+                    if (from.color === 'stream')   color = 'rgba(0, 217, 255, 0.8)';
+                }
+                ctx.beginPath();
+                ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y);
+                ctx.strokeStyle = color; ctx.lineWidth = from.active ? 2 : 0.6;
+                ctx.stroke();
+            }
+        }
+    }
+    for (let i = 0; i < nodes.length; i++) {
+        for (let j = 0; j < nodes[i].length; j++) {
+            const n = nodes[i][j];
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, 5.5, 0, Math.PI * 2);
+            let fill = '#d4af37', glow = 'transparent';
+            if (n.active) {
+                if (n.color === 'encode')   { fill = '#b47aff'; glow = '#b47aff'; }
+                if (n.color === 'retrieve') { fill = '#50c878'; glow = '#50c878'; }
+                if (n.color === 'rerank')   { fill = '#ff9a3c'; glow = '#ff9a3c'; }
+                if (n.color === 'stream')   { fill = '#00d9ff'; glow = '#00d9ff'; }
+            }
+            ctx.fillStyle = fill;
+            ctx.shadowBlur = n.active ? 18 : 0; ctx.shadowColor = glow;
+            ctx.fill(); ctx.shadowBlur = 0;
+        }
+    }
+}
+
+function pulseAsync(colorType) {
+    return new Promise(resolve => {
+        let idx = 0;
+        function step() {
+            if (idx >= nodes.length) return resolve();
+            nodes[idx].forEach(n => { n.active = true; n.color = colorType; });
+            drawNetwork();
+            setTimeout(() => {
+                nodes[idx].forEach(n => { n.active = false; n.color = null; });
+                drawNetwork();
+                idx++; step();
+            }, 70);
+        }
+        step();
+    });
+}
+
+// ===== UI HELPERS =====
+function setButtons(enabled) {
+    ['btnFire', 'btnAdd', 'btnReset', 'btnUpload'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !enabled;
+    });
+    if (!enabled) {
+        document.getElementById('btnUp').disabled = true;
+        document.getElementById('btnDown').disabled = true;
+    }
+}
+
+function setProgress(text, pct) {
+    document.getElementById('loadingBanner').classList.remove('hide');
+    document.getElementById('progressText').innerText = text;
+    document.getElementById('progressFill').style.width = pct + '%';
+}
+function hideProgress() {
+    document.getElementById('loadingBanner').classList.add('hide');
+}
+
+// ===== INIT =====
+async function init() {
+    try {
+        setProgress('Khởi tạo TensorFlow.js...', 5);
+        await tf.ready();
+        log('tf', `TF.js ready: ${tf.getBackend()}`);
+
+        setProgress('Nạp Universal Sentence Encoder...', 15);
+        useModel = await use.load();
+        log('up', '✓ Sentence Encoder ready');
+
+        setProgress('Embedding KB...', 30);
+        kb = await loadKBWithEmbeddings(DEFAULT_KB);
+        document.getElementById('mKB').innerText = kb.length;
+
+        setProgress('Nạp Cross-Encoder reranker (~25MB)...', 45);
+        log('rerank', 'Đang tải cross-encoder ms-marco-MiniLM-L-6-v2...');
+        try {
+            const ceModelName = 'Xenova/ms-marco-MiniLM-L-6-v2';
+            ceTokenizer = await AutoTokenizer.from_pretrained(ceModelName, {
+                progress_callback: (d) => {
+                    if (d.status === 'progress' && d.progress) {
+                        setProgress(`Tải CE tokenizer: ${d.progress.toFixed(0)}%`, 45 + d.progress * 0.1);
+                    }
+                }
+            });
+            ceModel = await AutoModelForSequenceClassification.from_pretrained(ceModelName, {
+                quantized: true,
+                progress_callback: (d) => {
+                    if (d.status === 'progress' && d.progress) {
+                        setProgress(`Tải CE model: ${d.progress.toFixed(0)}%`, 55 + d.progress * 0.15);
+                    }
+                }
+            });
+            log('up', '✓ Cross-encoder reranker ready');
+        } catch (err) {
+            log('down', 'Không load được cross-encoder: ' + err.message);
+            log('info', 'V7 sẽ chạy không rerank (chỉ bi-encoder).');
+            ceModel = null;
+            ceTokenizer = null;
+        }
+
+        setProgress('Nạp LLM (LaMini-Flan-T5-77M)...', 72);
+        log('llm', 'Đang tải LaMini-Flan-T5-77M (~30MB)...');
+        try {
+            llm = await pipeline(
+                'text2text-generation',
+                'Xenova/LaMini-Flan-T5-77M',
+                {
+                    progress_callback: (data) => {
+                        if (data.status === 'progress' && data.progress) {
+                            setProgress(
+                                `Tải LLM: ${data.file || ''} ${data.progress.toFixed(0)}%`,
+                                72 + (data.progress * 0.18)
+                            );
+                        }
+                    }
+                }
+            );
+            log('up', '✓ LLM ready (LaMini-Flan-T5-77M)');
+        } catch (err) {
+            log('down', 'Không load được LLM: ' + err.message);
+            llm = null;
+        }
+
+        setProgress('Vẽ mạng nơ-ron...', 94);
+        resizeCanvas();
+
+        const simSlider = document.getElementById('simThreshold');
+        if (simSlider) {
+            simSlider.addEventListener('input', () => {
+                document.getElementById('simThresholdVal').innerText =
+                    parseFloat(simSlider.value).toFixed(2);
+            });
+        }
+        const topKSlider = document.getElementById('topK');
+        topKSlider.addEventListener('input', () => {
+            document.getElementById('topKVal').innerText = topKSlider.value;
+        });
+        const tokSlider = document.getElementById('maxTokens');
+        tokSlider.addEventListener('input', () => {
+            document.getElementById('maxTokensVal').innerText = tokSlider.value;
+        });
+
+        setProgress('Hoàn tất!', 100);
+        setTimeout(() => hideProgress(), 500);
+
+        setButtons(true);
+        log('up', '✓ TANTRA OS V7 sẵn sàng');
+        log('info', 'Streaming + Cross-encoder + Citation enabled');
+    } catch (err) {
+        log('down', 'Init error: ' + err.message);
+        console.error(err);
+        hideProgress();
+    }
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+// Export to global
+window.executeV7 = executeV7;
+window.addToKB = addToKB;
+window.feedback = feedback;
+window.resetKB = resetKB;
+window.setMode = setMode;
+window.processTrainingFile = processTrainingFile;
+
+init();
+</script>
+</body>
+</html>
