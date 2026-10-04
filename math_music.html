@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Functions to Pitch Visualizer</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #121214;
+            color: #e1e1e6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: #1d1d22;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #00adb5;
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+
+        p {
+            color: #8f8f98;
+            font-size: 14px;
+            margin-top: 0;
+        }
+
+        canvas {
+            background: #09090b;
+            border: 2px solid #27272a;
+            border-radius: 8px;
+            width: 100%;
+            height: 300px;
+            margin: 15px 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        select {
+            background-color: #27272a;
+            color: white;
+        }
+
+        button {
+            background-color: #00adb5;
+            color: #121214;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #00fff5;
+        }
+
+        button.playing {
+            background-color: #ff4757;
+            color: white;
+        }
+
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background: #27272a;
+            padding: 10px;
+            border-radius: 6px;
+            color: #00adb5;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Trình diễn Hàm số Toán học & Cao độ</h1>
+    <p>Biến đổi các hàm số toán học thành chuyển động đồ thị và âm thanh điện tử</p>
+    
+    <div class="controls">
+        <select id="functionSelect">
+            <option value="sine">Hàm Sine Cơ Bản (Sóng mượt)</option>
+            <option value="sawtooth">Hàm Răng Cưa (x mod 1)</option>
+            <option value="square">Hàm Sóng Vuông (Floor/Mod)</option>
+            <option value="phonk">Hàm Phonk Custom (Giống trong ảnh)</option>
+        </select>
+        <button id="playBtn">▶ Phát Âm Thanh</button>
+    </div>
+
+    <canvas id="visualizer"></canvas>
+    <div class="formula" id="formulaDisplay">y = sin(x)</div>
+</div>
+
+<script>
+    const canvas = document.getElementById('visualizer');
+    const ctx = canvas.getContext('2d');
+    const functionSelect = document.getElementById('functionSelect');
+    const playBtn = document.getElementById('playBtn');
+    const formulaDisplay = document.getElementById('formulaDisplay');
+
+    // Thiết lập kích thước canvas thực tế
+    function resizeCanvas() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    let isPlaying = false;
+    let audioCtx = null;
+    let oscillator = null;
+    let time = 0;
+
+    // Định nghĩa các hàm toán học
+    const mathFunctions = {
+        sine: {
+            formula: "y = sin(x)",
+            calc: (x) => Math.sin(x)
+        },
+        sawtooth: {
+            formula: "y = 2 * (x % 1) - 1",
+            calc: (x) => 2 * ((x / (Math.PI * 2)) % 1) - 1
+        },
+        square: {
+            formula: "y = Math.floor(sin(x)) >= 0 ? 1 : -1",
+            calc: (x) => Math.sin(x) >= 0 ? 0.8 : -0.8
+        },
+        phonk: {
+            formula: "y = 2.6 * (1 - 2 * Math.floor(2 * ((9*x) % 1))) [Biến thể]",
+            calc: (x) => {
+                // Mô phỏng lại dạng sóng phân mảnh phức tạp từ ảnh minh họa
+                let modX = (x * 2) % (Math.PI * 2);
+                let inner = (9 * modX) % 1;
+                return 0.8 * (1 - 2 * Math.floor(2 * inner));
+            }
+        }
+    };
+
+    let currentFunc = 'sine';
+
+    // Cập nhật công thức hiển thị khi đổi hàm
+    functionSelect.addEventListener('change', (e) => {
+        currentFunc = e.target.value;
+        formulaDisplay.textContent = mathFunctions[currentFunc].formula;
+    });
+
+    // Vòng lặp vẽ đồ thị (Animation Loop)
+    function draw() {
+        requestAnimationFrame(draw);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Vẽ trục tọa độ trung tâm (Trục X)
+        ctx.strokeStyle = '#27272a';
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+
+        // Vẽ đồ thị hàm số
+        ctx.strokeStyle = '#00adb5';
+        ctx.lineWidth = 3;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00adb5';
+        ctx.beginPath();
+
+        for (let pixelX = 0; pixelX < canvas.width; pixelX++) {
+            // Ánh xạ pixel ngang thành giá trị x toán học
+            let x = (pixelX / canvas.width) * 20 + time; 
+            let y = mathFunctions[currentFunc].calc(x);
+            
+            // Ánh xạ giá trị y toán học (-1 đến 1) thành pixel dọc canvas
+            let pixelY = (canvas.height / 2) - (y * (canvas.height * 0.4));
+            
+            if (pixelX === 0) {
+                ctx.moveTo(pixelX, pixelY);
+            } else {
+                ctx.lineTo(pixelX, pixelY);
+            }
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0; // Reset shadow
+
+        // Tốc độ dịch chuyển đồ thị
+        time += 0.05;
+
+        // Cập nhật tần số âm thanh dựa theo giá trị hiện tại của hàm số
+        if (isPlaying && audioCtx) {
+            let currentY = mathFunctions[currentFunc].calc(time);
+            // Ánh xạ giá trị hàm số thành tần số âm thanh từ 200Hz đến 600Hz (Cao độ)
+            let frequency = 400 + (currentY * 200);
+            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        }
+    }
+
+    // Xử lý bật/tắt Web Audio API
+    playBtn.addEventListener('click', () => {
+        if (!isPlaying) {
+            // Khởi tạo AudioContext khi người dùng tương tác
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            oscillator = audioCtx.createOscillator();
+            // Sử dụng sóng hình sin để nghe êm tai khi cao độ thay đổi liên tục
+            oscillator.type = 'sine'; 
+            
+            // Kết nối âm thanh tới loa
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            
+            isPlaying = true;
+            playBtn.textContent = "■ Dừng Âm Thanh";
+            playBtn.classList.add('playing');
+        } else {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+            }
+            isPlaying = false;
+            playBtn.textContent = "▶ Phát Âm Thanh";
+            playBtn.classList.remove('playing');
+        }
+    });
+
+    // Chạy hiệu ứng vẽ
+    draw();
+</script>
+
+</body>
+</html>

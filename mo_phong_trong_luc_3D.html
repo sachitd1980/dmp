@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<script id="lumi-getcssvar">
+window.getCssVar = window.getCssVar || function(name) {
+  try {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  } catch (e) { return ''; }
+};
+</script>
+
+<script id="lumi-canvas-guard">
+(function() {
+  if (window.__lumiCanvasGuard) return;
+  window.__lumiCanvasGuard = true;
+  var MAX_PX = 4096, MIN_FONT_PX = 12;
+  try {
+    var CP = HTMLCanvasElement.prototype;
+    var BOX = {width: 'clientWidth', height: 'clientHeight'}, D = {};
+    Object.keys(BOX).forEach(function(p) {
+      D[p] = Object.getOwnPropertyDescriptor(CP, p);
+    });
+    var tracking = function(el, p) {
+      var box = el[BOX[p]];
+      return !el.style[p] && box > 0 && box === D[p].get.call(el) &&
+          box === el['__lumiLast' + p];
+    };
+    var MAX = {width: 'maxWidth', height: 'maxHeight'};
+    var PAD = {width: ['paddingLeft', 'paddingRight'],
+               height: ['paddingTop', 'paddingBottom']};
+    var avail = function(el, p) {
+      var pe = el.parentElement;
+      if (!pe) return 0;
+      var cs = getComputedStyle(pe);
+      return pe[BOX[p]] - parseFloat(cs[PAD[p][0]]) -
+          parseFloat(cs[PAD[p][1]]);
+    };
+    Object.keys(BOX).forEach(function(p) {
+      var d = D[p];
+      if (!d || !d.set || !d.get) return;
+      Object.defineProperty(CP, p, {
+        configurable: true, enumerable: d.enumerable, get: d.get,
+        set: function(v) {
+          var n = +v, box = this[BOX[p]];
+          if (n > MAX_PX) n = MAX_PX;
+          if (n > box && tracking(this, p)) {
+            var el = this, pins = {};
+            Object.keys(BOX).forEach(function(q) {
+              if (tracking(el, q)) pins[q] = avail(el, q) ||
+                  el['__lumiBox' + q];
+            });
+            Object.keys(pins).forEach(function(q) {
+              el.style[q] = '100%';
+              el.style[MAX[q]] = pins[q] + 'px';
+            });
+            n = box;
+          }
+          this['__lumiBox' + p] = box;
+          this['__lumiLast' + p] = n;
+          d.set.call(this, isNaN(n) ? v : n);
+        }
+      });
+    });
+  } catch (e) {}
+})();
+</script>
+
+<style id="lumi-runtime">
+/* (Giữ nguyên toàn bộ CSS của Luminous Design System) */
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans+Flex:ital,wght@0,300..700;1,300..700&family=Google+Sans+Code:ital,wght,MONO@0,300..700,0..1;1,300..700,0..1&display=swap');
+
+:root {
+  --body-bg: transparent;
+  --ff-sans: 'Google Sans Flex', 'Google Sans Text', 'Google Sans', sans-serif;
+  --ff-mono: 'Google Sans Code', 'Google Sans Mono', monospace;
+  --lumi-sys-spacing--xxs: 2px;
+  --lumi-sys-spacing--xs: 4px;
+  --lumi-sys-spacing--s: 8px;
+  --lumi-sys-spacing--m: 12px;
+  --lumi-sys-spacing--l: 16px;
+  --lumi-sys-spacing--xl: 20px;
+  --lumi-sys-spacing--xxl: 24px;
+  --lumi-sys-shape--small: 8px;
+  --lumi-sys-shape--medium: 12px;
+  --lumi-sys-shape--large: 16px;
+  --lumi-sys-shape--full: 999px;
+  --lumi-sys-color--surface: #fdfcfc;
+  --lumi-sys-color--surface-dim: #f2f0f0;
+  --lumi-sys-color--surface-bright: #ffffff;
+  --lumi-sys-color--on-surface: #000000;
+  --lumi-sys-color--on-surface-variant: rgba(0, 0, 0, 0.55);
+  --lumi-sys-color--accent-fixed: #3186ff;
+  --lumi-sys-color--stroke-default: #e3e3e3;
+  --lumi-sys-color--chart-series-1: #2575fc;
+  --lumi-sys-color--chart-series-2: #5b6e9e;
+}
+
+:root[data-theme="dark"], body.dark-mode {
+  --body-bg: #0f0f0f;
+  --lumi-sys-color--surface: #0f0f0f;
+  --lumi-sys-color--surface-dim: #141414;
+  --lumi-sys-color--surface-bright: #1c1c1c;
+  --lumi-sys-color--on-surface: #e0e0e0;
+  --lumi-sys-color--on-surface-variant: rgba(255, 255, 255, 0.55);
+  --lumi-sys-color--stroke-default: #2d2f38;
+  --lumi-sys-color--chart-series-1: #9dd2ff;
+  --lumi-sys-color--chart-series-2: #96a7d6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --body-bg: #0f0f0f;
+    --lumi-sys-color--surface: #0f0f0f;
+    --lumi-sys-color--surface-dim: #141414;
+    --lumi-sys-color--surface-bright: #1c1c1c;
+    --lumi-sys-color--on-surface: #e0e0e0;
+    --lumi-sys-color--on-surface-variant: rgba(255, 255, 255, 0.55);
+    --lumi-sys-color--stroke-default: #2d2f38;
+    --lumi-sys-color--chart-series-1: #9dd2ff;
+    --lumi-sys-color--chart-series-2: #96a7d6;
+  }
+}
+
+:root {
+  --surface-dim: var(--lumi-sys-color--surface-dim, #f2f0f0);
+  --surface-bright: var(--lumi-sys-color--surface-bright, #ffffff);
+  --on-surface: var(--lumi-sys-color--on-surface, #000000);
+  --on-surface-variant: var(--lumi-sys-color--on-surface-variant, rgba(0, 0, 0, 0.55));
+  --stroke-default: var(--lumi-sys-color--stroke-default, #e3e3e3);
+  --chart-1: var(--lumi-sys-color--chart-series-1, #2575fc);
+  --chart-2: var(--lumi-sys-color--chart-series-2, #5b6e9e);
+  --r-s: var(--lumi-sys-shape--small, 8px);
+  --r-m: var(--lumi-sys-shape--medium, 12px);
+}
+
+html, body {
+  background: var(--body-bg, transparent) !important;
+  color: var(--on-surface) !important;
+  overflow-y: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.widget-container { width: 100%; box-sizing: border-box; }
+
+.lumi-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 0 16px;
+  font-family: var(--ff-sans); font-size: 13px; font-weight: 500; border-radius: 999px;
+  border: 1px solid var(--stroke-default); cursor: pointer; transition: 0.15s;
+  background-color: var(--surface-bright); color: var(--on-surface);
+}
+.lumi-btn:hover { background-color: var(--surface-dim); }
+
+.lumi-slider-container { display: flex; align-items: center; gap: 16px; width: 100%; }
+.lumi-slider {
+  appearance: none; width: calc(100% + 28px); margin: 0 -14px; height: 40px; background: transparent; cursor: pointer;
+}
+.lumi-slider:focus { outline: none; }
+.lumi-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  --thumb-center: calc(14px + (100% - 28px) * (var(--progress, 50%) / 100%));
+  background: linear-gradient(to right, var(--on-surface) 0%, var(--on-surface) var(--thumb-center), var(--stroke-default) var(--thumb-center), var(--stroke-default) 100%);
+  border-radius: 999px;
+}
+.lumi-slider::-webkit-slider-thumb {
+  appearance: none; width: 32px; height: 32px; border-radius: 50%;
+  background-color: var(--on-surface); border: 2px solid var(--surface-bright);
+  margin-top: -14px; cursor: pointer;
+}
+.lumi-slider-value {
+  display: flex; align-items: center; justify-content: center; min-width: 48px; height: 32px;
+  background-color: var(--surface-dim); border-radius: 8px; font-family: var(--ff-mono); font-size: 13px;
+}
+</style>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mô Phỏng Vật Lý 3D</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%; font-family: var(--ff-sans);
+    }
+    .widget-container {
+      display: flex; flex-direction: column; gap: var(--lumi-sys-spacing--m); padding: 0;
+    }
+    .header-card {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; background: var(--surface-dim); border-radius: var(--r-m);
+    }
+    .header-titles h2 { margin: 0; font-size: 18px; line-height: 22px; font-weight: 600; }
+    .header-titles p { margin: 2px 0 0 0; font-size: 13px; color: var(--on-surface-variant); }
+    .telemetry-deck {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+    }
+    .telemetry-card {
+      background: var(--surface-bright); border: 1px solid var(--stroke-default);
+      border-radius: var(--r-s); padding: 8px 12px; display: flex; flex-direction: column; gap: 4px;
+    }
+    .telemetry-head { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--on-surface-variant); }
+    .telemetry-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .telemetry-metrics { display: flex; justify-content: space-between; font-family: var(--ff-mono); font-size: 12px; }
+    .control-deck {
+      display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--surface-dim); border-radius: var(--r-m);
+    }
+    .control-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+    .control-row { display: flex; flex-direction: column; gap: 4px; }
+    .control-label { font-size: 13px; }
+    
+    /* Viewport chứa Canvas 3D */
+    .canvas-viewport {
+      position: relative; width: 100%; height: 380px; overflow: hidden;
+      border-radius: var(--r-m); background: var(--surface-dim); border: 1px solid var(--stroke-default);
+      touch-action: none; cursor: grab;
+    }
+    .canvas-viewport:active { cursor: grabbing; }
+    .canvas-hint {
+      position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: white;
+      padding: 4px 8px; border-radius: 4px; font-size: 11px; pointer-events: none; backdrop-filter: blur(4px);
+    }
+  </style>
+
+  <!-- Load Three.js cho render 3D -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Load Cannon.js cho vật lý 3D -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+
+<script id="lumi-os-theme-init">
+(function() {
+  function syncBody() {
+    var dt = document.documentElement.getAttribute('data-theme');
+    if (document.body && (dt === 'dark' || dt === 'light')) document.body.classList.toggle('dark-mode', dt === 'dark');
+  }
+  function syncTheme(theme) {
+    if (theme !== 'dark' && theme !== 'light') return;
+    document.documentElement.setAttribute('data-theme', theme); syncBody();
+  }
+  new MutationObserver(syncBody).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  document.addEventListener('DOMContentLoaded', syncBody);
+  window.addEventListener('message', function(e) {
+    if (e.data && (e.data.type === 'set-theme' || e.data.type === 'APPLY_THEME') && e.data.theme) syncTheme(e.data.theme);
+  });
+})();
+</script>
+</head>
+<body>
+  <div class="widget-container">
+    <div class="header-card">
+      <div class="header-titles">
+        <h2>Mô Phỏng Không Gian 3D</h2>
+        <p>Hệ lò xo & thanh cứng kết nối động học - Kéo xoay camera để xem góc độ khác</p>
+      </div>
+      <button id="resetBtn" class="lumi-btn" type="button">Reset</button>
+    </div>
+
+    <div class="canvas-viewport" id="viewport">
+      <div class="canvas-hint">Kéo chuột/chạm để xoay góc nhìn</div>
+      <!-- WebGL canvas sẽ được gắn vào đây bởi Three.js -->
+    </div>
+
+    <div class="telemetry-deck">
+      <div class="telemetry-card">
+        <div class="telemetry-head">
+          <span class="telemetry-dot" style="background: var(--chart-1);"></span> Khối lượng 1 (Lò xo)
+        </div>
+        <div class="telemetry-metrics">
+          <span>Pos: <span id="t-pos1">0.0, 0.0, 0.0</span></span>
+          <span>Vel: <span id="t-vel1">0.0</span> m/s</span>
+        </div>
+      </div>
+      <div class="telemetry-card">
+        <div class="telemetry-head">
+          <span class="telemetry-dot" style="background: var(--chart-2);"></span> Khối lượng 2 (Thanh cứng)
+        </div>
+        <div class="telemetry-metrics">
+          <span>Pos: <span id="t-pos2">0.0, 0.0, 0.0</span></span>
+          <span>Vel: <span id="t-vel2">0.0</span> m/s</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-deck">
+      <div class="control-grid">
+        <div class="control-row">
+          <label class="control-label" for="slider-g">Trọng lực (g)</label>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-g" class="lumi-slider" data-key="g" min="0" max="2" step="0.1" value="1.0" style="--progress: 50%;">
+            <div id="slider-g-val" class="lumi-slider-value">1.0</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <label class="control-label" for="slider-k">Độ cứng lò xo (k)</label>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-k" class="lumi-slider" data-key="k" min="0.01" max="0.2" step="0.01" value="0.05" style="--progress: 21%;">
+            <div id="slider-k-val" class="lumi-slider-value">0.05</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <label class="control-label" for="slider-m1">Khối lượng m1</label>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-m1" class="lumi-slider" data-key="m1" min="0.2" max="5.0" step="0.1" value="1.0" style="--progress: 16.6%;">
+            <div id="slider-m1-val" class="lumi-slider-value">1.0</div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <label class="control-label" for="slider-m2">Khối lượng m2</label>
+          <div class="lumi-slider-container">
+            <input type="range" id="slider-m2" class="lumi-slider" data-key="m2" min="0.2" max="5.0" step="0.1" value="1.0" style="--progress: 16.6%;">
+            <div id="slider-m2-val" class="lumi-slider-value">1.0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getCssVar(name) {
+      if (!name) return '';
+      const clean = name.replace(/^var\(/, '').replace(/\)$/, '').trim();
+      return getComputedStyle(document.documentElement).getPropertyValue(clean.startsWith('--') ? clean : '--' + clean).trim();
+    }
+
+    const state = { g: 1.0, m1: 1.0, m2: 1.0, k: 0.05 };
+
+    let engine, world, body1, body2, anchorBody;
+    let scene, camera, renderer, controls;
+    let mesh1, mesh2, anchorMesh, springLine, rodMesh;
+    let animationFrameId;
+    let springConstraint, rodConstraint;
+
+    // Cannon.js và Three.js Setup
+    function init3DPhysics() {
+      // --- THREE.JS SETUP ---
+      const viewport = document.getElementById('viewport');
+      scene = new THREE.Scene();
+      
+      camera = new THREE.PerspectiveCamera(45, viewport.clientWidth / viewport.clientHeight, 0.1, 100);
+      camera.position.set(0, 2, 20); // Đứng lùi ra sau để nhìn toàn hệ thống
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio || 1);
+      renderer.shadowMap.enabled = true;
+      viewport.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.target.set(0, 0, 0);
+
+      // Lights
+      const ambient = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambient);
+      const directional = new THREE.DirectionalLight(0xffffff, 0.8);
+      directional.position.set(5, 15, 10);
+      directional.castShadow = true;
+      scene.add(directional);
+
+      // --- CANNON.JS SETUP ---
+      world = new CANNON.World();
+      world.gravity.set(0, -9.81 * state.g, 0);
+      world.broadphase = new CANNON.NaiveBroadphase();
+      world.solver.iterations = 20; // Ổn định vật lý
+
+      // Vật liệu và màu sắc theo biến CSS Luminous
+      const color1 = parseInt(getCssVar('--chart-1').replace('#', '0x')) || 0x2575fc;
+      const color2 = parseInt(getCssVar('--chart-2').replace('#', '0x')) || 0x5b6e9e;
+      const onSurface = parseInt(getCssVar('--on-surface').replace('#', '0x')) || 0x000000;
+
+      // 1. Điểm Neo (Anchor)
+      anchorBody = new CANNON.Body({ mass: 0 }); // Khối lượng 0 = tĩnh
+      anchorBody.position.set(0, 5, 0);
+      world.addBody(anchorBody);
+
+      const anchorGeo = new THREE.SphereGeometry(0.3, 16, 16);
+      const anchorMat = new THREE.MeshStandardMaterial({ color: onSurface, roughness: 0.3 });
+      anchorMesh = new THREE.Mesh(anchorGeo, anchorMat);
+      anchorMesh.position.copy(anchorBody.position);
+      scene.add(anchorMesh);
+
+      // 2. Khối lượng 1 (Nối với neo bằng lò xo)
+      const radius1 = 0.8;
+      const shape1 = new CANNON.Sphere(radius1);
+      body1 = new CANNON.Body({ mass: state.m1, shape: shape1, linearDamping: 0.1, angularDamping: 0.1 });
+      body1.position.set(2, 2, 0);
+      world.addBody(body1);
+
+      const geo1 = new THREE.SphereGeometry(radius1, 32, 32);
+      const mat1 = new THREE.MeshStandardMaterial({ color: color1, metalness: 0.2, roughness: 0.4 });
+      mesh1 = new THREE.Mesh(geo1, mat1);
+      mesh1.castShadow = true;
+      scene.add(mesh1);
+
+      // 3. Khối lượng 2 (Nối với Body 1 bằng thanh cứng)
+      const radius2 = 0.8;
+      const shape2 = new CANNON.Sphere(radius2);
+      body2 = new CANNON.Body({ mass: state.m2, shape: shape2, linearDamping: 0.1, angularDamping: 0.1 });
+      body2.position.set(4, -1, 0);
+      world.addBody(body2);
+
+      const geo2 = new THREE.SphereGeometry(radius2, 32, 32);
+      const mat2 = new THREE.MeshStandardMaterial({ color: color2, metalness: 0.2, roughness: 0.4 });
+      mesh2 = new THREE.Mesh(geo2, mat2);
+      mesh2.castShadow = true;
+      scene.add(mesh2);
+
+      // 4. Lò xo (Spring: Neo -> Body 1)
+      springConstraint = new CANNON.Spring(anchorBody, body1, {
+        localAnchorA: new CANNON.Vec3(0, 0, 0),
+        localAnchorB: new CANNON.Vec3(0, 0, 0),
+        restLength: 3,
+        stiffness: state.k * 1500, // Scale độ cứng lò xo cho môi trường 3D
+        damping: 3,
+      });
+      // Cannon Spring cần được gọi applyForce() mỗi frame trước khi step thế giới
+      world.addEventListener("preStep", () => {
+        springConstraint.applyForce();
+      });
+
+      // Visual cho Lò Xo (Dùng THREE.Line để vẽ đường xoắn ốc)
+      const springMat = new THREE.LineBasicMaterial({ color: color1, linewidth: 2 });
+      springLine = new THREE.Line(new THREE.BufferGeometry(), springMat);
+      scene.add(springLine);
+
+      // 5. Thanh Cứng (Distance Constraint: Body 1 -> Body 2)
+      rodConstraint = new CANNON.DistanceConstraint(body1, body2, 4.0); // Độ dài cố định
+      world.addConstraint(rodConstraint);
+
+      // Visual cho Thanh cứng (Cylinder)
+      const rodGeo = new THREE.CylinderGeometry(0.1, 0.1, 1, 8);
+      rodGeo.translate(0, 0.5, 0); // Di chuyển pivot về đáy
+      const rodMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5 });
+      rodMesh = new THREE.Mesh(rodGeo, rodMat);
+      scene.add(rodMesh);
+
+      // Tương tác Kéo thả Chuột (Drag/Drop) trong 3D
+      setup3DDragging();
+    }
+
+    // Hàm tạo lưới điểm hình lò xo xoắn
+    function updateSpringVisual(posA, posB) {
+      const coils = 12;
+      const radius = 0.4;
+      const points = [];
+      const dir = new THREE.Vector3().subVectors(posB, posA);
+      const length = dir.length();
+      dir.normalize();
+
+      const axis = new THREE.Vector3(0, 1, 0);
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(axis, dir);
+
+      for (let i = 0; i <= 100; i++) {
+        const t = i / 100;
+        const angle = t * Math.PI * 2 * coils;
+        const p = new THREE.Vector3(
+          Math.cos(angle) * radius,
+          t * length,
+          Math.sin(angle) * radius
+        );
+        p.applyQuaternion(quaternion);
+        p.add(posA);
+        points.push(p);
+      }
+      springLine.geometry.setFromPoints(points);
+    }
+
+    // Cập nhật mesh thanh cứng nối 2 vật thể
+    function updateRodVisual(posA, posB) {
+      const distance = posA.distanceTo(posB);
+      rodMesh.position.copy(posA);
+      rodMesh.scale.set(1, distance, 1);
+      rodMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), posB.clone().sub(posA).normalize());
+    }
+
+    // Thiết lập tính năng kéo chuột cho vật lý 3D
+    function setup3DDragging() {
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      let draggedBody = null;
+      let dragConstraint = null;
+      const dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+      const intersectionPoint = new THREE.Vector3();
+      const kinematicBody = new CANNON.Body({ mass: 0, type: CANNON.Body.KINEMATIC });
+      world.addBody(kinematicBody);
+
+      renderer.domElement.addEventListener('pointerdown', (e) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects([mesh1, mesh2]);
+
+        if (intersects.length > 0) {
+          controls.enabled = false; // Tạm dừng xoay camera
+          draggedBody = (intersects[0].object === mesh1) ? body1 : body2;
+          
+          dragPlane.setFromNormalAndCoplanarPoint(
+            camera.getWorldDirection(dragPlane.normal),
+            intersects[0].point
+          );
+          
+          kinematicBody.position.copy(intersects[0].point);
+          dragConstraint = new CANNON.PointToPointConstraint(
+            draggedBody, new CANNON.Vec3(0,0,0),
+            kinematicBody, new CANNON.Vec3(0,0,0)
+          );
+          world.addConstraint(dragConstraint);
+        }
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (draggedBody) {
+          const rect = renderer.domElement.getBoundingClientRect();
+          mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+          mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+          raycaster.setFromCamera(mouse, camera);
+          raycaster.ray.intersectPlane(dragPlane, intersectionPoint);
+          kinematicBody.position.copy(intersectionPoint);
+        }
+      });
+
+      window.addEventListener('pointerup', () => {
+        if (dragConstraint) {
+          world.removeConstraint(dragConstraint);
+          dragConstraint = null;
+        }
+        draggedBody = null;
+        controls.enabled = true; // Bật lại xoay camera
+      });
+    }
+
+    // Animation Loop
+    function animate() {
+      animationFrameId = requestAnimationFrame(animate);
+
+      // Cập nhật logic vật lý
+      world.step(1 / 60);
+
+      // Cập nhật vị trí đồ họa dựa trên vật lý
+      mesh1.position.copy(body1.position);
+      mesh1.quaternion.copy(body1.quaternion);
+      mesh2.position.copy(body2.position);
+      mesh2.quaternion.copy(body2.quaternion);
+
+      // Vẽ lò xo và thanh nối
+      updateSpringVisual(anchorMesh.position, mesh1.position);
+      updateRodVisual(mesh1.position, mesh2.position);
+
+      controls.update();
+      renderer.render(scene, camera);
+
+      // Cập nhật thông số bảng Telemetry
+      const v1 = Math.hypot(body1.velocity.x, body1.velocity.y, body1.velocity.z).toFixed(1);
+      const v2 = Math.hypot(body2.velocity.x, body2.velocity.y, body2.velocity.z).toFixed(1);
+
+      document.getElementById('t-pos1').textContent = `${body1.position.x.toFixed(1)}, ${body1.position.y.toFixed(1)}, ${body1.position.z.toFixed(1)}`;
+      document.getElementById('t-vel1').textContent = v1;
+
+      document.getElementById('t-pos2').textContent = `${body2.position.x.toFixed(1)}, ${body2.position.y.toFixed(1)}, ${body2.position.z.toFixed(1)}`;
+      document.getElementById('t-vel2').textContent = v2;
+    }
+
+    // Áp dụng thay đổi từ thanh trượt UI
+    function updatePhysicsState() {
+      if (!world) return;
+      world.gravity.set(0, -9.81 * state.g, 0);
+      springConstraint.stiffness = state.k * 1500;
+      
+      // Update khối lượng và tỉ lệ hiển thị (radius)
+      body1.mass = state.m1;
+      body1.updateMassProperties();
+      const s1 = 0.7 + state.m1 * 0.15;
+      mesh1.scale.set(s1, s1, s1);
+
+      body2.mass = state.m2;
+      body2.updateMassProperties();
+      const s2 = 0.7 + state.m2 * 0.15;
+      mesh2.scale.set(s2, s2, s2);
+    }
+
+    function resetSimulation() {
+      state.g = 1.0; state.k = 0.05; state.m1 = 1.0; state.m2 = 1.0;
+
+      const controlsConf = [
+        { id: 'slider-g', val: 1.0, min: 0, max: 2 },
+        { id: 'slider-k', val: 0.05, min: 0.01, max: 0.2 },
+        { id: 'slider-m1', val: 1.0, min: 0.2, max: 5.0 },
+        { id: 'slider-m2', val: 1.0, min: 0.2, max: 5.0 }
+      ];
+
+      controlsConf.forEach(c => {
+        const input = document.getElementById(c.id);
+        if (input) {
+          input.value = c.val;
+          const pct = (c.val - c.min) / (c.max - c.min) * 100;
+          input.style.setProperty('--progress', pct + '%');
+          const valBadge = document.getElementById(`${c.id}-val`);
+          if (valBadge) valBadge.textContent = c.val;
+        }
+      });
+
+      // Đưa các quả cầu về trạng thái ngẫu nhiên ban đầu
+      body1.position.set(2, 2, 0);
+      body1.velocity.set(0,0,0);
+      body1.angularVelocity.set(0,0,0);
+      
+      body2.position.set(4, -1, 2);
+      body2.velocity.set(0,0,0);
+      body2.angularVelocity.set(0,0,0);
+      
+      updatePhysicsState();
+      
+      // Đặt lại góc camera
+      controls.target.set(0,0,0);
+      camera.position.set(0, 2, 20);
+    }
+
+    // Gắn sự kiện cho các thanh trượt Luminous Slider
+    document.querySelectorAll('.lumi-slider').forEach(slider => {
+      slider.addEventListener('input', (e) => {
+        const key = e.target.dataset.key;
+        state[key] = parseFloat(e.target.value);
+        const pct = (e.target.value - e.target.min) / (e.target.max - e.target.min) * 100;
+        e.target.style.setProperty('--progress', pct + '%');
+        document.getElementById(`${e.target.id}-val`).textContent = e.target.value;
+        updatePhysicsState();
+      });
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', resetSimulation);
+
+    // Xử lý Resize Màn Hình
+    window.addEventListener('resize', () => {
+      if(!camera || !renderer) return;
+      const viewport = document.getElementById('viewport');
+      camera.aspect = viewport.clientWidth / viewport.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+    });
+
+    // Khởi chạy
+    init3DPhysics();
+    animate();
+
+    // Theme Sync cho 3D Canvas khi đổi màu nền
+    const applyTheme = t => {
+      if(!scene) return;
+      setTimeout(() => {
+        const bgColor = getCssVar('--surface-dim');
+        scene.background = new THREE.Color(bgColor);
+      }, 50);
+    };
+    if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) applyTheme('dark');
+    window.addEventListener('message', e => {
+      if (e.data?.type === 'set-theme' || e.data?.type === 'APPLY_THEME') applyTheme(e.data.theme);
+    });
+  </script>
+
+<script>/*luminous-slider-normalizer*/(function(){function f(r){if(!r||r.type!=='range')return;var mn=parseFloat(r.min||'0'),mx=parseFloat(r.max||'100'),v=parseFloat(r.value);if(isNaN(v))v=(mn+mx)/2;var p=mx>mn?((v-mn)/(mx-mn))*100:50;r.style.setProperty('--progress',p+'%');r.style.removeProperty('--slider-fill');}function all(){document.querySelectorAll('input[type="range"], .lumi-slider').forEach(f);}document.addEventListener('input',function(e){f(e.target);});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',all);else all();})();</script>
+</body>
+</html>
