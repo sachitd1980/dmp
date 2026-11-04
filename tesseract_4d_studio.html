@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TESSERACT 4D STUDIO — Mô Hình Hóa & Giải Phẫu Không Gian Đa Chiều</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js r128 & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- Chart.js for N-Dimensional Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            studio: {
+              bg: '#07090e',
+              panel: '#0d111a',
+              card: '#131926',
+              border: '#1f293d',
+              accent: '#00f0ff',
+              secondary: '#8b5cf6'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #07090e;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #26334d;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+
+    /* Range Slider Styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      background: #1e293b;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #38bdf8;
+      border: 2px solid #07090e;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      background: #7dd3fc;
+    }
+
+    .glass-hud {
+      background: rgba(13, 17, 26, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+    }
+
+    .mode-tab {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .mode-tab.active {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(139, 92, 246, 0.22));
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    .cell-btn.active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+
+    #canvas-container canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen w-screen overflow-hidden">
+
+  <!-- ==================== TOP NAVIGATION & MODE SWITCHER ==================== -->
+  <header class="h-14 bg-studio-panel border-b border-studio-border px-3 lg:px-5 flex items-center justify-between shrink-0 z-30">
+    <!-- Brand Title -->
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-500/20 to-violet-600/30 border border-sky-400/40 flex items-center justify-center shadow-lg shadow-sky-500/10">
+        <i class="fa-solid fa-cube text-sky-400 text-lg"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-mono font-bold text-sm md:text-base tracking-wider text-white">TESSERACT 4D STUDIO</h1>
+          <span class="hidden sm:inline-block text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">WebGL CAD v4.0</span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden md:block">Mô Hình Hóa Hình Học Đa Chiều — Đếm · Bóng Đổ · Trải Phẳng · Lát Cắt · Giải Tích N-Chiều</p>
+      </div>
+    </div>
+
+    <!-- 5 Interactive Mode Tabs -->
+    <nav class="flex items-center gap-1 md:gap-1.5 overflow-x-auto py-1 max-w-[58vw] lg:max-w-none">
+      <button onclick="switchMode('shadow')" id="tab-shadow" class="mode-tab active px-2.5 py-1.5 rounded-lg border border-studio-border text-xs font-medium text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-lightbulb text-sky-400"></i>
+        <span>1. Bóng Đổ 4D</span>
+      </button>
+      <button onclick="switchMode('extrude')" id="tab-extrude" class="mode-tab px-2.5 py-1.5 rounded-lg border border-studio-border text-xs font-medium text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-arrows-up-down-left-right text-emerald-400"></i>
+        <span>2. Phép Đếm (0D→4D)</span>
+      </button>
+      <button onclick="switchMode('unfold')" id="tab-unfold" class="mode-tab px-2.5 py-1.5 rounded-lg border border-studio-border text-xs font-medium text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-cross text-amber-400"></i>
+        <span>3. Trải Phẳng Dalí</span>
+      </button>
+      <button onclick="switchMode('slice')" id="tab-slice" class="mode-tab px-2.5 py-1.5 rounded-lg border border-studio-border text-xs font-medium text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-layer-group text-fuchsia-400"></i>
+        <span>4. Lát Cắt 3D</span>
+      </button>
+      <button onclick="switchMode('ndim')" id="tab-ndim" class="mode-tab px-2.5 py-1.5 rounded-lg border border-studio-border text-xs font-medium text-slate-300 flex items-center gap-1.5 whitespace-nowrap">
+        <i class="fa-solid fa-chart-line text-rose-400"></i>
+        <span>5. Không Gian N-Chiều</span>
+      </button>
+    </nav>
+
+    <!-- Export & Camera Actions -->
+    <div class="flex items-center gap-1.5">
+      <button onclick="exportCurrentOBJ()" title="Xuất mô hình 3D hiện tại sang file .OBJ (Blender / CAD)" class="px-2.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-mono flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-download"></i>
+        <span class="hidden xl:inline">Xuất .OBJ</span>
+      </button>
+      <button onclick="exportCurrentJSON()" title="Xuất dữ liệu tọa độ 4D/3D sang .JSON" class="px-2.5 py-1.5 rounded-lg bg-violet-500/15 hover:bg-violet-500/25 border border-violet-500/40 text-violet-300 text-xs font-mono flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-file-code"></i>
+        <span class="hidden xl:inline">.JSON</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN WORKSPACE (VIEWPORT + CONTROL SIDEBAR) ==================== -->
+  <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+    <!-- 3D WEBGL VIEWPORT -->
+    <main class="relative flex-1 h-[54vh] lg:h-full bg-studio-bg overflow-hidden" id="viewport-wrapper">
+      <div id="canvas-container" class="w-full h-full"></div>
+
+      <!-- TOP-LEFT TELEMETRY HUD OVERLAY -->
+      <div class="absolute top-3 left-3 glass-hud rounded-xl p-3 text-xs pointer-events-none max-w-xs sm:max-w-sm shadow-2xl">
+        <div class="flex items-center justify-between gap-4 border-b border-slate-700/60 pb-1.5 mb-2">
+          <span id="hud-mode-title" class="font-mono font-semibold text-sky-400 uppercase tracking-wider">CHẾ ĐỘ 1: BÓNG ĐỔ SCHLEGEL 4D</span>
+          <span id="hud-fps" class="font-mono text-[11px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">60 FPS</span>
+        </div>
+
+        <!-- Topological Counters -->
+        <div class="grid grid-cols-4 gap-1.5 text-center font-mono mb-2">
+          <div class="bg-slate-900/80 border border-slate-800 rounded p-1.5">
+            <div class="text-[10px] text-slate-400">ĐỈNH (V)</div>
+            <div id="hud-v" class="text-sm font-bold text-white">16</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded p-1.5">
+            <div class="text-[10px] text-slate-400">CẠNH (E)</div>
+            <div id="hud-e" class="text-sm font-bold text-sky-400">32</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded p-1.5">
+            <div class="text-[10px] text-slate-400">MẶT (F)</div>
+            <div id="hud-f" class="text-sm font-bold text-violet-400">24</div>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 rounded p-1.5">
+            <div class="text-[10px] text-slate-400">KHỐI (C)</div>
+            <div id="hud-c" class="text-sm font-bold text-amber-400">8</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Formula & Mathematical Insight -->
+        <div class="flex items-center justify-between text-[11px] font-mono text-slate-300 bg-slate-900/60 px-2 py-1 rounded border border-slate-800/80">
+          <span id="hud-formula">Euler: V - E + F - C = 0</span>
+          <span id="hud-diagonal" class="text-sky-300">Đường chéo: √4 = 2.00</span>
+        </div>
+        <p id="hud-desc" class="text-[11px] text-slate-400 mt-2 leading-relaxed">
+          Phép chiếu phối cảnh từ chiều thứ 4 (trục W) xuống không gian 3D tạo ra một khối lập phương nhỏ nằm lồng trong khối lập phương lớn, nối với nhau qua 6 khối chóp cụt.
+        </p>
+      </div>
+
+      <!-- BOTTOM-LEFT FLATLAND 2D OBSERVER MINI-PREVIEW (Active in Slice Mode) -->
+      <div id="flatland-preview-box" class="hidden absolute bottom-14 left-3 glass-hud rounded-xl p-2.5 w-48 shadow-xl pointer-events-none">
+        <div class="flex items-center justify-between text-[10px] font-mono text-fuchsia-300 mb-1">
+          <span>GÓC NHÌN "ÔNG HÌNH VUÔNG" (2D)</span>
+          <i class="fa-solid fa-eye"></i>
+        </div>
+        <canvas id="flatland-canvas" width="170" height="110" class="w-full h-24 bg-slate-950 rounded border border-slate-800"></canvas>
+        <div id="flatland-caption" class="text-[10px] text-slate-400 mt-1 text-center font-mono">Lát cắt 2D tương đương</div>
+      </div>
+
+      <!-- BOTTOM VIEWPORT QUICK TOOLBAR -->
+      <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        <div class="glass-hud px-3 py-1.5 rounded-lg flex items-center gap-3 text-[11px] text-slate-300 pointer-events-auto">
+          <span><i class="fa-solid fa-computer-mouse text-sky-400 mr-1"></i>Xoay 3D: Kéo chuột trái</span>
+          <span class="hidden sm:inline"><i class="fa-solid fa-magnifying-glass-plus text-sky-400 mr-1"></i>Thu phóng: Cuộn chuột</span>
+          <button onclick="resetCameraView()" class="text-sky-400 hover:text-sky-300 font-mono underline ml-1">Đặt lại góc nhìn</button>
+        </div>
+
+        <!-- Theme Selector Pills -->
+        <div class="glass-hud px-2.5 py-1 rounded-lg flex items-center gap-1.5 pointer-events-auto">
+          <span class="text-[10px] font-mono text-slate-400 mr-1">Chất liệu:</span>
+          <button onclick="setTheme('cyber')" class="w-4 h-4 rounded-full bg-cyan-400 ring-2 ring-offset-1 ring-offset-slate-900 ring-cyan-400" title="Cyber Cyan"></button>
+          <button onclick="setTheme('dali')" class="w-4 h-4 rounded-full bg-amber-400 hover:scale-110 transition" title="Dalí Gold"></button>
+          <button onclick="setTheme('matrix')" class="w-4 h-4 rounded-full bg-emerald-400 hover:scale-110 transition" title="Matrix Emerald"></button>
+          <button onclick="setTheme('plasma')" class="w-4 h-4 rounded-full bg-fuchsia-400 hover:scale-110 transition" title="Plasma Violet"></button>
+        </div>
+      </div>
+
+      <!-- N-DIMENSIONAL ANALYTICS OVERLAY MODAL (Active in Mode 5) -->
+      <div id="ndim-overlay" class="hidden absolute inset-x-3 bottom-14 top-3 md:left-auto md:w-[540px] glass-hud rounded-2xl p-4 overflow-y-auto z-20 shadow-2xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <h3 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie text-rose-400"></i>
+              BIỂU ĐỒ GIẢI TÍCH KHÔNG GIAN N-CHIỀU
+            </h3>
+            <p class="text-[11px] text-slate-400">Khi số chiều tăng lên, trực giác hình học 3D hoàn toàn sụp đổ</p>
+          </div>
+          <span id="ndim-badge" class="px-2.5 py-1 rounded bg-rose-500/20 border border-rose-500/40 text-rose-300 font-mono text-xs font-bold">N = 4 CHIỀU</span>
+        </div>
+
+        <!-- Key Metrics Grid for Selected N -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
+          <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg">
+            <div class="text-[10px] text-slate-400">SỐ ĐỈNH (2^N)</div>
+            <div id="ndim-stat-vertices" class="text-xs font-bold text-white truncate">16</div>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg">
+            <div class="text-[10px] text-slate-400">THỂ TÍCH CẦU R=1</div>
+            <div id="ndim-stat-vol" class="text-xs font-bold text-sky-400">4.9348</div>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg">
+            <div class="text-[10px] text-slate-400">TỶ LỆ CẦU / HỘP</div>
+            <div id="ndim-stat-ratio" class="text-xs font-bold text-amber-400">30.84%</div>
+          </div>
+          <div class="bg-slate-900/90 border border-slate-800 p-2 rounded-lg">
+            <div class="text-[10px] text-slate-400">TÂM ĐẾN ĐỈNH (√N)</div>
+            <div id="ndim-stat-diag" class="text-xs font-bold text-rose-400">2.000 m</div>
+          </div>
+        </div>
+
+        <!-- Chart 1: Hypersphere Volume Peak at N=5 -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3">
+          <div class="flex items-center justify-between text-[11px] font-mono text-slate-300 mb-1">
+            <span>1. Thể tích Siêu Cầu bán kính R=1 (Đạt cực đại tại N = 5 chiều)</span>
+            <span class="text-sky-400">V₅ ≈ 5.264</span>
+          </div>
+          <div class="h-36 w-full">
+            <canvas id="chart-sphere-vol"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Sphere-to-Cube Ratio & Corner Distance -->
+        <div class="bg-slate-950/70 border border-slate-800/90 rounded-xl p-3">
+          <div class="flex items-center justify-between text-[11px] font-mono text-slate-300 mb-1">
+            <span>2. Tỷ lệ Cầu nội tiếp / Lập phương (%) — Thể tích dồn hết về góc</span>
+            <span class="text-amber-400">N=10: 0.25%</span>
+          </div>
+          <div class="h-36 w-full">
+            <canvas id="chart-ratio"></canvas>
+          </div>
+        </div>
+
+        <!-- Regular Polytopes & AI Insights Box -->
+        <div class="bg-slate-900/70 border border-slate-800 rounded-xl p-3 text-xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-slate-200">Số khối đa diện đều (Regular Polytopes):</span>
+            <span id="ndim-regular-count" class="font-mono text-emerald-400 font-bold">6 khối đều (Có khối 24-cell độc nhất)</span>
+          </div>
+          <p id="ndim-insight-text" class="text-[11px] text-slate-400 leading-relaxed">
+            Ở 4 chiều có 6 khối đa bào đều (bao gồm khối 24-cell gồm 24 bát diện không hề có bản tương tự ở bất kỳ chiều nào khác). Từ 5 chiều trở lên chỉ còn đúng 3 khối đều: Simplex, Hypercube và Cross-polytope.
+          </p>
+        </div>
+      </div>
+
+      <!-- TOAST NOTIFICATION -->
+      <div id="toast-box" class="fixed bottom-5 right-5 z-50 hidden glass-hud border-sky-400/50 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-mono flex items-center gap-2.5">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+        <span id="toast-msg">Đã xuất mô hình thành công!</span>
+      </div>
+    </main>
+
+    <!-- ==================== RIGHT ENGINEERING CONTROL SIDEBAR ==================== -->
+    <aside class="w-full lg:w-[400px] xl:w-[430px] h-[46vh] lg:h-full bg-studio-panel border-t lg:border-t-0 lg:border-l border-studio-border overflow-y-auto p-4 flex flex-col gap-4 shrink-0 z-20">
+
+      <!-- ==================== PANEL 1: MODE 1 (4D SHADOW & ROTATION) ==================== -->
+      <div id="panel-shadow" class="space-y-4">
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+              <i class="fa-solid fa-rotate"></i>
+              Ma Trận Xoay 4 Chiều (6 Mặt Phẳng)
+            </h2>
+            <div class="flex items-center gap-1">
+              <button onclick="activateCliffordDoubleRotation()" class="px-2 py-1 rounded bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/40 text-violet-300 text-[11px] font-mono transition" title="Xoay đồng thời 2 mặt phẳng vuông góc XY và ZW">
+                <i class="fa-solid fa-infinity mr-1"></i>Xoay Kép
+              </button>
+              <button onclick="reset4DRotations()" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-mono transition">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Trong không gian 4D, phép xoay không diễn ra quanh 1 trục mà diễn ra trên <strong>6 mặt phẳng tọa độ</strong>. Xoay trên mặt phẳng chứa chiều thứ 4 (<span class="text-sky-300 font-mono">XW, YW, ZW</span>) tạo ra hiệu ứng <em>lộn trái từ trong ra ngoài</em>.
+          </p>
+
+          <!-- 3 Hyperspatial 4D Planes (XW, YW, ZW) -->
+          <div class="space-y-2.5 pt-1">
+            <div class="text-[10px] font-mono uppercase text-sky-400/90 font-semibold">Mặt phẳng Siêu Không Gian (Chứa trục W):</div>
+            
+            <!-- XW Plane -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <label class="flex items-center gap-2 text-slate-200">
+                  <input type="checkbox" id="auto-xw" checked onchange="syncRotationControls()" class="accent-sky-400 rounded" />
+                  <span>Mặt phẳng <strong class="text-sky-400">XW</strong> (Lộn Trái-Phải 4D)</span>
+                </label>
+                <span id="val-xw" class="text-sky-400">0°</span>
+              </div>
+              <input type="range" id="slider-xw" min="0" max="360" step="1" value="0" oninput="onManualAngleChange('xw', this.value)" />
+            </div>
+
+            <!-- YW Plane -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <label class="flex items-center gap-2 text-slate-200">
+                  <input type="checkbox" id="auto-yw" onchange="syncRotationControls()" class="accent-sky-400 rounded" />
+                  <span>Mặt phẳng <strong class="text-sky-400">YW</strong> (Lộn Trên-Dưới 4D)</span>
+                </label>
+                <span id="val-yw" class="text-sky-400">0°</span>
+              </div>
+              <input type="range" id="slider-yw" min="0" max="360" step="1" value="0" oninput="onManualAngleChange('yw', this.value)" />
+            </div>
+
+            <!-- ZW Plane -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <label class="flex items-center gap-2 text-slate-200">
+                  <input type="checkbox" id="auto-zw" onchange="syncRotationControls()" class="accent-sky-400 rounded" />
+                  <span>Mặt phẳng <strong class="text-sky-400">ZW</strong> (Lộn Trước-Sau 4D)</span>
+                </label>
+                <span id="val-zw" class="text-sky-400">0°</span>
+              </div>
+              <input type="range" id="slider-zw" min="0" max="360" step="1" value="0" oninput="onManualAngleChange('zw', this.value)" />
+            </div>
+          </div>
+
+          <!-- 3 Spatial 3D Planes (XY, YZ, XZ) -->
+          <div class="space-y-2.5 pt-2 border-t border-slate-800">
+            <div class="text-[10px] font-mono uppercase text-violet-400/90 font-semibold">Mặt phẳng Không Gian 3D Quen Thuộc:</div>
+
+            <!-- XY Plane -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <label class="flex items-center gap-2 text-slate-300">
+                  <input type="checkbox" id="auto-xy" onchange="syncRotationControls()" class="accent-violet-400 rounded" />
+                  <span>Mặt phẳng <strong class="text-violet-400">XY</strong> (Quanh trục Z)</span>
+                </label>
+                <span id="val-xy" class="text-violet-400">0°</span>
+              </div>
+              <input type="range" id="slider-xy" min="0" max="360" step="1" value="0" oninput="onManualAngleChange('xy', this.value)" />
+            </div>
+
+            <!-- YZ Plane -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <label class="flex items-center gap-2 text-slate-300">
+                  <input type="checkbox" id="auto-yz" onchange="syncRotationControls()" class="accent-violet-400 rounded" />
+                  <span>Mặt phẳng <strong class="text-violet-400">YZ</strong> (Quanh trục X)</span>
+                </label>
+                <span id="val-yz" class="text-violet-400">0°</span>
+              </div>
+              <input type="range" id="slider-yz" min="0" max="360" step="1" value="0" oninput="onManualAngleChange('yz', this.value)" />
+            </div>
+
+            <!-- XZ Plane -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-mono">
+                <label class="flex items-center gap-2 text-slate-300">
+                  <input type="checkbox" id="auto-xz" onchange="syncRotationControls()" class="accent-violet-400 rounded" />
+                  <span>Mặt phẳng <strong class="text-violet-400">XZ</strong> (Quanh trục Y)</span>
+                </label>
+                <span id="val-xz" class="text-violet-400">0°</span>
+              </div>
+              <input type="range" id="slider-xz" min="0" max="360" step="1" value="0" oninput="onManualAngleChange('xz', this.value)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 4D Camera & Projection Settings -->
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-video"></i>
+              Nguồn Sáng 4D & Phép Chiếu Bóng
+            </h3>
+            <span id="val-wcam" class="text-xs font-mono text-amber-300">d_w = 2.80</span>
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between text-[11px] text-slate-400">
+              <span>Khoảng cách đèn chiếu 4D (Tỉ lệ s = d_w / (d_w - w))</span>
+            </div>
+            <input type="range" id="slider-wcam" min="1.65" max="5.50" step="0.05" value="2.80" oninput="updateWCamera(this.value)" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button onclick="setProjectionType('perspective')" id="btn-proj-persp" class="px-2.5 py-1.5 rounded-lg border border-sky-400 bg-sky-500/20 text-white text-xs font-mono">
+              Phối cảnh (Schlegel)
+            </button>
+            <button onclick="setProjectionType('isometric4d')" id="btn-proj-ortho" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-mono">
+              Trực giao 4 Trục
+            </button>
+          </div>
+        </div>
+
+        <!-- 8-Cubic Cell Anatomy Inspector -->
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+              <i class="fa-solid fa-cubes"></i>
+              Giải Phẫu 8 Khối Lập Phương Biên
+            </h3>
+            <span class="text-[10px] font-mono text-slate-400">Click để bóc tách</span>
+          </div>
+          <p class="text-[11px] text-slate-400">
+            Cũng như lập phương 3D có 6 mặt vuông làm biên, siêu lập phương 4D có <strong>8 khối lập phương 3D</strong> làm biên:
+          </p>
+          <div class="grid grid-cols-2 gap-1.5 text-xs font-mono">
+            <button onclick="selectCellHighlight(-1)" id="cell-btn--1" class="cell-btn active px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              <i class="fa-solid fa-layer-group mr-1"></i>Tất cả 8 khối
+            </button>
+            <button onclick="selectCellHighlight(0)" id="cell-btn-0" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              1. Khối Trong (w = -1)
+            </button>
+            <button onclick="selectCellHighlight(1)" id="cell-btn-1" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              2. Khối Ngoài (w = +1)
+            </button>
+            <button onclick="selectCellHighlight(2)" id="cell-btn-2" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              3. Chóp cụt Trái (x = -1)
+            </button>
+            <button onclick="selectCellHighlight(3)" id="cell-btn-3" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              4. Chóp cụt Phải (x = +1)
+            </button>
+            <button onclick="selectCellHighlight(4)" id="cell-btn-4" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              5. Chóp cụt Dưới (y = -1)
+            </button>
+            <button onclick="selectCellHighlight(5)" id="cell-btn-5" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              6. Chóp cụt Trên (y = +1)
+            </button>
+            <button onclick="selectCellHighlight(6)" id="cell-btn-6" class="cell-btn px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-left truncate">
+              7. Chóp cụt Sau (z = -1)
+            </button>
+            <button onclick="selectCellHighlight(7)" id="cell-btn-7" class="cell-btn col-span-2 px-2 py-1.5 rounded border border-slate-700 bg-slate-800/70 text-center truncate">
+              8. Chóp cụt Trước (z = +1)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PANEL 2: MODE 2 (0D -> 4D EXTRUSION & COMBINATORICS) ==================== -->
+      <div id="panel-extrude" class="hidden space-y-4">
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              Quá Trình Kéo Giãn Chiều (0D → 4D)
+            </h2>
+            <span id="val-extrude-dim" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs font-bold">D = 4.00</span>
+          </div>
+
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Mỗi lần kéo hình cũ theo một hướng <strong>vuông góc với tất cả các chiều trước đó</strong>, số đỉnh tăng gấp đôi (<span class="font-mono text-white">V_new = 2 × V_old</span>) và số cạnh mới bằng <span class="font-mono text-white">2 × E_old + V_old</span>.
+          </p>
+
+          <!-- Continuous Dimension Slider -->
+          <div class="space-y-1.5">
+            <input type="range" id="slider-extrude" min="0" max="4" step="0.01" value="4" oninput="updateExtrusionDimension(this.value)" />
+            <div class="flex justify-between text-[10px] font-mono text-slate-400">
+              <button onclick="animateExtrudeTo(0)" class="hover:text-white">0D (Điểm)</button>
+              <button onclick="animateExtrudeTo(1)" class="hover:text-white">1D (Đoạn)</button>
+              <button onclick="animateExtrudeTo(2)" class="hover:text-white">2D (Vuông)</button>
+              <button onclick="animateExtrudeTo(3)" class="hover:text-white">3D (Khối)</button>
+              <button onclick="animateExtrudeTo(4)" class="hover:text-white">4D (Tesseract)</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <button onclick="toggleExtrudeAutoPlay()" id="btn-extrude-play" class="flex-1 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-semibold flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-play"></i>
+              <span>Chạy Mô Phỏng Kéo Giãn 0D → 4D</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Binomial Recurrence Table -->
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-2.5">
+          <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-sky-400">
+            Bảng Quy Luật Nhị Thức: N(d, k) = 2·N(d-1, k) + N(d-1, k-1)
+          </h3>
+          <p class="text-[11px] text-slate-400">
+            Mỗi ô bằng <strong>2 lần ô ngay phía trên</strong> cộng với <strong>ô phía trên bên trái</strong>:
+          </p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-[11px] font-mono text-center border-collapse">
+              <thead>
+                <tr class="bg-slate-900 text-slate-400 border-b border-slate-700">
+                  <th class="p-1.5 text-left">Chiều</th>
+                  <th class="p-1.5">Đỉnh (0)</th>
+                  <th class="p-1.5">Cạnh (1)</th>
+                  <th class="p-1.5">Mặt (2)</th>
+                  <th class="p-1.5">Khối (3)</th>
+                  <th class="p-1.5">4-Face</th>
+                </tr>
+              </thead>
+              <tbody id="combinatorics-table-body" class="divide-y divide-slate-800/70">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PANEL 3: MODE 3 (SALVADOR DALI 3D CROSS UNFOLDING) ==================== -->
+      <div id="panel-unfold" class="hidden space-y-4">
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+              <i class="fa-solid fa-cross"></i>
+              Trải Phẳng Thập Giá 3D (Corpus Hypercubus)
+            </h2>
+            <span id="val-fold-pct" class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-xs font-bold">0% (Trải phẳng)</span>
+          </div>
+
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Như hộp giấy 3D cắt ra thành 6 hình vuông chữ thập 2D, siêu lập phương 4D trải ra không gian 3D thành <strong>8 khối lập phương ghép hình cây thập giá</strong> (bức họa <em>Corpus Hypercubus</em> năm 1954 của Salvador Dalí).
+          </p>
+
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-xs font-mono text-slate-300">
+              <span>Trải Phẳng 3D (0%)</span>
+              <span>Gấp Vào Chiều Thứ 4 (100%)</span>
+            </div>
+            <input type="range" id="slider-fold" min="0" max="100" step="0.5" value="0" oninput="updateFoldProgress(this.value)" />
+          </div>
+
+          <div class="flex gap-2">
+            <button onclick="toggleFoldAutoPlay()" id="btn-fold-play" class="flex-1 py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-mono font-semibold flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-play"></i>
+              <span>Tự Động Gấp / Mở 4D</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-2 text-xs text-slate-300">
+          <h3 class="font-mono font-bold text-sky-400 uppercase">Cấu Trúc 8 Khối Của Cây Thập Giá:</h3>
+          <ul class="space-y-1.5 text-[11px] text-slate-400 list-disc pl-4">
+            <li><strong class="text-white">1 Khối Tâm:</strong> Trụ cột nơi gắn 6 khối xung quanh (trở thành Khối Trong <span class="font-mono">w = -1</span> khi gấp).</li>
+            <li><strong class="text-white">4 Khối Nhánh Ngang (±X, ±Z):</strong> Gấp 90° qua chiều thứ 4 để tạo thành 4 khối chóp cụt bên.</li>
+            <li><strong class="text-white">2 Khối Đỉnh & Thân Dưới (±Y):</strong> Gấp tạo thành 2 khối chóp cụt Trên & Dưới.</li>
+            <li><strong class="text-white">1 Khối Chân Thập Giá (Y = -4):</strong> Khối thứ 8 gập bọc toàn bộ bên ngoài, trở thành Khối Ngoài (<span class="font-mono">w = +1</span>).</li>
+          </ul>
+          <div class="pt-1 text-[11px] font-mono text-amber-300/90">
+            * Tổng số cách trải phẳng 3D khác nhau của Tesseract: 261 cách (chứng minh năm 1984).
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PANEL 4: MODE 4 (3D CROSS-SECTIONS & FLATLAND) ==================== -->
+      <div id="panel-slice" class="hidden space-y-4">
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-fuchsia-400 flex items-center gap-2">
+              <i class="fa-solid fa-layer-group"></i>
+              Máy Chụp Cắt Lớp Không Gian 4D → 3D
+            </h2>
+            <span id="val-slice-pos" class="px-2 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 font-mono text-xs font-bold">c = 0.00</span>
+          </div>
+
+          <!-- 3 Sub-mode Slice Buttons -->
+          <div class="space-y-1.5">
+            <label class="text-[10px] font-mono uppercase text-slate-400">Chọn Vật Thể & Góc Đi Xuyên Qua Thế Giới 3D:</label>
+            <div class="grid grid-cols-1 gap-1.5">
+              <button onclick="setSliceSubMode('vertex')" id="slice-btn-vertex" class="px-3 py-2 rounded-lg border border-fuchsia-400 bg-fuchsia-500/20 text-left text-xs font-mono text-white flex items-center justify-between">
+                <span>A. Tesseract Đứng Trên Đỉnh (Tứ diện → Bát diện)</span>
+                <i class="fa-solid fa-gem text-fuchsia-300"></i>
+              </button>
+              <button onclick="setSliceSubMode('parallel')" id="slice-btn-parallel" class="px-3 py-2 rounded-lg border border-slate-700 bg-slate-800/60 text-left text-xs font-mono text-slate-300 flex items-center justify-between">
+                <span>B. Tesseract Song Song Mặt (Khối lập phương)</span>
+                <i class="fa-solid fa-cube text-sky-300"></i>
+              </button>
+              <button onclick="setSliceSubMode('hypersphere')" id="slice-btn-hypersphere" class="px-3 py-2 rounded-lg border border-slate-700 bg-slate-800/60 text-left text-xs font-mono text-slate-300 flex items-center justify-between">
+                <span>C. Siêu Cầu 4D (Phình to & Co lại như Flatland)</span>
+                <i class="fa-solid fa-circle-dot text-emerald-300"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Hyperplane Position Slider c -->
+          <div class="space-y-1.5 pt-1">
+            <div class="flex justify-between text-[11px] font-mono text-slate-300">
+              <span>Vị trí lát cắt siêu phẳng (c):</span>
+              <span id="slice-shape-badge" class="text-fuchsia-300 font-bold">Khối Bát Diện Đều (Octahedron)</span>
+            </div>
+            <input type="range" id="slider-slice" min="-2.0" max="2.0" step="0.01" value="0.0" oninput="updateSlicePosition(this.value)" />
+            <div class="flex justify-between text-[10px] font-mono text-slate-400">
+              <button onclick="updateSlicePosition(-1.5)" class="hover:text-white">c = -1.5 (Tứ diện)</button>
+              <button onclick="updateSlicePosition(-0.5)" class="hover:text-white">c = -0.5 (Cắt cụt)</button>
+              <button onclick="updateSlicePosition(0.0)" class="hover:text-white text-fuchsia-300">c = 0 (Bát diện)</button>
+              <button onclick="updateSlicePosition(1.5)" class="hover:text-white">c = +1.5 (Đảo)</button>
+            </div>
+          </div>
+
+          <button onclick="toggleSliceAutoPlay()" id="btn-slice-play" class="w-full py-2 rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/30 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-mono font-semibold flex items-center justify-center gap-2 transition">
+            <i class="fa-solid fa-play"></i>
+            <span>Cho Vật Thể 4D Đi Xuyên Qua Thế Giới 3D</span>
+          </button>
+        </div>
+
+        <!-- Explanation of Vertex-First Slice -->
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-2 text-[11px] text-slate-400 leading-relaxed">
+          <div class="font-mono font-bold text-xs text-white uppercase">Giải Thích Hiện Tượng:</div>
+          <p>
+            Khi dựng khối lập phương 3D đứng trên 1 đỉnh đi qua mặt phẳng 2D, ông Hình Vuông thấy: <strong>Điểm → Tam giác đều → Lục giác đều → Tam giác ngược → Điểm</strong>.
+          </p>
+          <p>
+            Nâng lên 1 chiều: Khi dựng Siêu lập phương 4D đứng trên đỉnh <span class="font-mono text-slate-200">(-1,-1,-1,-1)</span> đi xuyên qua không gian 3D theo đường chéo chính <span class="font-mono text-slate-200">x+y+z+w = 2c</span>, ta thấy:
+            <strong class="text-fuchsia-300">Điểm → Tứ diện đều → Tứ diện cụt → Bát diện đều (tại c = 0) → Tứ diện ngược → Điểm!</strong>
+          </p>
+        </div>
+      </div>
+
+      <!-- ==================== PANEL 5: MODE 5 (N-DIMENSIONAL CURSE OF DIMENSIONALITY) ==================== -->
+      <div id="panel-ndim" class="hidden space-y-4">
+        <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-rose-400 flex items-center gap-2">
+              <i class="fa-solid fa-atom"></i>
+              Khảo Sát Không Gian N-Chiều (1D → 100D)
+            </h2>
+            <span id="val-ndim-slider" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-xs font-bold">N = 4</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[11px] text-slate-300 font-mono">Chọn số chiều không gian (N):</label>
+            <input type="range" id="slider-ndim" min="1" max="100" step="1" value="4" oninput="updateNDimension(this.value)" />
+            <div class="flex justify-between text-[10px] font-mono text-slate-400">
+              <button onclick="updateNDimension(2)" class="hover:text-white">2D</button>
+              <button onclick="updateNDimension(3)" class="hover:text-white">3D</button>
+              <button onclick="updateNDimension(4)" class="hover:text-white">4D</button>
+              <button onclick="updateNDimension(5)" class="hover:text-rose-300">5D (Max Cầu)</button>
+              <button onclick="updateNDimension(10)" class="hover:text-white">10D (Thuyết dây)</button>
+              <button onclick="updateNDimension(100)" class="hover:text-white">100D (AI)</button>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Mô hình 3D bên trái minh họa trực quan nghịch lý <strong>"Quả cầu gai (Spiky Cube)"</strong>: Khoảng cách từ tâm đến mặt bên luôn bằng <span class="font-mono text-white">1m</span>, nhưng khoảng cách từ tâm ra các góc nhọn tăng vọt theo <span class="font-mono text-rose-300">√N</span> (ở 100 chiều là <span class="font-mono text-rose-300">10m</span>!).
+          </p>
+        </div>
+      </div>
+
+      <!-- ==================== GLOBAL STUDIO RENDERING & MATERIAL CONTROLS ==================== -->
+      <div class="bg-studio-card border border-studio-border rounded-xl p-3.5 space-y-3 mt-auto">
+        <h3 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-sky-400"></i>
+          Tinh Chỉnh Đồ Họa & Ánh Sáng Studio
+        </h3>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <div class="flex justify-between text-[11px] font-mono text-slate-400">
+              <span>Độ đục Mặt Kính</span>
+              <span id="val-opacity">18%</span>
+            </div>
+            <input type="range" min="0" max="0.65" step="0.02" value="0.18" oninput="updateFaceOpacity(this.value)" />
+          </div>
+
+          <div class="space-y-1">
+            <div class="flex justify-between text-[11px] font-mono text-slate-400">
+              <span>Độ dày Thanh Cạnh</span>
+              <span id="val-strut">1.0x</span>
+            </div>
+            <input type="range" min="0.4" max="2.2" step="0.1" value="1.0" oninput="updateStrutRadius(this.value)" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs font-mono text-slate-300">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="chk-floor-shadow" checked onchange="toggleFloorShadow(this.checked)" class="accent-sky-400 rounded" />
+            <span>Bóng đổ 2D dưới sàn</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="chk-vertex-labels" onchange="toggleVertexCoords(this.checked)" class="accent-sky-400 rounded" />
+            <span>Tọa độ (±1,±1,±1,±1)</span>
+          </label>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ==================== CORE 3D / 4D GRAPHICS & MATHEMATICAL ENGINE ==================== -->
+  <script>
+    /***************************************************************************
+     * 1. MATHEMATICAL CONSTANTS & 4D TESSERACT TOPOLOGY
+     ***************************************************************************/
+    const state = {
+      mode: 'shadow', // 'shadow' | 'extrude' | 'unfold' | 'slice' | 'ndim'
+      projection: 'perspective', // 'perspective' | 'isometric4d'
+      wCameraDist: 2.80,
+      angles: { xy: 0, yz: 0, xz: 0, xw: 0, yw: 0, zw: 0 },
+      autoRot: { xy: false, yz: false, xz: false, xw: true, yw: false, zw: false },
+      rotSpeeds: { xy: 0.45, yz: 0.35, xz: 0.3, xw: 0.65, yw: 0.5, zw: 0.55 },
+      highlightedCell: -1, // -1 = all, 0..7 = specific cell
+      extrudeDim: 4.0,
+      extrudePlaying: false,
+      foldProgress: 0.0, // 0 = unfolded 3D cross, 1 = folded 4D Schlegel tesseract
+      foldPlaying: false,
+      foldDirection: 1,
+      sliceSubMode: 'vertex', // 'vertex' | 'parallel' | 'hypersphere'
+      slicePos: 0.0, // c in [-2, +2]
+      slicePlaying: false,
+      nDim: 4,
+      faceOpacity: 0.18,
+      strutScale: 1.0,
+      showFloorShadow: true,
+      showVertexCoords: false,
+      theme: 'cyber'
+    };
+
+    const THEMES = {
+      cyber: {
+        inner: 0x00f0ff,
+        outer: 0x8b5cf6,
+        strut: 0x38bdf8,
+        face: 0x0ea5e9,
+        highlight: 0xfacc15,
+        slice: 0xe879f9
+      },
+      dali: {
+        inner: 0xfbbf24,
+        outer: 0xd97706,
+        strut: 0xf59e0b,
+        face: 0xb45309,
+        highlight: 0x38bdf8,
+        slice: 0xfbbf24
+      },
+      matrix: {
+        inner: 0x10b981,
+        outer: 0x059669,
+        strut: 0x34d399,
+        face: 0x10b981,
+        highlight: 0xfde047,
+        slice: 0x34d399
+      },
+      plasma: {
+        inner: 0xf43f5e,
+        outer: 0xec4899,
+        strut: 0xe879f9,
+        face: 0xc026d3,
+        highlight: 0x22d3ee,
+        slice: 0xf43f5e
+      }
+    };
+
+    // 16 Vertices of standard 4D Hypercube [-1, +1]^4
+    const BASE_VERTICES_4D = [];
+    for (let i = 0; i < 16; i++) {
+      BASE_VERTICES_4D.push([
+        (i & 1) ? 1 : -1, // x
+        (i & 2) ? 1 : -1, // y
+        (i & 4) ? 1 : -1, // z
+        (i & 8) ? 1 : -1  // w
+      ]);
+    }
+
+    // 32 Edges (pairs of vertices differing in exactly 1 bit)
+    const EDGES_4D = [];
+    for (let i = 0; i < 16; i++) {
+      for (let bit = 0; bit < 4; bit++) {
+        const j = i ^ (1 << bit);
+        if (i < j) {
+          EDGES_4D.push({ a: i, b: j, axis: bit }); // axis: 0=X, 1=Y, 2=Z, 3=W
+        }
+      }
+    }
+
+    // 24 Square Faces (each defined by 4 vertex indices in perimeter order)
+    const FACES_4D = [];
+    for (let a1 = 0; a1 < 4; a1++) {
+      for (let a2 = a1 + 1; a2 < 4; a2++) {
+        // Remaining two axes are fixed
+        const fixedAxes = [0, 1, 2, 3].filter(x => x !== a1 && x !== a2);
+        for (let s1 = 0; s1 < 2; s1++) {
+          for (let s2 = 0; s2 < 2; s2++) {
+            const baseMask = (s1 << fixedAxes[0]) | (s2 << fixedAxes[1]);
+            const v00 = baseMask;
+            const v10 = baseMask | (1 << a1);
+            const v11 = baseMask | (1 << a1) | (1 << a2);
+            const v01 = baseMask | (1 << a2);
+            FACES_4D.push([v00, v10, v11, v01]);
+          }
+        }
+      }
+    }
+
+    // 8 Cubic Cells (each cell fixes 1 axis to -1 or +1)
+    // Order: 0:(w=-1), 1:(w=+1), 2:(x=-1), 3:(x=+1), 4:(y=-1), 5:(y=+1), 6:(z=-1), 7:(z=+1)
+    const CELLS_4D = [
+      { id: 0, axis: 3, val: -1, name: 'Khối Trong (w = -1)' },
+      { id: 1, axis: 3, val: 1,  name: 'Khối Ngoài (w = +1)' },
+      { id: 2, axis: 0, val: -1, name: 'Chóp cụt Trái (x = -1)' },
+      { id: 3, axis: 0, val: 1,  name: 'Chóp cụt Phải (x = +1)' },
+      { id: 4, axis: 1, val: -1, name: 'Chóp cụt Dưới (y = -1)' },
+      { id: 5, axis: 1, val: 1,  name: 'Chóp cụt Trên (y = +1)' },
+      { id: 6, axis: 2, val: -1, name: 'Chóp cụt Sau (z = -1)' },
+      { id: 7, axis: 2, val: 1,  name: 'Chóp cụt Trước (z = +1)' }
+    ].map(cell => {
+      const verts = [];
+      for (let i = 0; i < 16; i++) {
+        if (BASE_VERTICES_4D[i][cell.axis] === cell.val) verts.push(i);
+      }
+      const faceIndices = [];
+      FACES_4D.forEach((f, idx) => {
+        if (f.every(v => verts.includes(v))) faceIndices.push(idx);
+      });
+      const edgeIndices = [];
+      EDGES_4D.forEach((e, idx) => {
+        if (verts.includes(e.a) && verts.includes(e.b)) edgeIndices.push(idx);
+      });
+      return { ...cell, verts, faceIndices, edgeIndices };
+    });
+
+    /***************************************************************************
+     * 2. THREE.JS SCENE, CAMERA, LIGHTS & GEOMETRY GROUPS
+     ***************************************************************************/
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x07090e, 0.032);
+
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(5.2, 4.0, 6.4);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x07090e, 1);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.maxDistance = 28;
+    controls.minDistance = 2;
+
+    // Studio 3-Point Lighting + Core 4D Point Light
+    const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.65);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    keyLight.position.set(8, 14, 10);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0x8b5cf6, 0.75);
+    rimLight.position.set(-10, -6, -8);
+    scene.add(rimLight);
+
+    const coreLight = new THREE.PointLight(0x00f0ff, 1.5, 12);
+    coreLight.position.set(0, 0, 0);
+    scene.add(coreLight);
+
+    // Subtle Studio Reference Grid Floor
+    const floorGrid = new THREE.GridHelper(18, 18, 0x1e293b, 0x0f172a);
+    floorGrid.position.y = -3.2;
+    scene.add(floorGrid);
+
+    // Main Root Groups for each Mode
+    const tesseractGroup = new THREE.Group(); // Used for Mode 1 & Mode 2
+    const floorShadowGroup = new THREE.Group(); // 2D Wall/Floor Shadow projection
+    const unfoldGroup = new THREE.Group(); // Mode 3: Salvador Dali 3D Cross
+    const sliceGroup = new THREE.Group(); // Mode 4: 3D Cross-sections
+    const nDimGroup = new THREE.Group(); // Mode 5: N-Dimensional Spiky Sphere
+
+    scene.add(tesseractGroup);
+    scene.add(floorShadowGroup);
+    scene.add(unfoldGroup);
+    scene.add(sliceGroup);
+    scene.add(nDimGroup);
+
+    /***************************************************************************
+     * 3. BUILD REUSABLE MESHES FOR TESSERACT (16 VERTICES, 32 EDGES, 24 FACES)
+     ***************************************************************************/
+    const vertexMeshes = [];
+    const edgeMeshes = [];
+    const faceMeshes = [];
+    const floorShadowLines = [];
+
+    const sphereGeo = new THREE.SphereGeometry(0.085, 20, 20);
+    const cylGeo = new THREE.CylinderGeometry(0.032, 0.032, 1, 14);
+    cylGeo.rotateX(Math.PI / 2); // Align cylinder along Z for easy lookAt scaling
+
+    // Create 16 Vertex Spheres
+    for (let i = 0; i < 16; i++) {
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0x00f0ff,
+        emissive: 0x00f0ff,
+        emissiveIntensity: 0.45,
+        metalness: 0.5,
+        roughness: 0.2
+      });
+      const mesh = new THREE.Mesh(sphereGeo, mat);
+      tesseractGroup.add(mesh);
+      vertexMeshes.push(mesh);
+    }
+
+    // Create 32 Cylindrical Edge Struts
+    for (let i = 0; i < 32; i++) {
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0x38bdf8,
+        emissive: 0x0284c7,
+        emissiveIntensity: 0.3,
+        metalness: 0.6,
+        roughness: 0.25
+      });
+      const mesh = new THREE.Mesh(cylGeo, mat);
+      tesseractGroup.add(mesh);
+      edgeMeshes.push(mesh);
+
+      // Corresponding 2D shadow line on the floor plane y = -3.18
+      const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0x0284c7, transparent: true, opacity: 0.38 });
+      const line = new THREE.Line(lineGeo, lineMat);
+      floorShadowGroup.add(line);
+      floorShadowLines.push(line);
+    }
+
+    // Create 24 Quad Face Meshes
+    for (let i = 0; i < 24; i++) {
+      const geo = new THREE.BufferGeometry();
+      const positions = new Float32Array(18); // 2 triangles * 3 vertices * 3 coords
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: 0x0ea5e9,
+        transparent: true,
+        opacity: state.faceOpacity,
+        roughness: 0.15,
+        metalness: 0.1,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      tesseractGroup.add(mesh);
+      faceMeshes.push(mesh);
+    }
+
+    // Projected 3D Coordinates cache (for HUD & .OBJ/.JSON export)
+    let currentProjected3D = BASE_VERTICES_4D.map(() => new THREE.Vector3());
+    let currentRotated4D = BASE_VERTICES_4D.map(v => [...v]);
+
+    /***************************************************************************
+     * 4. 4D ROTATION & PROJECTION MATHEMATICS
+     ***************************************************************************/
+    function rotate4DPoint(pt, anglesDeg) {
+      let [x, y, z, w] = pt;
+      const toRad = Math.PI / 180;
+
+      // Helper for 2D planar rotation
+      const rot = (a, b, deg) => {
+        if (deg === 0) return [a, b];
+        const r = deg * toRad;
+        const c = Math.cos(r), s = Math.sin(r);
+        return [a * c - b * s, a * s + b * c];
+      };
+
+      [x, y] = rot(x, y, anglesDeg.xy);
+      [y, z] = rot(y, z, anglesDeg.yz);
+      [x, z] = rot(x, z, anglesDeg.xz);
+      [x, w] = rot(x, w, anglesDeg.xw);
+      [y, w] = rot(y, w, anglesDeg.yw);
+      [z, w] = rot(z, w, anglesDeg.zw);
+
+      return [x, y, z, w];
+    }
+
+    function project4DTo3D(pt4d) {
+      const [x, y, z, w] = pt4d;
+      if (state.projection === 'perspective') {
+        const denom = Math.max(0.25, state.wCameraDist - w);
+        const scale = state.wCameraDist / denom;
+        return new THREE.Vector3(x * scale, y * scale, z * scale);
+      } else {
+        // 4-Axis Isometric Oblique Projection (4th axis W projected along diagonal vector)
+        const wVec = new THREE.Vector3(0.52, 0.42, 0.52);
+        return new THREE.Vector3(
+          (x + w * wVec.x) * 1.15,
+          (y + w * wVec.y) * 1.15,
+          (z + w * wVec.z) * 1.15
+        );
+      }
+    }
+
+    /***************************************************************************
+     * 5. UPDATE MODE 1 (4D SHADOW) & MODE 2 (0D->4D EXTRUSION)
+     ***************************************************************************/
+    function updateTesseractGeometry() {
+      const theme = THEMES[state.theme];
+      const D = state.mode === 'extrude' ? state.extrudeDim : 4.0;
+
+      // Determine active vertex positions in 4D based on continuous dimension D in [0, 4]
+      for (let i = 0; i < 16; i++) {
+        const raw = BASE_VERTICES_4D[i];
+
+        // Continuous extrusion interpolation from 0D point -> 1D -> 2D -> 3D -> 4D
+        const tX = Math.min(1, Math.max(0, D - 0));
+        const tY = Math.min(1, Math.max(0, D - 1));
+        const tZ = Math.min(1, Math.max(0, D - 2));
+        const tW = Math.min(1, Math.max(0, D - 3));
+
+        const x = raw[0] === -1 ? -tX : -tX + 2 * tX;
+        const y = raw[1] === -1 ? -tY : -tY + 2 * tY;
+        const z = raw[2] === -1 ? -tZ : -tZ + 2 * tZ;
+        const w = raw[3] === -1 ? -tW : -tW + 2 * tW;
+
+        const rotPt = rotate4DPoint([x, y, z, w], state.angles);
+        currentRotated4D[i] = rotPt;
+        currentProjected3D[i] = project4DTo3D(rotPt);
+      }
+
+      // Update 16 Vertex Spheres
+      const highlightedVerts = state.highlightedCell >= 0 ? CELLS_4D[state.highlightedCell].verts : null;
+      for (let i = 0; i < 16; i++) {
+        const mesh = vertexMeshes[i];
+        mesh.position.copy(currentProjected3D[i]);
+
+        // Hide duplicate higher-dimension vertices during 0D..3D extrusion
+        const maxBitNeeded = Math.ceil(D);
+        const isVisible = (i < Math.pow(2, Math.max(0, maxBitNeeded))) || D >= 3.01;
+        mesh.visible = isVisible;
+
+        const wVal = currentRotated4D[i][3];
+        const isCellActive = !highlightedVerts || highlightedVerts.includes(i);
+        mesh.material.color.setHex(isCellActive ? (wVal < 0 ? theme.inner : theme.outer) : 0x334155);
+        mesh.material.emissive.setHex(isCellActive ? (wVal < 0 ? theme.inner : theme.outer) : 0x0f172a);
+        const depthScale = THREE.MathUtils.clamp(1.25 - wVal * 0.2, 0.7, 1.55);
+        mesh.scale.setScalar(depthScale * (isCellActive ? 1.05 : 0.7));
+      }
+
+      // Update 32 Edge Struts & 2D Floor Shadow
+      const highlightedEdges = state.highlightedCell >= 0 ? CELLS_4D[state.highlightedCell].edgeIndices : null;
+      for (let i = 0; i < 32; i++) {
+        const edge = EDGES_4D[i];
+        const mesh = edgeMeshes[i];
+        const pA = currentProjected3D[edge.a];
+        const pB = currentProjected3D[edge.b];
+        const dist = pA.distanceTo(pB);
+
+        const axisActive = D > edge.axis;
+        const maxVertIndex = Math.pow(2, Math.ceil(D));
+        const vertsBorn = edge.a < maxVertIndex && edge.b < maxVertIndex;
+
+        if (!axisActive || !vertsBorn || dist < 0.002) {
+          mesh.visible = false;
+          floorShadowLines[i].visible = false;
+          continue;
+        }
+
+        mesh.visible = true;
+        mesh.position.copy(pA).add(pB).multiplyScalar(0.5);
+        mesh.lookAt(pB);
+        mesh.scale.set(state.strutScale, state.strutScale, dist);
+
+        const isEdgeHighlighted = !highlightedEdges || highlightedEdges.includes(i);
+        if (state.highlightedCell >= 0 && isEdgeHighlighted) {
+          mesh.material.color.setHex(theme.highlight);
+          mesh.material.emissive.setHex(theme.highlight);
+          mesh.material.emissiveIntensity = 0.65;
+        } else {
+          mesh.material.color.setHex(isEdgeHighlighted ? theme.strut : 0x1e293b);
+          mesh.material.emissive.setHex(isEdgeHighlighted ? theme.strut : 0x0f172a);
+          mesh.material.emissiveIntensity = isEdgeHighlighted ? 0.32 : 0.05;
+        }
+
+        // 2D Floor Shadow Projection (simulating light at y = +9 casting onto floor y = -3.18)
+        const shadowLine = floorShadowLines[i];
+        shadowLine.visible = state.showFloorShadow;
+        if (state.showFloorShadow) {
+          const lightY = 9.5;
+          const floorY = -3.18;
+          const projFloor = (p) => {
+            const t = (floorY - lightY) / (p.y - lightY);
+            return new THREE.Vector3(p.x * t, floorY, p.z * t);
+          };
+          const sA = projFloor(pA);
+          const sB = projFloor(pB);
+          const posAttr = shadowLine.geometry.attributes.position;
+          posAttr.setXYZ(0, sA.x, sA.y, sA.z);
+          posAttr.setXYZ(1, sB.x, sB.y, sB.z);
+          posAttr.needsUpdate = true;
+        }
+      }
+
+      // Update 24 Quad Faces
+      const highlightedFaces = state.highlightedCell >= 0 ? CELLS_4D[state.highlightedCell].faceIndices : null;
+      for (let i = 0; i < 24; i++) {
+        const f = FACES_4D[i];
+        const mesh = faceMeshes[i];
+
+        const p0 = currentProjected3D[f[0]];
+        const p1 = currentProjected3D[f[1]];
+        const p2 = currentProjected3D[f[2]];
+        const p3 = currentProjected3D[f[3]];
+
+        // Check if face has non-zero area (active in current extrusion dimension)
+        const areaCheck = new THREE.Vector3().subVectors(p1, p0).cross(new THREE.Vector3().subVectors(p2, p0)).lengthSq();
+        if (areaCheck < 0.0001 || state.faceOpacity <= 0.005) {
+          mesh.visible = false;
+          continue;
+        }
+
+        const isFaceHighlighted = !highlightedFaces || highlightedFaces.includes(i);
+        if (state.highlightedCell >= 0 && !isFaceHighlighted) {
+          mesh.visible = false;
+          continue;
+        }
+
+        mesh.visible = true;
+        mesh.material.color.setHex(state.highlightedCell >= 0 ? theme.highlight : theme.face);
+        mesh.material.opacity = state.highlightedCell >= 0 ? Math.min(0.45, state.faceOpacity * 1.9) : state.faceOpacity;
+
+        const pos = mesh.geometry.attributes.position.array;
+        // Triangle 1: p0, p1, p2
+        pos[0] = p0.x; pos[1] = p0.y; pos[2] = p0.z;
+        pos[3] = p1.x; pos[4] = p1.y; pos[5] = p1.z;
+        pos[6] = p2.x; pos[7] = p2.y; pos[8] = p2.z;
+        // Triangle 2: p0, p2, p3
+        pos[9]  = p0.x; pos[10] = p0.y; pos[11] = p0.z;
+        pos[12] = p2.x; pos[13] = p2.y; pos[14] = p2.z;
+        pos[15] = p3.x; pos[16] = p3.y; pos[17] = p3.z;
+
+        mesh.geometry.attributes.position.needsUpdate = true;
+        mesh.geometry.computeVertexNormals();
+      }
+    }
+
+    /***************************************************************************
+     * 6. MODE 3: SALVADOR DALI 3D CROSS UNFOLDING (CORPUS HYPERCUBUS)
+     ***************************************************************************/
+    // Build 8 distinct cubic cell meshes that smoothly morph between the 3D Cross Net and 4D Schlegel Tesseract
+    const daliCells = [];
+    // Offsets of the 8 cubes in the 3D Salvador Dalí Cross (side length = 1.35)
+    const DALI_CELL_CENTERS = [
+      new THREE.Vector3(0, 0, 0),    // 0: Central Hub Cube (w = -1)
+      new THREE.Vector3(0, -2, 0),   // 1: Bottom Shaft Cube ( folds to w = +1 outer cube )
+      new THREE.Vector3(-1, 0, 0),   // 2: Left Cube (x = -1)
+      new THREE.Vector3(1, 0, 0),    // 3: Right Cube (x = +1)
+      new THREE.Vector3(0, -1, 0),   // 4: Lower Cube (y = -1)
+      new THREE.Vector3(0, 1, 0),    // 5: Top Cube (y = +1)
+      new THREE.Vector3(0, 0, -1),   // 6: Back Cube (z = -1)
+      new THREE.Vector3(0, 0, 1)     // 7: Front Cube (z = +1)
+    ];
+
+    const DALI_COLORS = [
+      0x38bdf8, // Center
+      0xf59e0b, // Bottom shaft (becomes Outer Cube)
+      0x8b5cf6,
+      0x8b5cf6,
+      0x10b981,
+      0x10b981,
+      0xec4899,
+      0xec4899
+    ];
+
+    const LOCAL_CUBE_VERTS = [
+      [-1,-1,-1], [1,-1,-1], [-1,1,-1], [1,1,-1],
+      [-1,-1, 1], [1,-1, 1], [-1,1, 1], [1,1, 1]
+    ];
+    const LOCAL_CUBE_EDGES = [
+      [0,1],[2,3],[4,5],[6,7],
+      [0,2],[1,3],[4,6],[5,7],
+      [0,4],[1,5],[2,6],[3,7]
+    ];
+    const LOCAL_CUBE_FACES = [
+      [0,1,3,2], [4,5,7,6], [0,1,5,4],
+      [2,3,7,6], [0,2,6,4], [1,3,7,5]
+    ];
+
+    function initDaliUnfoldGroup() {
+      for (let c = 0; c < 8; c++) {
+        const cellObj = {
+          edgeLines: [],
+          faceMesh: null
+        };
+
+        // 6 Quad Faces (12 triangles = 36 vertices)
+        const faceGeo = new THREE.BufferGeometry();
+        faceGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36 * 3), 3));
+        const faceMat = new THREE.MeshPhysicalMaterial({
+          color: DALI_COLORS[c],
+          transparent: true,
+          opacity: 0.28,
+          roughness: 0.2,
+          metalness: 0.1,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        const fMesh = new THREE.Mesh(faceGeo, faceMat);
+        unfoldGroup.add(fMesh);
+        cellObj.faceMesh = fMesh;
+
+        // 12 Cylinder Edges per Cube
+        for (let e = 0; e < 12; e++) {
+          const eMat = new THREE.MeshStandardMaterial({
+            color: DALI_COLORS[c],
+            emissive: DALI_COLORS[c],
+            emissiveIntensity: 0.35,
+            metalness: 0.5,
+            roughness: 0.25
+          });
+          const eMesh = new THREE.Mesh(cylGeo, eMat);
+          unfoldGroup.add(eMesh);
+          cellObj.edgeLines.push(eMesh);
+        }
+
+        daliCells.push(cellObj);
+      }
+    }
+    initDaliUnfoldGroup();
+
+    function updateDaliUnfoldGeometry() {
+      const t = state.foldProgress; // 0.0 (3D Cross) -> 1.0 (Folded 4D Tesseract)
+      // Smooth ease-in-out
+      const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      const scaleCross = 1.25;
+
+      for (let c = 0; c < 8; c++) {
+        const cellDef = CELLS_4D[c];
+        const centerOffset = DALI_CELL_CENTERS[c];
+        const cellMeshObj = daliCells[c];
+
+        // Compute the 8 interpolated 3D vertices of this cell
+        const verts3D = [];
+        for (let k = 0; k < 8; k++) {
+          const localV = LOCAL_CUBE_VERTS[k];
+          // 1. Unfolded 3D Cross position
+          const unfoldedPos = new THREE.Vector3(
+            (centerOffset.x * 2 + localV[0]) * 0.5 * scaleCross,
+            (centerOffset.y * 2 + localV[1] + 0.8) * 0.5 * scaleCross,
+            (centerOffset.z * 2 + localV[2]) * 0.5 * scaleCross
+          );
+
+          // 2. Folded 4D Schlegel Tesseract position
+          const globalVertIdx = cellDef.verts[k];
+          const rot4D = rotate4DPoint(BASE_VERTICES_4D[globalVertIdx], {
+            xy: 0, yz: 0, xz: 0,
+            xw: state.angles.xw * ease,
+            yw: state.angles.yw * ease,
+            zw: state.angles.zw * ease
+          });
+          const foldedPos = project4DTo3D(rot4D);
+
+          // Arc trajectory through 4D space during folding
+          const lerped = new THREE.Vector3().lerpVectors(unfoldedPos, foldedPos, ease);
+          verts3D.push(lerped);
+        }
+
+        // Update 12 edges of this cell
+        for (let e = 0; e < 12; e++) {
+          const [ia, ib] = LOCAL_CUBE_EDGES[e];
+          const pA = verts3D[ia];
+          const pB = verts3D[ib];
+          const dist = pA.distanceTo(pB);
+          const eMesh = cellMeshObj.edgeLines[e];
+          eMesh.position.copy(pA).add(pB).multiplyScalar(0.5);
+          eMesh.lookAt(pB);
+          eMesh.scale.set(state.strutScale * 0.85, state.strutScale * 0.85, dist);
+        }
+
+        // Update 6 faces of this cell
+        const posArr = cellMeshObj.faceMesh.geometry.attributes.position.array;
+        let ptr = 0;
+        for (let f = 0; f < 6; f++) {
+          const [i0, i1, i2, i3] = LOCAL_CUBE_FACES[f];
+          const p0 = verts3D[i0], p1 = verts3D[i1], p2 = verts3D[i2], p3 = verts3D[i3];
+          // Tri 1
+          posArr[ptr++] = p0.x; posArr[ptr++] = p0.y; posArr[ptr++] = p0.z;
+          posArr[ptr++] = p1.x; posArr[ptr++] = p1.y; posArr[ptr++] = p1.z;
+          posArr[ptr++] = p2.x; posArr[ptr++] = p2.y; posArr[ptr++] = p2.z;
+          // Tri 2
+          posArr[ptr++] = p0.x; posArr[ptr++] = p0.y; posArr[ptr++] = p0.z;
+          posArr[ptr++] = p2.x; posArr[ptr++] = p2.y; posArr[ptr++] = p2.z;
+          posArr[ptr++] = p3.x; posArr[ptr++] = p3.y; posArr[ptr++] = p3.z;
+        }
+        cellMeshObj.faceMesh.geometry.attributes.position.needsUpdate = true;
+        cellMeshObj.faceMesh.geometry.computeVertexNormals();
+        cellMeshObj.faceMesh.material.opacity = Math.max(0.06, state.faceOpacity * 1.4);
+      }
+    }
+
+    /***************************************************************************
+     * 7. MODE 4: EXACT 3D CROSS-SECTIONS OF 4D OBJECTS (FLATLAND SIMULATOR)
+     ***************************************************************************/
+    // Orthonormal Hadamard Basis for Vertex-First Main Diagonal Slice:
+    // u4 = 0.5*(1, 1, 1, 1) is the normal vector to the slicing 3D hyperplane!
+    const HADAMARD_U1 = [ 0.5,  0.5, -0.5, -0.5];
+    const HADAMARD_U2 = [ 0.5, -0.5,  0.5, -0.5];
+    const HADAMARD_U3 = [-0.5,  0.5,  0.5, -0.5];
+    const HADAMARD_U4 = [ 0.5,  0.5,  0.5,  0.5];
+
+    function dot4(a, b) {
+      return a[0]*b[0] + a[1]*b[1] + a[2]*b[2] + a[3]*b[3];
+    }
+
+    // Dynamic Group for rendering the 3D slice polyhedron/sphere
+    const sliceSolidMat = new THREE.MeshPhysicalMaterial({
+      color: 0xe879f9,
+      emissive: 0x701a75,
+      emissiveIntensity: 0.25,
+      roughness: 0.18,
+      metalness: 0.15,
+      transparent: true,
+      opacity: 0.78,
+      side: THREE.DoubleSide
+    });
+    const sliceWireMat = new THREE.MeshStandardMaterial({
+      color: 0xf0abfc,
+      emissive: 0xe879f9,
+      emissiveIntensity: 0.6
+    });
+
+    // Reference Translucent Slicing Plane Indicator in 3D Viewport
+    const slicePlaneRingGeo = new THREE.RingGeometry(2.6, 2.66, 64);
+    slicePlaneRingGeo.rotateX(Math.PI / 2);
+    const slicePlaneRing = new THREE.Mesh(
+      slicePlaneRingGeo,
+      new THREE.MeshBasicMaterial({ color: 0xe879f9, side: THREE.DoubleSide, transparent: true, opacity: 0.45 })
+    );
+    sliceGroup.add(slicePlaneRing);
+
+    const dynamicSliceMeshGroup = new THREE.Group();
+    sliceGroup.add(dynamicSliceMeshGroup);
+
+    function clearGroup(grp) {
+      while (grp.children.length > 0) {
+        const child = grp.children[0];
+        if (child.geometry) child.geometry.dispose();
+        grp.remove(child);
+      }
+    }
+
+    function updateSliceGeometry() {
+      clearGroup(dynamicSliceMeshGroup);
+      const c = state.slicePos;
+      const theme = THEMES[state.theme];
+      sliceSolidMat.color.setHex(theme.slice);
+
+      let vCount = 0, eCount = 0, fCount = 0;
+      let shapeName = '';
+
+      if (state.sliceSubMode === 'vertex') {
+        // Sub-mode A: Tesseract standing on vertex (-1,-1,-1,-1), sliced by u4 . p = c (c in [-2, +2])
+        const scale3D = 1.45;
+
+        if (Math.abs(c) >= 1.995) {
+          shapeName = Math.abs(c) <= 2.02 ? '1 Điểm Duy Nhất (Đỉnh Cực)' : 'Ngoài Không Gian (Biến Mất)';
+          if (Math.abs(c) <= 2.02) {
+            vCount = 1;
+            const ptMesh = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), sliceWireMat);
+            dynamicSliceMeshGroup.add(ptMesh);
+          }
+        } else {
+          // Intersect each of the 8 cubic cells with hyperplane u4 . p = c
+          // Because each face of the 24 square faces is convex, intersecting a 2D face with hyperplane u4.p = c gives a line segment on the boundary of the 3D slice!
+          // Better yet: each of the 8 cubic cells (3D cubes) intersected with the hyperplane gives a 2D convex polygon face of our 3D slice polyhedron!
+          const uniqueVerts = [];
+          const findOrAddVert = (v3) => {
+            for (let i = 0; i < uniqueVerts.length; i++) {
+              if (uniqueVerts[i].distanceToSquared(v3) < 1e-5) return i;
+            }
+            uniqueVerts.push(v3);
+            return uniqueVerts.length - 1;
+          };
+
+          const sliceFaces = [];
+          const uniqueEdgeKeys = new Set();
+
+          // For each of the 8 cubic cells, find all intersection points along its 12 edges
+          for (let cellIdx = 0; cellIdx < 8; cellIdx++) {
+            const cell = CELLS_4D[cellIdx];
+            const cellSliceIndices = [];
+
+            for (const edgeIdx of cell.edgeIndices) {
+              const edge = EDGES_4D[edgeIdx];
+              const pA = BASE_VERTICES_4D[edge.a];
+              const pB = BASE_VERTICES_4D[edge.b];
+              const dA = dot4(pA, HADAMARD_U4) - c;
+              const dB = dot4(pB, HADAMARD_U4) - c;
+
+              if ((dA <= 0 && dB >= 0) || (dA >= 0 && dB <= 0)) {
+                const denom = dA - dB;
+                let t = Math.abs(denom) < 1e-8 ? 0.5 : dA / denom;
+                if (t >= -1e-5 && t <= 1 + 1e-5) {
+                  t = Math.max(0, Math.min(1, t));
+                  const p4 = [
+                    pA[0] + t * (pB[0] - pA[0]),
+                    pA[1] + t * (pB[1] - pA[1]),
+                    pA[2] + t * (pB[2] - pA[2]),
+                    pA[3] + t * (pB[3] - pA[3])
+                  ];
+                  // Project p4 onto orthonormal basis (U1, U2, U3)
+                  const v3 = new THREE.Vector3(
+                    dot4(p4, HADAMARD_U1) * scale3D,
+                    dot4(p4, HADAMARD_U2) * scale3D,
+                    dot4(p4, HADAMARD_U3) * scale3D
+                  );
+                  const vIdx = findOrAddVert(v3);
+                  if (!cellSliceIndices.includes(vIdx)) {
+                    cellSliceIndices.push(vIdx);
+                  }
+                }
+              }
+            }
+
+            // If this cell intersects the hyperplane in a polygon (>= 3 vertices), order its vertices angularly
+            if (cellSliceIndices.length >= 3) {
+              const pts = cellSliceIndices.map(idx => uniqueVerts[idx]);
+              const centroid = new THREE.Vector3();
+              pts.forEach(p => centroid.add(p));
+              centroid.divideScalar(pts.length);
+
+              const v1 = new THREE.Vector3().subVectors(pts[1], pts[0]);
+              const v2 = new THREE.Vector3().subVectors(pts[2], pts[0]);
+              const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
+              if (normal.lengthSq() > 1e-6) {
+                // Ensure outward-pointing normal from origin
+                if (normal.dot(centroid) < 0) normal.negate();
+                const refAxis = new THREE.Vector3().subVectors(pts[0], centroid).normalize();
+                const biNormal = new THREE.Vector3().crossVectors(normal, refAxis).normalize();
+
+                cellSliceIndices.sort((ia, ib) => {
+                  const da = new THREE.Vector3().subVectors(uniqueVerts[ia], centroid);
+                  const db = new THREE.Vector3().subVectors(uniqueVerts[ib], centroid);
+                  const angA = Math.atan2(da.dot(biNormal), da.dot(refAxis));
+                  const angB = Math.atan2(db.dot(biNormal), db.dot(refAxis));
+                  return angA - angB;
+                });
+
+                sliceFaces.push(cellSliceIndices);
+                for (let k = 0; k < cellSliceIndices.length; k++) {
+                  const u = cellSliceIndices[k];
+                  const v = cellSliceIndices[(k + 1) % cellSliceIndices.length];
+                  const key = u < v ? `${u}_${v}` : `${v}_${u}`;
+                  uniqueEdgeKeys.add(key);
+                }
+              }
+            }
+          }
+
+          vCount = uniqueVerts.length;
+          eCount = uniqueEdgeKeys.size;
+          fCount = sliceFaces.length;
+
+          // Build Solid Polyhedron Mesh
+          const triPositions = [];
+          sliceFaces.forEach(poly => {
+            const p0 = uniqueVerts[poly[0]];
+            for (let k = 1; k < poly.length - 1; k++) {
+              const p1 = uniqueVerts[poly[k]];
+              const p2 = uniqueVerts[poly[k + 1]];
+              triPositions.push(p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+            }
+          });
+
+          if (triPositions.length > 0) {
+            const polyGeo = new THREE.BufferGeometry();
+            polyGeo.setAttribute('position', new THREE.Float32BufferAttribute(triPositions, 3));
+            polyGeo.computeVertexNormals();
+            const polyMesh = new THREE.Mesh(polyGeo, sliceSolidMat);
+            dynamicSliceMeshGroup.add(polyMesh);
+          }
+
+          // Render Vertex Spheres & Edge Struts
+          uniqueVerts.forEach(v => {
+            const s = new THREE.Mesh(sphereGeo, sliceWireMat);
+            s.position.copy(v);
+            dynamicSliceMeshGroup.add(s);
+          });
+
+          uniqueEdgeKeys.forEach(key => {
+            const [ia, ib] = key.split('_').map(Number);
+            const pA = uniqueVerts[ia];
+            const pB = uniqueVerts[ib];
+            const dist = pA.distanceTo(pB);
+            if (dist > 0.001) {
+              const cyl = new THREE.Mesh(cylGeo, sliceWireMat);
+              cyl.position.copy(pA).add(pB).multiplyScalar(0.5);
+              cyl.lookAt(pB);
+              cyl.scale.set(1.1, 1.1, dist);
+              dynamicSliceMeshGroup.add(cyl);
+            }
+          });
+
+          // Classify exact topological shape name
+          if (Math.abs(c) < 0.03) {
+            shapeName = 'Khối Bát Diện Đều (Regular Octahedron)';
+          } else if (Math.abs(c) > 0.98) {
+            shapeName = c < 0 ? 'Khối Tứ Diện Đều (Regular Tetrahedron)' : 'Khối Tứ Diện Đều Ngược';
+          } else {
+            shapeName = 'Tứ Diện Cụt Đỉnh (Truncated Tetrahedron)';
+          }
+        }
+      } else if (state.sliceSubMode === 'parallel') {
+        // Sub-mode B: Axis-Aligned Slice w = c (Constant Cube for c in [-1, +1])
+        if (Math.abs(c) <= 1.0) {
+          vCount = 8; eCount = 12; fCount = 6;
+          shapeName = 'Khối Lập Phương Đều (Cạnh không đổi)';
+          const boxGeo = new THREE.BoxGeometry(2.2, 2.2, 2.2);
+          const boxMesh = new THREE.Mesh(boxGeo, sliceSolidMat);
+          dynamicSliceMeshGroup.add(boxMesh);
+          const edgesGeo = new THREE.EdgesGeometry(boxGeo);
+          const line = new THREE.LineSegments(edgesGeo, new THREE.LineBasicMaterial({ color: 0xffffff }));
+          dynamicSliceMeshGroup.add(line);
+        } else {
+          shapeName = 'Ngoài Phạm Vi [-1, +1] (Biến Mất)';
+        }
+      } else if (state.sliceSubMode === 'hypersphere') {
+        // Sub-mode C: 4D Hypersphere x^2 + y^2 + z^2 + w^2 = R^2 (R = 1.65)
+        const R = 1.65;
+        if (Math.abs(c) <= R) {
+          const r = Math.sqrt(Math.max(0.001, R * R - c * c));
+          vCount = '∞'; eCount = '∞'; fCount = 1;
+          shapeName = `Quả Cầu 3D (Bán kính r = ${r.toFixed(2)})`;
+          const sphGeo = new THREE.SphereGeometry(r * 1.25, 40, 32);
+          const sphMesh = new THREE.Mesh(sphGeo, sliceSolidMat);
+          dynamicSliceMeshGroup.add(sphMesh);
+
+          const wireGeo = new THREE.WireframeGeometry(new THREE.SphereGeometry(r * 1.252, 16, 12));
+          const wire = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0xf0abfc, transparent: true, opacity: 0.35 }));
+          dynamicSliceMeshGroup.add(wire);
+        } else {
+          shapeName = 'Siêu Cầu Chưa Chạm Tới (Hư Không)';
+        }
+      }
+
+      // Update HUD counters & Flatland 2D Observer Mini-Canvas
+      document.getElementById('hud-v').textContent = vCount;
+      document.getElementById('hud-e').textContent = eCount;
+      document.getElementById('hud-f').textContent = fCount;
+      document.getElementById('hud-c').textContent = vCount === 0 ? 0 : 1;
+      document.getElementById('slice-shape-badge').textContent = shapeName;
+
+      drawFlatland2DPreview(c);
+    }
+
+    // Draw the 2D analogy ("Ông Hình Vuông" seeing a 3D Cube or 3D Sphere pass through 2D Flatland)
+    function drawFlatland2DPreview(c) {
+      const cvs = document.getElementById('flatland-canvas');
+      if (!cvs) return;
+      const ctx = cvs.getContext('2d');
+      const w = cvs.width, h = cvs.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Subtle grid
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.stroke();
+
+      ctx.strokeStyle = '#e879f9';
+      ctx.fillStyle = 'rgba(232, 121, 249, 0.25)';
+      ctx.lineWidth = 2;
+
+      const cx = w / 2, cy = h / 2;
+      const captionEl = document.getElementById('flatland-caption');
+
+      if (state.sliceSubMode === 'vertex') {
+        // 3D Cube standing on vertex passing through 2D plane: Triangle -> Hexagon -> Inverted Triangle
+        if (Math.abs(c) < 1.98) {
+          const normC = c / 2; // [-1, 1]
+          ctx.beginPath();
+          if (Math.abs(normC) < 0.05) {
+            // Regular Hexagon
+            for (let i = 0; i < 6; i++) {
+              const ang = (i * Math.PI) / 3 - Math.PI / 6;
+              const px = cx + Math.cos(ang) * 34;
+              const py = cy + Math.sin(ang) * 34;
+              if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            captionEl.textContent = '2D: Hình Lục Giác Đều';
+          } else {
+            // Triangle or Truncated Triangle
+            const r = (1 - Math.abs(normC)) * 42;
+            const flip = normC > 0 ? Math.PI : 0;
+            for (let i = 0; i < 3; i++) {
+              const ang = (i * 2 * Math.PI) / 3 - Math.PI / 2 + flip;
+              const px = cx + Math.cos(ang) * r;
+              const py = cy + Math.sin(ang) * r;
+              if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+            }
+            captionEl.textContent = normC < 0 ? '2D: Tam Giác Đều Lớn Dần' : '2D: Tam Giác Ngược Nhỏ Dần';
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        } else {
+          captionEl.textContent = '2D: Biến mất khỏi Mặt Phẳng';
+        }
+      } else if (state.sliceSubMode === 'parallel') {
+        if (Math.abs(c) <= 1.0) {
+          ctx.fillRect(cx - 28, cy - 28, 56, 56);
+          ctx.strokeRect(cx - 28, cy - 28, 56, 56);
+          captionEl.textContent = '2D: Hình Vuông Cố Định';
+        } else {
+          captionEl.textContent = '2D: Biến mất';
+        }
+      } else {
+        const R = 1.65;
+        if (Math.abs(c) <= R) {
+          const r = Math.sqrt(R * R - c * c) * 24;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          captionEl.textContent = `2D: Hình Tròn (r = ${(r/24).toFixed(2)})`;
+        } else {
+          captionEl.textContent = '2D: Chưa xuất hiện';
+        }
+      }
+    }
+
+    /***************************************************************************
+     * 8. MODE 5: N-DIMENSIONAL ANALYTICS & SPIKY CUBE VISUALIZATION
+     ***************************************************************************/
+    let chartVol = null;
+    let chartRatio = null;
+
+    // Gamma function for exact N-ball volume: V_n(R) = pi^(n/2) / Gamma(n/2 + 1) * R^n
+    function gammaHalfInteger(n) {
+      // Computes Gamma(n/2 + 1)
+      if (n % 2 === 0) {
+        let k = n / 2;
+        let res = 1;
+        for (let i = 2; i <= k; i++) res *= i;
+        return res;
+      } else {
+        // Gamma(m + 0.5) = (2m)! / (4^m * m!) * sqrt(pi)
+        let m = (n + 1) / 2;
+        let prod = Math.sqrt(Math.PI);
+        for (let i = 1; i <= m; i++) {
+          prod *= (i - 0.5);
+        }
+        return prod;
+      }
+    }
+
+    function unitSphereVolume(n) {
+      return Math.pow(Math.PI, n / 2) / gammaHalfInteger(n);
+    }
+
+    function initNDimVisualsAndCharts() {
+      // Build 3D conceptual visualization of the "Spiky Cube / Corner Concentration"
+      const wireCube = new THREE.LineSegments(
+        new THREE.EdgesGeometry(new THREE.BoxGeometry(2, 2, 2)),
+        new THREE.LineBasicMaterial({ color: 0x475569 })
+      );
+      nDimGroup.add(wireCube);
+
+      // Inscribed Sphere of radius 1
+      const inSphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 24),
+        new THREE.MeshPhysicalMaterial({
+          color: 0x0ea5e9,
+          transparent: true,
+          opacity: 0.35,
+          roughness: 0.2
+        })
+      );
+      inSphere.name = 'inscribedSphere';
+      nDimGroup.add(inSphere);
+
+      // 8 Corner Spikes extending outward to length sqrt(N)
+      const spikesGroup = new THREE.Group();
+      spikesGroup.name = 'cornerSpikes';
+      for (let i = 0; i < 8; i++) {
+        const dir = new THREE.Vector3(
+          (i & 1) ? 1 : -1,
+          (i & 2) ? 1 : -1,
+          (i & 4) ? 1 : -1
+        ).normalize();
+        const coneGeo = new THREE.ConeGeometry(0.16, 1, 16);
+        coneGeo.translate(0, 0.5, 0);
+        coneGeo.rotateX(Math.PI / 2);
+        const coneMat = new THREE.MeshStandardMaterial({
+          color: 0xf43f5e,
+          emissive: 0xe11d48,
+          emissiveIntensity: 0.45
+        });
+        const cone = new THREE.Mesh(coneGeo, coneMat);
+        cone.lookAt(dir);
+        cone.userData.dir = dir;
+        spikesGroup.add(cone);
+      }
+      nDimGroup.add(spikesGroup);
+
+      // Initialize Chart.js Charts
+      const labels20 = Array.from({ length: 20 }, (_, i) => `${i + 1}D`);
+      const vols20 = labels20.map((_, i) => Number(unitSphereVolume(i + 1).toFixed(4)));
+      const ratios12 = Array.from({ length: 12 }, (_, i) => {
+        const d = i + 1;
+        return Number(((unitSphereVolume(d) / Math.pow(2, d)) * 100).toFixed(2));
+      });
+
+      const ctx1 = document.getElementById('chart-sphere-vol').getContext('2d');
+      chartVol = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: labels20,
+          datasets: [{
+            label: 'Thể tích cầu R=1',
+            data: vols20,
+            backgroundColor: labels20.map((_, i) => (i + 1 === 5 ? '#f43f5e' : '#38bdf8')),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#1e293b' } }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('chart-ratio').getContext('2d');
+      chartRatio = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 12 }, (_, i) => `${i + 1}D`),
+          datasets: [{
+            label: 'Tỷ lệ Cầu / Hộp (%)',
+            data: ratios12,
+            borderColor: '#fbbf24',
+            backgroundColor: 'rgba(251, 191, 36, 0.15)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
+            y: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { color: '#1e293b' } }
+          }
+        }
+      });
+    }
+
+    function updateNDimension(val) {
+      const N = parseInt(val, 10);
+      state.nDim = N;
+      document.getElementById('slider-ndim').value = N;
+      document.getElementById('val-ndim-slider').textContent = `N = ${N}`;
+      document.getElementById('ndim-badge').textContent = `N = ${N} CHIỀU`;
+
+      const vol = unitSphereVolume(N);
+      const ratioPct = (vol / Math.pow(2, N)) * 100;
+      const cornerDist = Math.sqrt(N);
+
+      document.getElementById('ndim-stat-vertices').textContent = N <= 20 ? Math.pow(2, N).toLocaleString('vi-VN') : `2^${N}`;
+      document.getElementById('ndim-stat-vol').textContent = vol < 0.0001 ? vol.toExponential(2) : vol.toFixed(4);
+      document.getElementById('ndim-stat-ratio').textContent = ratioPct < 0.01 ? `< 0.001%` : `${ratioPct.toFixed(2)}%`;
+      document.getElementById('ndim-stat-diag').textContent = `${cornerDist.toFixed(3)} m`;
+
+      // Regular Polytopes count
+      const regEl = document.getElementById('ndim-regular-count');
+      if (N === 1) regEl.textContent = '1 (Đoạn thẳng)';
+      else if (N === 2) regEl.textContent = 'Vô số (Đa giác đều n cạnh)';
+      else if (N === 3) regEl.textContent = '5 Khối Platon (Tứ, Lập, Bát, Thập nhị, Nhị thập)';
+      else if (N === 4) regEl.textContent = '6 Khối Đều (Có khối 24-cell độc nhất)';
+      else regEl.textContent = 'Chỉ còn đúng 3 khối đều!';
+
+      // Scale 3D Spikes to visually represent sqrt(N)
+      const spikes = nDimGroup.getObjectByName('cornerSpikes');
+      if (spikes) {
+        spikes.children.forEach(cone => {
+          cone.scale.set(1, 1, Math.min(5.5, Math.sqrt(N) * 0.85));
+        });
+      }
+    }
+
+    /***************************************************************************
+     * 9. COMBINATORICS TABLE GENERATOR (PASCAL / HYPERCUBE RECURRENCE)
+     ***************************************************************************/
+    function populateCombinatoricsTable() {
+      const tbody = document.getElementById('combinatorics-table-body');
+      tbody.innerHTML = '';
+
+      // N(d, k) = (d choose k) * 2^(d - k)
+      const fact = (n) => (n <= 1 ? 1 : n * fact(n - 1));
+      const comb = (n, k) => (k < 0 || k > n ? 0 : fact(n) / (fact(k) * fact(n - k)));
+
+      const dimNames = ['0D (Điểm)', '1D (Đoạn)', '2D (Vuông)', '3D (Lập phương)', '4D (Tesseract)', '5D (Penteract)', '6D (Hexeract)'];
+      for (let d = 0; d <= 6; d++) {
+        const tr = document.createElement('tr');
+        tr.className = d === 4
+          ? 'bg-sky-500/20 text-sky-300 font-bold'
+          : 'hover:bg-slate-800/60 text-slate-300';
+
+        let rowHtml = `<td class="p-1.5 text-left font-semibold">${dimNames[d]}</td>`;
+        for (let k = 0; k <= 4; k++) {
+          const val = k <= d ? comb(d, k) * Math.pow(2, d - k) : '—';
+          rowHtml += `<td class="p-1.5">${val}</td>`;
+        }
+        tr.innerHTML = rowHtml;
+        tbody.appendChild(tr);
+      }
+    }
+
+    /***************************************************************************
+     * 10. UI CONTROLLERS & MODE SWITCHING
+     ***************************************************************************/
+    function switchMode(newMode) {
+      state.mode = newMode;
+
+      // Update Tab Active States
+      ['shadow', 'extrude', 'unfold', 'slice', 'ndim'].forEach(m => {
+        document.getElementById(`tab-${m}`).classList.toggle('active', m === newMode);
+        document.getElementById(`panel-${m}`).classList.toggle('hidden', m !== newMode);
+      });
+
+      // Toggle 3D Scene Groups visibility
+      tesseractGroup.visible = (newMode === 'shadow' || newMode === 'extrude');
+      floorShadowGroup.visible = (newMode === 'shadow' || newMode === 'extrude') && state.showFloorShadow;
+      unfoldGroup.visible = (newMode === 'unfold');
+      sliceGroup.visible = (newMode === 'slice');
+      nDimGroup.visible = (newMode === 'ndim');
+
+      // Overlays
+      document.getElementById('flatland-preview-box').classList.toggle('hidden', newMode !== 'slice');
+      document.getElementById('ndim-overlay').classList.toggle('hidden', newMode !== 'ndim');
+
+      // Update HUD Mode Title & Description
+      const titleEl = document.getElementById('hud-mode-title');
+      const descEl = document.getElementById('hud-desc');
+
+      if (newMode === 'shadow') {
+        titleEl.textContent = 'CHẾ ĐỘ 1: BÓNG ĐỔ SCHLEGEL 4D';
+        descEl.textContent = 'Phép chiếu phối cảnh từ chiều thứ 4 xuống không gian 3D tạo ra khối lập phương trong lồng khối lập phương ngoài cùng 6 hình chóp cụt.';
+        updateHUDCounts(16, 32, 24, 8, 4);
+      } else if (newMode === 'extrude') {
+        titleEl.textContent = 'CHẾ ĐỘ 2: PHÉP ĐẾM & KÉO GIÃN CHIỀU';
+        descEl.textContent = 'Kéo giãn liên tục từ Điểm (0D) → Đoạn thẳng (1D) → Hình vuông (2D) → Lập phương (3D) → Siêu lập phương (4D).';
+        updateExtrusionDimension(state.extrudeDim);
+      } else if (newMode === 'unfold') {
+        titleEl.textContent = 'CHẾ ĐỘ 3: TRẢI PHẲNG THẬP GIÁ DALÍ';
+        descEl.textContent = '8 khối lập phương ghép thành cây thập giá 3D (Corpus Hypercubus). Kéo thanh trượt để gấp các khối qua chiều thứ 4.';
+        updateHUDCounts(16, 32, 24, 8, 4);
+        updateDaliUnfoldGeometry();
+      } else if (newMode === 'slice') {
+        titleEl.textContent = 'CHẾ ĐỘ 4: LÁT CẮT 3D XUYÊN KHÔNG GIAN';
+        descEl.textContent = 'Quan sát lát cắt 3D khi một vật thể 4D đi xuyên qua thế giới của chúng ta — giống như quả cầu 3D đi qua Thế Giới Phẳng 2D.';
+        updateSliceGeometry();
+      } else if (newMode === 'ndim') {
+        titleEl.textContent = 'CHẾ ĐỘ 5: KHÔNG GIAN N-CHIỀU (1D → 100D)';
+        descEl.textContent = 'Khi số chiều tăng cao, thể tích siêu cầu tiến về 0 và gần như toàn bộ thể tích khối lập phương dồn hết ra các góc nhọn.';
+        updateNDimension(state.nDim);
+      }
+    }
+
+    function updateHUDCounts(v, e, f, c, dim) {
+      document.getElementById('hud-v').textContent = v;
+      document.getElementById('hud-e').textContent = e;
+      document.getElementById('hud-f').textContent = f;
+      document.getElementById('hud-c').textContent = c;
+      const euler = v - e + f - c;
+      document.getElementById('hud-formula').textContent = `V - E + F - C = ${euler}`;
+      document.getElementById('hud-diagonal').textContent = `Đường chéo: √${dim.toFixed(1)} = ${Math.sqrt(dim).toFixed(2)}`;
+    }
+
+    // Mode 1 Rotation & Projection Handlers
+    function onManualAngleChange(plane, val) {
+      state.angles[plane] = parseFloat(val);
+      document.getElementById(`val-${plane}`).textContent = `${Math.round(val)}°`;
+    }
+
+    function syncRotationControls() {
+      ['xy', 'yz', 'xz', 'xw', 'yw', 'zw'].forEach(p => {
+        state.autoRot[p] = document.getElementById(`auto-${p}`).checked;
+      });
+    }
+
+    function activateCliffordDoubleRotation() {
+      // Double rotation in two mutually orthogonal planes: XY and ZW
+      state.autoRot = { xy: true, yz: false, xz: false, xw: false, yw: false, zw: true };
+      ['xy', 'yz', 'xz', 'xw', 'yw', 'zw'].forEach(p => {
+        document.getElementById(`auto-${p}`).checked = state.autoRot[p];
+      });
+      showToast('Đã bật Xoay Kép Clifford (Đồng thời mặt phẳng XY & ZW — Chỉ tâm đứng yên)');
+    }
+
+    function reset4DRotations() {
+      ['xy', 'yz', 'xz', 'xw', 'yw', 'zw'].forEach(p => {
+        state.angles[p] = 0;
+        state.autoRot[p] = false;
+        document.getElementById(`auto-${p}`).checked = false;
+        document.getElementById(`slider-${p}`).value = 0;
+        document.getElementById(`val-${p}`).textContent = '0°';
+      });
+    }
+
+    function updateWCamera(val) {
+      state.wCameraDist = parseFloat(val);
+      document.getElementById('val-wcam').textContent = `d_w = ${state.wCameraDist.toFixed(2)}`;
+    }
+
+    function setProjectionType(type) {
+      state.projection = type;
+      document.getElementById('btn-proj-persp').className = type === 'perspective'
+        ? 'px-2.5 py-1.5 rounded-lg border border-sky-400 bg-sky-500/20 text-white text-xs font-mono'
+        : 'px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-mono';
+      document.getElementById('btn-proj-ortho').className = type === 'isometric4d'
+        ? 'px-2.5 py-1.5 rounded-lg border border-sky-400 bg-sky-500/20 text-white text-xs font-mono'
+        : 'px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-mono';
+    }
+
+    function selectCellHighlight(cellIdx) {
+      state.highlightedCell = cellIdx;
+      for (let i = -1; i < 8; i++) {
+        const btn = document.getElementById(`cell-btn-${i}`);
+        if (btn) btn.classList.toggle('active', i === cellIdx);
+      }
+    }
+
+    // Mode 2 Extrusion Handlers
+    function updateExtrusionDimension(val) {
+      const D = parseFloat(val);
+      state.extrudeDim = D;
+      document.getElementById('slider-extrude').value = D;
+      document.getElementById('val-extrude-dim').textContent = `D = ${D.toFixed(2)}`;
+
+      const dInt = Math.round(D);
+      const counts = [
+        [1, 0, 0, 0],
+        [2, 1, 0, 0],
+        [4, 4, 1, 0],
+        [8, 12, 6, 1],
+        [16, 32, 24, 8]
+      ][dInt];
+      updateHUDCounts(counts[0], counts[1], counts[2], counts[3], D);
+    }
+
+    function animateExtrudeTo(targetD) {
+      state.extrudePlaying = false;
+      updateExtrusionDimension(targetD);
+    }
+
+    function toggleExtrudeAutoPlay() {
+      state.extrudePlaying = !state.extrudePlaying;
+      const btn = document.getElementById('btn-extrude-play');
+      if (state.extrudePlaying && state.extrudeDim >= 3.98) {
+        state.extrudeDim = 0;
+      }
+      btn.innerHTML = state.extrudePlaying
+        ? '<i class="fa-solid fa-pause"></i><span>Tạm Dừng Mô Phỏng Kéo Giãn</span>'
+        : '<i class="fa-solid fa-play"></i><span>Chạy Mô Phỏng Kéo Giãn 0D → 4D</span>';
+    }
+
+    // Mode 3 Unfold Handlers
+    function updateFoldProgress(val) {
+      const pct = parseFloat(val);
+      state.foldProgress = pct / 100;
+      document.getElementById('slider-fold').value = pct;
+      document.getElementById('val-fold-pct').textContent = `${Math.round(pct)}% (${pct < 5 ? 'Trải phẳng' : pct > 95 ? 'Đã gấp 4D' : 'Đang gấp 4D'})`;
+      updateDaliUnfoldGeometry();
+    }
+
+    function toggleFoldAutoPlay() {
+      state.foldPlaying = !state.foldPlaying;
+      const btn = document.getElementById('btn-fold-play');
+      btn.innerHTML = state.foldPlaying
+        ? '<i class="fa-solid fa-pause"></i><span>Tạm Dừng Gấp 4D</span>'
+        : '<i class="fa-solid fa-play"></i><span>Tự Động Gấp / Mở 4D</span>';
+    }
+
+    // Mode 4 Slice Handlers
+    function setSliceSubMode(sub) {
+      state.sliceSubMode = sub;
+      ['vertex', 'parallel', 'hypersphere'].forEach(s => {
+        const el = document.getElementById(`slice-btn-${s}`);
+        if (s === sub) {
+          el.className = 'px-3 py-2 rounded-lg border border-fuchsia-400 bg-fuchsia-500/20 text-left text-xs font-mono text-white flex items-center justify-between';
+        } else {
+          el.className = 'px-3 py-2 rounded-lg border border-slate-700 bg-slate-800/60 text-left text-xs font-mono text-slate-300 flex items-center justify-between';
+        }
+      });
+      updateSliceGeometry();
+    }
+
+    function updateSlicePosition(val) {
+      state.slicePos = parseFloat(val);
+      document.getElementById('slider-slice').value = state.slicePos;
+      document.getElementById('val-slice-pos').textContent = `c = ${state.slicePos.toFixed(2)}`;
+      updateSliceGeometry();
+    }
+
+    function toggleSliceAutoPlay() {
+      state.slicePlaying = !state.slicePlaying;
+      const btn = document.getElementById('btn-slice-play');
+      btn.innerHTML = state.slicePlaying
+        ? '<i class="fa-solid fa-pause"></i><span>Tạm Dừng Quét Lát Cắt</span>'
+        : '<i class="fa-solid fa-play"></i><span>Cho Vật Thể 4D Đi Xuyên Qua Thế Giới 3D</span>';
+    }
+
+    // Global Appearance & Theme Handlers
+    function updateFaceOpacity(val) {
+      state.faceOpacity = parseFloat(val);
+      document.getElementById('val-opacity').textContent = `${Math.round(state.faceOpacity * 100)}%`;
+    }
+
+    function updateStrutRadius(val) {
+      state.strutScale = parseFloat(val);
+      document.getElementById('val-strut').textContent = `${state.strutScale.toFixed(1)}x`;
+    }
+
+    function toggleFloorShadow(checked) {
+      state.showFloorShadow = checked;
+      floorShadowGroup.visible = checked && (state.mode === 'shadow' || state.mode === 'extrude');
+    }
+
+    function setTheme(themeKey) {
+      state.theme = themeKey;
+      coreLight.color.setHex(THEMES[themeKey].inner);
+      if (state.mode === 'slice') updateSliceGeometry();
+    }
+
+    function resetCameraView() {
+      camera.position.set(5.2, 4.0, 6.4);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+
+    // 4D Coordinate HTML Labels Overlay (Optional toggle)
+    const coordLabelsContainer = document.createElement('div');
+    coordLabelsContainer.className = 'absolute inset-0 pointer-events-none overflow-hidden';
+    document.getElementById('viewport-wrapper').appendChild(coordLabelsContainer);
+    const vertexLabelDivs = [];
+
+    for (let i = 0; i < 16; i++) {
+      const div = document.createElement('div');
+      div.className = 'hidden absolute text-[9px] font-mono px-1 py-0.2 rounded bg-slate-950/80 text-sky-300 border border-sky-500/30 -translate-x-1/2 -translate-y-full';
+      const v = BASE_VERTICES_4D[i].map(x => (x > 0 ? '+1' : '-1')).join(',');
+      div.textContent = `(${v})`;
+      coordLabelsContainer.appendChild(div);
+      vertexLabelDivs.push(div);
+    }
+
+    function toggleVertexCoords(checked) {
+      state.showVertexCoords = checked;
+      if (!checked) {
+        vertexLabelDivs.forEach(d => d.classList.add('hidden'));
+      }
+    }
+
+    function updateVertexCoordinateLabels() {
+      if (!state.showVertexCoords || (state.mode !== 'shadow' && state.mode !== 'extrude')) {
+        vertexLabelDivs.forEach(d => d.classList.add('hidden'));
+        return;
+      }
+      const rect = renderer.domElement.getBoundingClientRect();
+      for (let i = 0; i < 16; i++) {
+        const div = vertexLabelDivs[i];
+        if (!vertexMeshes[i].visible) {
+          div.classList.add('hidden');
+          continue;
+        }
+        const pos = currentProjected3D[i].clone().project(camera);
+        if (pos.z > 1) {
+          div.classList.add('hidden');
+          continue;
+        }
+        const x = (pos.x * 0.5 + 0.5) * rect.width;
+        const y = (-pos.y * 0.5 + 0.5) * rect.height;
+        div.style.left = `${x}px`;
+        div.style.top = `${y - 8}px`;
+        div.classList.remove('hidden');
+      }
+    }
+
+    /***************************************************************************
+     * 11. DIRECT 3D MODEL EXPORT (.OBJ & .JSON)
+     ***************************************************************************/
+    function showToast(msg) {
+      const box = document.getElementById('toast-box');
+      document.getElementById('toast-msg').textContent = msg;
+      box.classList.remove('hidden');
+      setTimeout(() => box.classList.add('hidden'), 3400);
+    }
+
+    function triggerDownload(filename, content, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportCurrentOBJ() {
+      let obj = `# TESSERACT 4D STUDIO - Wavefront .OBJ Export\n`;
+      obj += `# Chế độ: ${state.mode.toUpperCase()} | Khoảng cách đèn chiếu 4D d_w = ${state.wCameraDist}\n\n`;
+
+      for (let i = 0; i < 16; i++) {
+        const v = currentProjected3D[i];
+        obj += `v ${v.x.toFixed(6)} ${v.y.toFixed(6)} ${v.z.toFixed(6)}\n`;
+      }
+      obj += `\n# 32 Edges\n`;
+      EDGES_4D.forEach(e => {
+        obj += `l ${e.a + 1} ${e.b + 1}\n`;
+      });
+      obj += `\n# 24 Quad Faces\n`;
+      FACES_4D.forEach(f => {
+        obj += `f ${f[0] + 1} ${f[1] + 1} ${f[2] + 1} ${f[3] + 1}\n`;
+      });
+
+      triggerDownload(`tesseract_4d_${state.mode}.obj`, obj, 'text/plain;charset=utf-8');
+      showToast('Đã xuất file mô hình 3D tesseract_4d.obj thành công!');
+    }
+
+    function exportCurrentJSON() {
+      const payload = {
+        metadata: {
+          generator: 'TESSERACT 4D STUDIO WebGL',
+          mode: state.mode,
+          projection: state.projection,
+          wCameraDist: state.wCameraDist,
+          angles4D: state.angles,
+          eulerFormula: 'V(16) - E(32) + F(24) - C(8) = 0'
+        },
+        vertices4D: currentRotated4D,
+        projectedVertices3D: currentProjected3D.map(v => [
+          Number(v.x.toFixed(5)),
+          Number(v.y.toFixed(5)),
+          Number(v.z.toFixed(5))
+        ]),
+        edges: EDGES_4D,
+        faces: FACES_4D
+      };
+
+      triggerDownload(
+        `tesseract_4d_data.json`,
+        JSON.stringify(payload, null, 2),
+        'application/json;charset=utf-8'
+      );
+      showToast('Đã xuất dữ liệu tọa độ 4D/3D sang .JSON!');
+    }
+
+    /***************************************************************************
+     * 12. RESIZE HANDLER & MAIN ANIMATION LOOP
+     ***************************************************************************/
+    function handleResize() {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w === 0 || h === 0) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    let lastTime = performance.now();
+    let frameCount = 0;
+    let fpsAccumulator = 0;
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+
+      const dt = Math.min(0.1, (now - lastTime) / 1000);
+      lastTime = now;
+
+      // FPS counter update
+      frameCount++;
+      fpsAccumulator += dt;
+      if (fpsAccumulator >= 0.5) {
+        const fps = Math.round(frameCount / fpsAccumulator);
+        document.getElementById('hud-fps').textContent = `${fps} FPS`;
+        frameCount = 0;
+        fpsAccumulator = 0;
+      }
+
+      // Advance active 4D plane rotations
+      ['xy', 'yz', 'xz', 'xw', 'yw', 'zw'].forEach(p => {
+        if (state.autoRot[p]) {
+          state.angles[p] = (state.angles[p] + state.rotSpeeds[p] * 60 * dt) % 360;
+          document.getElementById(`slider-${p}`).value = state.angles[p];
+          document.getElementById(`val-${p}`).textContent = `${Math.round(state.angles[p])}°`;
+        }
+      });
+
+      // Mode-specific real-time updates
+      if (state.mode === 'shadow' || state.mode === 'extrude') {
+        if (state.mode === 'extrude' && state.extrudePlaying) {
+          let nextD = state.extrudeDim + dt * 0.65;
+          if (nextD >= 4.0) {
+            nextD = 4.0;
+            toggleExtrudeAutoPlay();
+          }
+          updateExtrusionDimension(nextD);
+        }
+        updateTesseractGeometry();
+        updateVertexCoordinateLabels();
+      } else if (state.mode === 'unfold') {
+        if (state.foldPlaying) {
+          let nextPct = state.foldProgress * 100 + state.foldDirection * dt * 28;
+          if (nextPct >= 100) {
+            nextPct = 100;
+            state.foldDirection = -1;
+          } else if (nextPct <= 0) {
+            nextPct = 0;
+            state.foldDirection = 1;
+          }
+          updateFoldProgress(nextPct);
+        } else {
+          updateDaliUnfoldGeometry();
+        }
+      } else if (state.mode === 'slice') {
+        if (state.slicePlaying) {
+          let nextC = state.slicePos + dt * 0.65;
+          if (nextC > 2.0) nextC = -2.0;
+          updateSlicePosition(nextC);
+        }
+      } else if (state.mode === 'ndim') {
+        nDimGroup.rotation.y += dt * 0.35;
+        nDimGroup.rotation.x = Math.sin(now * 0.0007) * 0.25;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // Start Application on Window Load
+    window.onload = function () {
+      handleResize();
+      populateCombinatoricsTable();
+      initNDimVisualsAndCharts();
+      updateTesseractGeometry();
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>
