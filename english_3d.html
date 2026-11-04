@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lộ Trình Cá Nhân: Đạt 6.5+ IELTS Sau 1 Lộ Trình - Adaptive Learning & 3D Lab</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Three.js & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brandBlue: '#1565d8',
+                        brandSky: '#2484ff',
+                        brandOrange: '#ff8a00',
+                        brandWarm: '#fdf3d7',
+                        brandWarmBorder: '#f3d999',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f8fafc;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        body {
+            background-color: #f4f7fb;
+            color: #1e293b;
+            overflow-x: hidden;
+        }
+        /* Banner Pattern */
+        .hero-banner-bg {
+            background: linear-gradient(135deg, #0c58d0 0%, #1c7dff 50%, #094eb8 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-banner-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+            background-size: 22px 22px;
+            pointer-events: none;
+        }
+        /* Staircase Step Transition */
+        .stair-step {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stair-step:hover {
+            transform: translateY(-4px);
+        }
+        /* Custom Table Styling */
+        .roadmap-table th, .roadmap-table td {
+            border-color: #e2e8f0;
+        }
+        /* 3D Floating Label */
+        .label-3d {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            user-select: none;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            z-index: 20;
+        }
+        .label-3d:hover {
+            z-index: 35;
+            transform: translate(-50%, -55%) scale(1.06);
+        }
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.86);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: floatSlow 3.2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- ==================== 1. TOP BLUE HERO BANNER (CHUẨN MẪU LỘ TRÌNH CÁ NHÂN) ==================== -->
+    <header class="hero-banner-bg text-white shadow-lg border-b border-blue-400/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-5 relative z-10">
+            <!-- Decorative Stars -->
+            <div class="hidden md:block absolute right-10 top-3 text-amber-300 text-xl animate-pulse">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="hidden md:block absolute right-24 bottom-3 text-amber-200 text-sm">
+                <i class="fa-solid fa-star"></i>
+            </div>
+
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-4">
+                <!-- Left Mascot & Title -->
+                <div class="flex items-center gap-4 text-center sm:text-left flex-col sm:flex-row">
+                    <!-- Cute Mascot SVG Badge -->
+                    <div class="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-md border-2 border-amber-300/80 flex items-center justify-center shadow-xl shrink-0 animate-float">
+                        <svg viewBox="0 0 64 64" class="w-13 h-13">
+                            <!-- Cute Owl/Cat Scholar Mascot -->
+                            <circle cx="32" cy="34" r="22" fill="#ffffff"/>
+                            <path d="M14 22 L22 10 L28 18 Z" fill="#ff9f1c"/>
+                            <path d="M50 22 L42 10 L36 18 Z" fill="#ff9f1c"/>
+                            <circle cx="24" cy="32" r="4.5" fill="#1e293b"/>
+                            <circle cx="40" cy="32" r="4.5" fill="#1e293b"/>
+                            <circle cx="25.5" cy="30.5" r="1.5" fill="#ffffff"/>
+                            <circle cx="41.5" cy="30.5" r="1.5" fill="#ffffff"/>
+                            <ellipse cx="18" cy="37" rx="3.5" ry="2" fill="#fda4af"/>
+                            <ellipse cx="46" cy="37" rx="3.5" ry="2" fill="#fda4af"/>
+                            <path d="M29 36 Q32 40 35 36" stroke="#ea580c" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                            <!-- Graduation Cap -->
+                            <polygon points="32,6 12,15 32,22 52,15" fill="#1e293b"/>
+                            <rect x="23" y="19" width="18" height="4" rx="2" fill="#334155"/>
+                            <path d="M48 16 L50 26" stroke="#facc15" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 border border-white/25 text-amber-200 text-xs font-bold mb-1">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>AI ADAPTIVE LEARNING & 3D INTERACTIVE SIMULATOR</span>
+                        </div>
+                        <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white drop-shadow">
+                            Lộ trình cá nhân
+                        </h1>
+                        <p class="text-xs sm:text-sm md:text-base text-blue-100 font-medium mt-0.5">
+                            Đạt <span class="text-amber-300 font-extrabold underline decoration-amber-300/60">6.5+ IELTS</span> sau 1 lộ trình - với phương pháp <span class="text-white font-bold">Adaptive Learning</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Action Buttons & Live Progress Pill -->
+                <div class="flex flex-wrap items-center justify-center gap-2">
+                    <button onclick="openDiagnosticModal()" class="px-3.5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/20 flex items-center gap-2 transition transform hover:-translate-y-0.5">
+                        <i class="fa-solid fa-stethoscope"></i>
+                        <span>Test Chẩn Đoán Adaptive (CAT)</span>
+                    </button>
+                    <button onclick="toggleAdaptiveConfigPanel()" class="px-3.5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs sm:text-sm flex items-center gap-2 transition">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Cá Nhân Hóa Lộ Trình</span>
+                    </button>
+                    <button onclick="openLessonModal(currentStageIdx, 0, 0)" class="px-3.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg flex items-center gap-2 transition">
+                        <i class="fa-solid fa-cube"></i>
+                        <span>Phòng Học 3D</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== 2. ADAPTIVE LEARNING CONFIGURATION DRAWER (COLLAPSIBLE) ==================== -->
+    <section id="adaptive-config-drawer" class="bg-white border-b border-slate-200 shadow-sm transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-gradient-to-r from-blue-50 via-indigo-50/60 to-amber-50/70 p-3.5 rounded-2xl border border-blue-200/80">
+                <!-- Left Controls -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
+                    <!-- Starting Band -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">
+                            <i class="fa-solid fa-flag-checkered text-blue-600 mr-1"></i>Trình độ xuất phát hiện tại
+                        </label>
+                        <select id="cfg-start-band" onchange="applyAdaptivePersonalization()" class="w-full bg-white text-slate-800 text-xs font-bold rounded-xl px-3 py-2 border border-slate-300 focus:outline-none focus:border-blue-500">
+                            <option value="0">Beginner 0.0 (Mất gốc toàn diện)</option>
+                            <option value="1">Elementary 3.5 (Đã có gốc cơ bản)</option>
+                            <option value="2">Pre-IELTS 4.5 (Đã biết cấu trúc đề)</option>
+                            <option value="3">Intermediate 5.5 (Cần bứt phá 6.5+)</option>
+                        </select>
+                    </div>
+                    <!-- Weak Skill Focus -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">
+                            <i class="fa-solid fa-bullseye text-orange-500 mr-1"></i>Kỹ năng yếu cần Adaptive ưu tiên
+                        </label>
+                        <select id="cfg-weak-skill" onchange="applyAdaptivePersonalization()" class="w-full bg-white text-slate-800 text-xs font-bold rounded-xl px-3 py-2 border border-slate-300 focus:outline-none focus:border-blue-500">
+                            <option value="all">Cân bằng cả 4 Kỹ năng + Ngữ pháp/Từ vựng</option>
+                            <option value="grammar_pron">Mất gốc Ngữ pháp & Phát âm IPA</option>
+                            <option value="writing">Yếu IELTS Writing (Task 1 & Task 2)</option>
+                            <option value="speaking">Yếu IELTS Speaking (Phản xạ & Từ vựng)</option>
+                            <option value="listening_reading">Yếu Listening & Reading (Bẫy Paraphrase)</option>
+                        </select>
+                    </div>
+                    <!-- Daily Study Time -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase text-slate-500 mb-1">
+                            <i class="fa-solid fa-clock text-emerald-600 mr-1"></i>Quỹ thời gian học mỗi ngày
+                        </label>
+                        <select id="cfg-daily-time" onchange="applyAdaptivePersonalization()" class="w-full bg-white text-slate-800 text-xs font-bold rounded-xl px-3 py-2 border border-slate-300 focus:outline-none focus:border-blue-500">
+                            <option value="45">45 phút / ngày (Tiêu chuẩn - 1 buổi/ngày)</option>
+                            <option value="90" selected>90 phút / ngày (Tăng tốc - 2 buổi/ngày)</option>
+                            <option value="135">135 phút / ngày (Cấp tốc - 3 buổi/ngày)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right Adaptive Summary Metrics -->
+                <div class="flex items-center gap-3 sm:gap-4 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shrink-0 shadow-sm">
+                    <div class="text-center">
+                        <div class="text-[10px] font-bold uppercase text-slate-400">Tổng số buổi</div>
+                        <div id="metric-total-sessions" class="text-base font-extrabold text-blue-600 font-mono">250 Buổi</div>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200"></div>
+                    <div class="text-center">
+                        <div class="text-[10px] font-bold uppercase text-slate-400">Adaptive Tối ưu</div>
+                        <div id="metric-saved-sessions" class="text-base font-extrabold text-emerald-600 font-mono">Chuẩn 100%</div>
+                    </div>
+                    <div class="h-8 w-px bg-slate-200"></div>
+                    <div class="text-center">
+                        <div class="text-[10px] font-bold uppercase text-slate-400">Hoàn thành</div>
+                        <div id="metric-completed-pct" class="text-base font-extrabold text-orange-500 font-mono">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 3. MAIN CONTENT CONTAINER ==================== -->
+    <main class="max-w-7xl mx-auto w-full px-3 sm:px-6 py-6 space-y-6 flex-1">
+
+        <!-- 3.1. STAIRCASE 5 STAGES PROGRESS BAR (BIỂU ĐỒ BẬC THANG 5 CHẶNG CHUẨN MẪU) -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                        Bản đồ 5 Chặng Cá Nhân Hóa
+                    </span>
+                    <h2 class="text-base sm:text-lg font-extrabold text-slate-800 mt-1">
+                        Chọn Chặng Học Tập Để Xem Chi Tiết Từng Buổi & Mở Phòng Học 3D
+                    </h2>
+                </div>
+                <div class="flex items-center gap-2 text-xs text-slate-500">
+                    <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-orange-500"></span> Đang chọn</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-200"></span> Chặng tiếp theo</span>
+                    <span class="inline-flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Đã miễn/Hoàn thành</span>
+                </div>
+            </div>
+
+            <!-- Visual Staircase Container (5 Ascending Steps) -->
+            <div id="staircase-container" class="grid grid-cols-1 md:grid-cols-5 gap-2.5 md:items-end pt-6 pb-2 px-1">
+                <!-- Populated dynamically by JS -->
+            </div>
+
+            <!-- Red Target Line & Sub-Stage Module Filter Pills (Giống hệt thanh dưới bậc thang trong ảnh mẫu) -->
+            <div class="mt-3 pt-3 border-t-2 border-rose-400/80 relative">
+                <div class="absolute -top-3 right-4 bg-white px-2 text-rose-500 text-[11px] font-extrabold flex items-center gap-1">
+                    <i class="fa-solid fa-bullseye"></i> Đích đến: 6.5+ IELTS
+                </div>
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <div id="stage-module-pills" class="flex items-center gap-1.5 overflow-x-auto pb-1">
+                        <!-- Module filter tabs populated by JS -->
+                    </div>
+                    <!-- Adaptive Filter & Expand All Toggle -->
+                    <div class="flex items-center gap-2 shrink-0">
+                        <select id="filter-adaptive-tag" onchange="renderRoadmapTable()" class="bg-slate-100 text-slate-700 text-xs font-bold rounded-xl px-3 py-1.5 border border-slate-300">
+                            <option value="all">Hiển thị: Tất cả buổi học</option>
+                            <option value="priority">🔥 Chỉ hiện buổi Ưu tiên Adaptive</option>
+                            <option value="uncompleted">⏳ Chỉ hiện buổi Chưa hoàn thành</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3.2. MỤC TIÊU & KIẾN THỨC ĐẠT ĐƯỢC (CHUẨN CẤU TRÚC KHUNG VÀNG NHẠT + 4 Ô GRID TRONG ẢNH MẪU) -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+                <!-- Row 1: Mục tiêu -->
+                <div class="lg:col-span-2 bg-brandWarm border-b lg:border-b border-r-0 lg:border-r border-brandWarmBorder p-4 flex items-center justify-center lg:justify-start">
+                    <span class="text-sm font-extrabold text-slate-800">Mục tiêu</span>
+                </div>
+                <div class="lg:col-span-10 p-4 border-b border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <p id="stage-goal-text" class="text-xs sm:text-sm font-bold text-slate-700 leading-relaxed">
+                        Cần nỗ lực học tập trong <span class="text-blue-600 font-extrabold">45 buổi học</span> ở chặng này để đạt trình độ <span class="text-orange-600 font-extrabold">IELTS 3.5 (Foundation)</span>.
+                    </p>
+                    <span id="stage-adaptive-badge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300 shrink-0 self-start sm:self-center">
+                        Adaptive: Lộ trình Tối ưu hóa
+                    </span>
+                </div>
+
+                <!-- Row 2: Kiến thức đạt được (4 Grid Cards) -->
+                <div class="lg:col-span-2 bg-brandWarm border-r-0 lg:border-r border-brandWarmBorder p-4 flex items-center justify-center lg:justify-start">
+                    <span class="text-sm font-extrabold text-slate-800">Kiến thức đạt được</span>
+                </div>
+                <div class="lg:col-span-10 p-4 bg-slate-50/60">
+                    <div id="stage-outcomes-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- 4 Cards populated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3.3. BẢNG CHI TIẾT LỘ TRÌNH HỌC TẬP (FULL CURRICULUM TABLE - ĐẦY ĐỦ TỪNG BUỔI HỌC) -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <!-- Table Top Controls -->
+            <div class="p-4 sm:px-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
+                <div>
+                    <h3 id="table-stage-heading" class="text-sm sm:text-base font-extrabold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-blue-600"></i>
+                        <span>Chi Tiết Từng Buổi Học — Chặng 1: Khởi Động (Beginner 0.0 ➔ 3.5 IELTS)</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Bấm vào bất kỳ dòng bài học nào hoặc nút <b>"Học ngay & 3D"</b> để mở bài giảng chi tiết, từ vựng phát âm và mô hình 3D tương tác.
+                    </p>
+                </div>
+
+                <!-- Search input -->
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input id="lesson-search-input" type="text" oninput="renderRoadmapTable()" placeholder="Tìm buổi học, chủ điểm..."
+                        class="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <!-- Responsive Table Wrapper -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse roadmap-table">
+                    <thead>
+                        <tr class="bg-brandWarm text-slate-800 border-b border-brandWarmBorder text-xs font-extrabold uppercase tracking-wider">
+                            <th class="py-3.5 px-4 w-48 border-r border-brandWarmBorder text-center">Kỹ năng / Học phần</th>
+                            <th class="py-3.5 px-3 w-24 border-r border-brandWarmBorder text-center">Buổi</th>
+                            <th class="py-3.5 px-3 w-36 border-r border-brandWarmBorder text-center">Loại bài học</th>
+                            <th class="py-3.5 px-4">Nội dung bài học chi tiết & Tương tác 3D</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roadmap-table-body" class="divide-y divide-slate-200 text-xs sm:text-sm">
+                        <!-- Populated dynamically by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== 4. INTERACTIVE LESSON & 3D THREE.JS VISUALIZER MODAL ==================== -->
+    <div id="lesson-3d-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-7xl h-[94vh] flex flex-col overflow-hidden shadow-2xl text-slate-100">
+
+            <!-- Modal Top Bar -->
+            <div class="h-14 px-4 sm:px-6 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <span id="modal-session-badge" class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono text-xs font-extrabold shrink-0">
+                        Chặng 1 • Buổi 1
+                    </span>
+                    <h3 id="modal-lesson-title" class="text-sm sm:text-base font-extrabold text-white truncate">
+                        Bảng Phiên Âm Quốc Tế IPA: Nguyên Âm Đơn & Nguyên Âm Đôi
+                    </h3>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="speakModalSummary()" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-volume-high"></i>
+                        <span class="hidden sm:inline">Đọc mẫu phát âm</span>
+                    </button>
+                    <button onclick="toggleLessonCompletedFromModal()" id="modal-complete-btn" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Đánh dấu Hoàn thành</span>
+                    </button>
+                    <button onclick="closeLessonModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white flex items-center justify-center transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body: Split Left 3D Three.js Stage & Right Lesson Content / Quiz -->
+            <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+                <!-- LEFT: 3D INTERACTIVE THREE.JS STAGE -->
+                <div class="w-full lg:w-7/12 h-72 sm:h-80 lg:h-full relative bg-slate-950 flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800">
+                    <!-- Top 3D Scene Mode Switcher -->
+                    <div class="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+                        <div class="glass-dark px-3 py-2 rounded-2xl pointer-events-auto max-w-md">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                                <span id="modal-3d-mode-title" class="text-xs font-extrabold text-cyan-300 uppercase tracking-wider">
+                                    MÔ PHỎNG 3D TRỰC QUAN
+                                </span>
+                            </div>
+                            <p id="modal-3d-instruction" class="text-[11px] text-slate-300 mt-0.5">
+                                Xoay 360° bằng chuột • Bấm vào khối 3D hoặc nhãn nổi để nghe phát âm tiếng Anh.
+                            </p>
+                        </div>
+
+                        <!-- Switch 3D Visualizer Type anytime -->
+                        <div class="glass-dark p-1 rounded-xl pointer-events-auto flex items-center gap-1 flex-wrap">
+                            <button onclick="switch3DVisualizerType('ipa')" id="vbtn-ipa" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white">Khẩu hình IPA</button>
+                            <button onclick="switch3DVisualizerType('grammar')" id="vbtn-grammar" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white">Cấu trúc Ngữ pháp</button>
+                            <button onclick="switch3DVisualizerType('vocab')" id="vbtn-vocab" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white">Mạng Từ vựng</button>
+                            <button onclick="switch3DVisualizerType('writing')" id="vbtn-writing" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white">Biểu đồ & Essay 3D</button>
+                            <button onclick="switch3DVisualizerType('speaking')" id="vbtn-speaking" class="px-2 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white">Phản xạ 4 Kỹ năng</button>
+                        </div>
+                    </div>
+
+                    <!-- Three.js Canvas Container -->
+                    <div id="modal-three-container" class="w-full h-full relative cursor-grab active:cursor-grabbing">
+                        <div id="modal-labels-container" class="absolute inset-0 pointer-events-none overflow-hidden z-10"></div>
+                    </div>
+
+                    <!-- Bottom Interactive 3D Sub-Controls Bar -->
+                    <div class="absolute bottom-3 left-3 right-3 z-20 pointer-events-none">
+                        <div class="glass-dark px-3.5 py-2.5 rounded-2xl pointer-events-auto flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-sliders"></i>
+                                <span id="modal-3d-subcontrol-label">Tương tác trực tiếp trên mô hình 3D:</span>
+                            </span>
+                            <div id="modal-3d-subcontrols" class="flex flex-wrap items-center gap-1.5">
+                                <!-- Populated dynamically based on 3D visualizer type -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT: STRUCTURED LESSON CONTENT, VOCABULARY AUDIO & ADAPTIVE MASTERY QUIZ -->
+                <div class="w-full lg:w-5/12 h-full overflow-y-auto p-4 sm:p-6 space-y-5 bg-slate-900">
+
+                    <!-- 1. Core Concept & Formula Box -->
+                    <div class="bg-slate-950/90 border border-blue-500/30 rounded-2xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-extrabold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-lightbulb"></i>
+                                <span>Trọng Tâm Bài Học & Công Thức Ghi Nhớ</span>
+                            </span>
+                            <span id="modal-skill-tag" class="text-[11px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">Pronunciation</span>
+                        </div>
+                        <p id="modal-core-theory" class="text-xs sm:text-sm text-slate-200 leading-relaxed"></p>
+                        <div id="modal-formula-box" class="mt-3 p-3 rounded-xl bg-slate-900 border border-slate-800 font-mono text-xs text-amber-300 leading-relaxed"></div>
+                    </div>
+
+                    <!-- 2. High-Scoring Vocabulary / Structures Table (with Click-to-Speak) -->
+                    <div class="bg-slate-950/90 border border-emerald-500/30 rounded-2xl p-4">
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 mb-2.5">
+                            <i class="fa-solid fa-spell-check"></i>
+                            <span>Từ Vựng / Cấu Trúc Ăn Điểm & Ví Dụ Mẫu (Bấm để nghe phát âm)</span>
+                        </h4>
+                        <div id="modal-vocab-list" class="space-y-2">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- 3. Adaptive Mastery Check Mini-Quiz -->
+                    <div class="bg-slate-950/90 border border-amber-500/40 rounded-2xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-brain"></i>
+                                <span>Kiểm Tra Độ Hiểu Bài (Adaptive Mastery Check)</span>
+                            </h4>
+                            <span class="text-[11px] text-slate-400">Trả lời đúng để hoàn thành buổi học</span>
+                        </div>
+                        <p id="modal-quiz-question" class="text-xs sm:text-sm font-bold text-white mb-3"></p>
+                        <div id="modal-quiz-options" class="grid grid-cols-1 gap-2"></div>
+                        <div id="modal-quiz-feedback" class="hidden mt-3 p-3 rounded-xl text-xs leading-relaxed"></div>
+                    </div>
+
+                    <!-- Navigation between lessons -->
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                        <button onclick="navigateModalLesson(-1)" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition">
+                            <i class="fa-solid fa-arrow-left"></i> Buổi trước
+                        </button>
+                        <button onclick="navigateModalLesson(1)" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-lg transition">
+                            <span>Buổi tiếp theo</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 5. CAT ADAPTIVE PLACEMENT TEST MODAL ==================== -->
+    <div id="diagnostic-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 relative overflow-hidden">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-800">
+                            COMPUTERIZED ADAPTIVE TEST (IRT/CAT)
+                        </span>
+                        <h3 class="text-base sm:text-lg font-extrabold text-slate-800">
+                            Bài Test Chẩn Đoán Trình Độ Thích Ứng (6 Câu Hỏi Thông Minh)
+                        </h3>
+                    </div>
+                </div>
+                <button onclick="closeDiagnosticModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Adaptive Difficulty Meter -->
+            <div class="my-4 bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between flex-wrap gap-2">
+                <div class="text-xs font-bold text-slate-600">
+                    Câu hỏi: <span id="cat-q-index" class="text-blue-600 font-extrabold font-mono">1 / 6</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500">Độ khó câu hiện tại:</span>
+                    <span id="cat-current-band-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-100 text-blue-700 font-mono">
+                        Band 3.5
+                    </span>
+                </div>
+                <div class="text-[11px] text-emerald-600 font-semibold">
+                    <i class="fa-solid fa-chart-line mr-1"></i>Đúng ➔ Tăng độ khó | Sai ➔ Hạ độ khó
+                </div>
+            </div>
+
+            <!-- Question Body -->
+            <div id="cat-question-area" class="space-y-4 my-4">
+                <div id="cat-skill-pill" class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Ngữ pháp & Cấu trúc câu
+                </div>
+                <h4 id="cat-question-text" class="text-sm sm:text-base font-extrabold text-slate-800 leading-relaxed"></h4>
+                <div id="cat-options-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+            </div>
+
+            <!-- Result Box (Hidden until finished) -->
+            <div id="cat-result-area" class="hidden my-4 p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 text-center space-y-3">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mx-auto text-2xl shadow-lg">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h4 id="cat-result-title" class="text-lg font-extrabold text-slate-800"></h4>
+                <p id="cat-result-desc" class="text-xs sm:text-sm text-slate-600 leading-relaxed"></p>
+                <button onclick="applyCatResultToRoadmap()" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs sm:text-sm shadow-lg transition">
+                    Áp Dụng Lộ Trình Cá Nhân Hóa Ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 6. COMPLETE CURRICULUM GENERATOR & 3D ENGINE SCRIPT ==================== -->
+    <script>
+        /***********************************************************************
+         * PHẦN 1: CƠ SỞ DỮ LIỆU ĐẦY ĐỦ 5 CHẶNG (BEGINNER 0.0 -> 6.5+ IELTS)
+         * Bao gồm đầy đủ các Học phần (Phát âm IPA, Từ vựng, Ngữ pháp 14 phần,
+         * Listening, Reading, Writing Task 1-2, Speaking Part 1-2-3, Đề thi thử)
+         ***********************************************************************/
+        const STAGES_DATA = [
+            // =================================================================
+            // CHẶNG 1: KHỞI ĐỘNG (BEGINNER 0.0 -> 3.5 IELTS) - 45 BUỔI
+            // =================================================================
+            {
+                id: 1,
+                name: 'Beginner (0.0 - 3.5)',
+                shortTitle: 'Chặng 1: Khởi động',
+                bandRange: '0.0 ➔ 3.5 IELTS',
+                totalSessions: 45,
+                stepHeightClass: 'md:h-28',
+                goalText: 'Cần nỗ lực học tập trong <b class="text-blue-600">45 buổi học</b> ở chặng này để xây dựng nền tảng <b class="text-orange-600">Phát âm chuẩn IPA, 1.200 Từ vựng A1-A2 và 14 Chủ điểm Ngữ pháp cốt lõi (Đạt 3.5 IELTS)</b>.',
+                outcomes: [
+                    {
+                        icon: 'fa-microphone-lines',
+                        title: 'Ngữ âm & Phát âm (IPA)',
+                        desc: 'Làm chủ 44 âm IPA (20 nguyên âm, 24 phụ âm), trọng âm từ (Word Stress), âm cuối (Ending Sounds /s/, /z/, /ed/) và ngữ điệu câu cơ bản.'
+                    },
+                    {
+                        icon: 'fa-book-atlas',
+                        title: 'Từ vựng & Ngữ pháp nền tảng',
+                        desc: 'Nắm vững 14 chủ điểm ngữ pháp cốt lõi (8 Từ loại, 10 Đại từ, 6 Thì cơ bản, Mạo từ, Giới từ) và 1.200 từ vựng chủ đề đời sống hàng ngày.'
+                    },
+                    {
+                        icon: 'fa-headphones-simple',
+                        title: 'Kỹ năng Nghe - Đọc Sơ cấp',
+                        desc: 'Nghe bắt từ khóa (Keywords) các đoạn hội thoại ngắn ( đánh vần tên, số điện thoại, ngày tháng, địa điểm) và đọc hiểu đoạn văn 250 từ.'
+                    },
+                    {
+                        icon: 'fa-comments',
+                        title: 'Kỹ năng Viết câu & Nói phản xạ',
+                        desc: 'Viết đúng cấu trúc câu đơn (S-V-O), câu ghép (FANBOYS) không sai lỗi chia động từ; tự tin trả lời trọn vẹn câu hỏi giới thiệu bản thân.'
+                    }
+                ],
+                modules: [
+                    {
+                        moduleId: 'c1_ipa',
+                        skillName: 'Phát âm chuẩn IPA',
+                        skillCategory: 'grammar_pron',
+                        visual3DType: 'ipa',
+                        sessions: [
+                            { no: 1, type: 'Bài giảng 3D', title: 'Tổng quan 44 âm IPA & Cặp nguyên âm đơn /i:/ và /ɪ/ (Sheep vs Ship)', core: 'Phân biệt độ căng cơ miệng và độ dài hơi giữa nguyên âm dài /i:/ (căng miệng sang ngang) và nguyên âm ngắn /ɪ/ (thả lỏng hàm).', formula: '/i:/ (ee, ea: see, eat, team) vs. /ɪ/ (i: sit, ship, live)', vocab: [{ w: 'Sheep /ʃiːp/', m: 'Con cừu (âm /i:/ dài)', ex: 'The white sheep is eating grass.' }, { w: 'Ship /ʃɪp/', m: 'Con tàu (âm /ɪ/ ngắn)', ex: 'The big ship sailed across the sea.' }], quiz: { q: 'Từ nào sau đây chứa nguyên âm dài /i:/?', opts: ['Sit', 'Live', 'Seat', 'Ship'], ans: 2, exp: '"Seat" /siːt/ chứa âm /i:/ dài, các từ còn lại chứa âm /ɪ/ ngắn.' } },
+                            { no: 2, type: 'Phòng luyện 3D', title: 'Cặp nguyên âm /ʊ/ - /u:/ và /e/ - /æ/ (Mở khẩu hình 3D)', core: 'Âm /æ/ (cat, family) yêu cầu hạ rộng xương hàm dưới và bè miệng vừa phải; âm /u:/ (food, school) tròn môi chu về phía trước.', formula: 'Khẩu hình /æ/ = Miệng mở rộng 2 ngón tay + Lưỡi hạ thấp', vocab: [{ w: 'Family /ˈfæməli/', m: 'Gia đình (âm /æ/ bẹt)', ex: 'My family lives in Ho Chi Minh City.' }, { w: 'School /skuːl/', m: 'Trường học (âm /u:/ tròn môi)', ex: 'She goes to school by bus.' }], quiz: { q: 'Để phát âm chuẩn âm /æ/ trong từ "bad", khẩu hình miệng cần như thế nào?', opts: ['Tròn môi nhỏ', 'Mở rộng hàm dưới và bè nhẹ môi', 'Khép kín răng', 'Uốn cong đầu lưỡi lên vòm họng'], ans: 1, exp: 'Âm /æ/ là nguyên âm mở phía trước nên cần hạ rộng hàm dưới.' } },
+                            { no: 3, type: 'Bài giảng 3D', title: 'Nguyên âm trung tâm /ə/ (Schwa), /ɜː/ và /ʌ/ — Chìa khóa nói tự nhiên', core: 'Âm /ə/ (Schwa) là âm xuất hiện nhiều nhất trong tiếng Anh ở các âm tiết không nhấn trọng âm (about, teacher, today).', formula: 'Unstressed Syllable ➔ Thu gọn về âm lướt nhẹ /ə/', vocab: [{ w: 'Teacher /ˈtiːtʃər/', m: 'Giáo viên (âm cuối /ə/)', ex: 'My teacher is very kind and patient.' }, { w: 'Bird /bɜːrd/', m: 'Con chim (âm /ɜː/ cong lưỡi)', ex: 'A little bird is singing in the tree.' }], quiz: { q: 'Âm tiết đầu tiên trong từ "about" /əˈbaʊt/ được phát âm là gì?', opts: ['/eɪ/', '/ɑː/', '/ə/ (Schwa)', '/ɔː/'], ans: 2, exp: 'Âm tiết đầu không nhận trọng âm nên đọc lướt nhẹ thành âm /ə/.' } },
+                            { no: 4, type: 'Phòng luyện 3D', title: '8 Nguyên âm đôi (Diphthongs): /eɪ/, /aɪ/, /ɔɪ/, /aʊ/, /əʊ/, /ɪə/, /eə/, /ʊə/', core: 'Nguyên âm đôi là sự trượt mượt mà từ vị trí khẩu hình nguyên âm thứ nhất sang nguyên âm thứ hai (độ dài nguyên âm đầu chiếm 70%).', formula: 'Diphthong = 70% Âm chính (Mạnh, rõ) + 30% Âm lướt (Nhẹ)', vocab: [{ w: 'Great /ɡreɪt/', m: 'Tuyệt vời (/eɪ/)', ex: 'Honesty is a great quality.' }, { w: 'Enjoy /ɪnˈdʒɔɪ/', m: 'Tận hưởng (/ɔɪ/)', ex: 'We enjoyed ourselves at the party.' }], quiz: { q: 'Nguyên tắc vàng khi phát âm Nguyên âm đôi (Diphthongs) là gì?', opts: ['Đọc tách rời thành 2 âm riêng biệt', 'Trượt mượt từ âm đầu (70%) sang âm sau (30%)', 'Bỏ luôn âm thứ hai', 'Chỉ đọc âm thứ hai'], ans: 1, exp: 'Nguyên âm đôi phải có sự chuyển dịch khẩu hình liên tục từ âm thứ nhất sang âm thứ hai.' } },
+                            { no: 5, type: 'Bài giảng 3D', title: 'Phụ âm Vô thanh (Unvoiced) vs. Hữu thanh (Voiced): /p/-/b/, /t/-/d/, /k/-/g/, /f/-/v/', core: 'Đặt tay lên cổ họng: Âm vô thanh chỉ đẩy luồng hơi qua miệng (dây thanh quản KHÔNG rung); âm hữu thanh làm rung dây thanh quản.', formula: 'Unvoiced (/p, t, k, f, s, ʃ, θ, tʃ/) vs. Voiced (/b, d, g, v, z, ʒ, ð, dʒ/)', vocab: [{ w: 'Think /θɪŋk/', m: 'Suy nghĩ (Âm /θ/ vô thanh đưa nhẹ đầu lưỡi ra giữa 2 hàm răng)', ex: 'I think this is a good idea.' }, { w: 'This /ðɪs/', m: 'Cái này (Âm /ð/ hữu thanh rung cổ họng)', ex: 'This book belongs to me.' }], quiz: { q: 'Cặp phụ âm nào dưới đây có cùng vị trí đặt lưỡi giữa hai hàm răng (một vô thanh, một hữu thanh)?', opts: ['/p/ và /b/', '/θ/ (think) và /ð/ (this)', '/k/ và /g/', '/m/ và /n/'], ans: 1, exp: 'Cả /θ/ và /ð/ đều đặt đầu lưỡi chạm nhẹ giữa 2 hàm răng.' } },
+                            { no: 6, type: 'Thực hành AI', title: 'Quy tắc phát âm đuôi -s/-es, đuôi -ed, Trọng âm từ & Nối âm (Linking Sounds)', core: 'Bật rõ âm cuối (Ending sounds) giúp giám khảo IELTS nghe rõ số ít/số nhiều và thì quá khứ.', formula: 'Đuôi -ed: /ɪd/ (sau t, d) • /t/ (sau âm vô thanh) • /d/ (sau âm hữu thanh & nguyên âm)', vocab: [{ w: 'Watched /wɒtʃt/', m: 'Đã xem (tận cùng /tʃ/ vô thanh ➔ bật /t/)', ex: 'He watched a movie yesterday.' }, { w: 'Played /pleɪd/', m: 'Đã chơi (tận cùng nguyên âm ➔ bật /d/)', ex: 'Both the teams played well.' }], quiz: { q: 'Từ "watched" có đuôi -ed được phát âm là gì?', opts: ['/ɪd/', '/d/', '/t/', 'Câm không đọc'], ans: 2, exp: 'Âm kết thúc của "watch" là /tʃ/ (vô thanh) nên đuôi -ed đọc là /t/.' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c1_grammar',
+                        skillName: 'Ngữ pháp nền tảng (14 Chủ điểm)',
+                        skillCategory: 'grammar_pron',
+                        visual3DType: 'grammar',
+                        sessions: [
+                            { no: 7, type: 'Bài giảng 3D', title: 'Cấu trúc câu cơ bản (Part 1 & Part 2): 8 Từ loại (Parts of Speech) & Trật tự S-V-O', core: 'Hiểu rõ chức năng của 8 từ loại (Noun, Pronoun, Adjective, Verb, Adverb, Preposition, Conjunction, Interjection) để lắp ghép câu chuẩn xác.', formula: 'Subject (Noun/Pronoun) + Verb + (Adjective) + Object + Adverb + Preposition Phrase', vocab: [{ w: 'Parts of Speech', m: '8 Từ loại trong tiếng Anh', ex: 'She (Pronoun) speaks (Verb) softly (Adverb).' }, { w: 'Complement', m: 'Bổ ngữ hoàn thiện nghĩa', ex: 'He is a well-known teacher.' }], quiz: { q: 'Trong câu "She speaks politely", từ "politely" đóng vai trò là từ loại nào?', opts: ['Noun (Danh từ)', 'Adjective (Tính từ)', 'Adverb (Trạng từ)', 'Preposition (Giới từ)'], ans: 2, exp: '"Politely" bổ nghĩa cho động từ "speaks" nên là Trạng từ chỉ cách thức (Adverb of Manner).' } },
+                            { no: 8, type: 'Phòng luyện 3D', title: 'Danh từ (Part 3: 5 Loại Noun) & Mạo từ (Part 11: A, An, The)', core: 'Phân biệt Proper, Common, Collective, Material, Abstract Noun; Danh từ đếm được/không đếm được và cách dùng mạo từ A/An/The.', formula: 'A (+ âm phụ âm) • An (+ âm nguyên âm u,e,o,a,i) • The (+ danh từ đã xác định/duy nhất)', vocab: [{ w: 'Collective Noun', m: 'Danh từ tập hợp (team, family, class, flock)', ex: 'The team won the match.' }, { w: 'Abstract Noun', m: 'Danh từ trừu tượng (honesty, love, courage)', ex: 'Honesty is a great quality.' }], quiz: { q: 'Chọn mạo từ đúng: "She waited for ______ hour at ______ station."', opts: ['a / a', 'an / the', 'the / an', 'an / a'], ans: 1, exp: '"Hour" có chữ "h" câm, phát âm bằng nguyên âm /aʊər/ nên dùng "an"; "the station" đã xác định.' } },
+                            { no: 9, type: 'Bài giảng 3D', title: 'Đại từ phần 1 (Part 4): Personal, Possessive, Reflexive & Emphatic Pronouns', core: 'Nắm vững ma trận quy đổi 5 cột: Subject (I/he/she), Object (me/him/her), Possessive Adj (my/his + N), Possessive Pronoun (mine/his đứng độc lập) và Reflexive (-self).', formula: 'Possessive Adjective + Noun = Possessive Pronoun (my book = mine)', vocab: [{ w: 'Reflexive Pronoun', m: 'Đại từ phản thân (myself, herself, themselves)', ex: 'She looked at herself in the mirror.' }, { w: 'Possessive Pronoun', m: 'Đại từ sở hữu đứng độc lập (mine, yours, hers, ours, theirs)', ex: 'This book is mine, and that bag is hers.' }], quiz: { q: 'Điền từ đúng: "This car belongs to him. It is ______."', opts: ['him', 'himself', 'his', 'he'], ans: 2, exp: '"His" vừa là tính từ sở hữu vừa là đại từ sở hữu đứng độc lập cuối câu.' } },
+                            { no: 10, type: 'Phòng luyện 3D', title: 'Đại từ phần 2 (Part 4): Demonstrative, Distributive, Reciprocal, Indefinite, Interrogative & Relative', core: 'Phân biệt This/That/These/Those, Each/Every/Either/Neither/Both, Each other (2) vs One another (3+), và Đại từ bất định Someone/Everyone (+ V số ít).', formula: 'Each / Every / Either / Neither / Someone / Everyone + Động từ SỐ ÍT (is/has/V-s)', vocab: [{ w: 'Neither of them', m: 'Không ai trong 2 người (+ V số ít)', ex: 'Neither of them is coming today.' }, { w: 'One another', m: 'Lẫn nhau (từ 3 người trở lên)', ex: 'All the team members support one another.' }], quiz: { q: 'Chọn câu đúng ngữ pháp:', opts: ['Everyone in the room are happy.', 'Each student have a book.', 'Neither of the two boys is present.', 'They love one another (chỉ 2 người).'], ans: 2, exp: '"Neither of + danh từ số nhiều" vẫn luôn chia động từ số ít "is".' } },
+                            { no: 11, type: 'Bài giảng 3D', title: 'Tính từ (Part 5: 10 Loại Adjective) & Trạng từ (Part 7: 10 Loại Adverb)', core: 'Vị trí của Tính từ (trước Danh từ hoặc sau Linking Verb: be, seem, feel, look, become) và Trạng từ (bổ nghĩa cho Verb, Adj hoặc cả câu).', formula: 'Subject + Linking Verb (feel/look/seem/be) + Adjective | Subject + Action Verb + Adverb', vocab: [{ w: 'Well-known', m: 'Nổi tiếng (Compound Adjective)', ex: 'He is a well-known teacher in Delhi.' }, { w: 'Fortunately', m: 'May mắn thay (Sentence Adverb đứng đầu câu)', ex: 'Fortunately, nobody was injured.' }], quiz: { q: 'Chọn từ đúng: "The soup smells ______ and she cooks very ______."', opts: ['good / well', 'well / good', 'goodly / well', 'good / good'], ans: 0, exp: '"Smells" là Linking Verb nên cộng Adjective (good); "cooks" là Action Verb nên cộng Adverb (well).' } },
+                            { no: 12, type: 'Bài giảng 3D', title: 'Động từ (Part 6) & Hệ thống Thì Hiện tại - Quá khứ - Tương lai (Part 12)', core: 'Phân biệt Transitive vs Intransitive Verb; làm chủ 6 thì nền tảng: Hiện tại đơn, Hiện tại tiếp diễn, Hiện tại hoàn thành, Quá khứ đơn, Quá khứ tiếp diễn, Tương lai đơn.', formula: 'Present Perfect: S + have/has + V3/ed (Hành động bắt đầu trong quá khứ kéo dài tới hiện tại hoặc vừa mới xảy ra)', vocab: [{ w: 'Have finished', m: 'Đã hoàn thành (Hiện tại hoàn thành)', ex: 'I have just finished my homework.' }, { w: 'Irregular Verb', m: 'Động từ bất quy tắc (go-went-gone, write-wrote-written)', ex: 'They went to London last summer.' }], quiz: { q: 'Chia động từ đúng: "She ______ (live) in this city since 2020."', opts: ['lived', 'lives', 'has lived', 'is living'], ans: 2, exp: 'Có mốc thời gian "since 2020" nên chia thì Hiện tại hoàn thành (has lived).' } },
+                            { no: 13, type: 'Phòng luyện 3D', title: 'Giới từ Không gian & Thời gian (Part 8) + Liên từ (Part 9) + Modals (Part 13)', core: 'Sử dụng chuẩn xác AT (giờ), ON (ngày/thứ), IN (tháng/năm/buổi); 4 nhóm Liên từ (FANBOYS, Subordinating, Correlative) và Động từ khuyết thiếu.', formula: 'Correlative Pairs: Both A and B • Either A or B • Neither A nor B • Not only A but also B', vocab: [{ w: 'With ease', m: 'Một cách dễ dàng (Preposition of Manner)', ex: 'She solved the problem with ease.' }, { w: 'However', m: 'Tuy nhiên (Conjunctive Adverb sau dấu chấm phẩy ";")', ex: 'It was raining; however, we went out.' }], quiz: { q: 'Điền giới từ đúng: "We will meet ______ 9 o\'clock ______ Monday morning."', opts: ['at / on', 'in / at', 'on / in', 'at / in'], ans: 0, exp: 'Dùng "at" trước giờ cụ thể (9 o\'clock) và "on" trước ngày/buổi của ngày cụ thể (Monday morning).' } },
+                            { no: 14, type: 'Luyện tập Adaptive', title: 'Câu Bị Động (Passive Voice) & Hòa hợp Chủ ngữ - Động từ (Part 14)', core: 'Chuyển đổi câu chủ động sang bị động (O + be + V3/ed + by S) — cấu trúc cực kỳ quan trọng cho IELTS Writing Task 1 Process & Map.', formula: 'Passive Voice: Subject (Object cũ) + be (chia theo thì) + Past Participle (V3/ed) + (by Agent)', vocab: [{ w: 'Was written by', m: 'Được viết bởi (Bị động Quá khứ đơn)', ex: 'This famous book was written by him.' }, { w: 'Are manufactured', m: 'Được sản xuất (Bị động Hiện tại đơn)', ex: 'Cars are manufactured in this factory.' }], quiz: { q: 'Chuyển câu "They built this bridge in 2015" sang câu bị động:', opts: ['This bridge built in 2015.', 'This bridge is built in 2015.', 'This bridge was built in 2015.', 'This bridge has been built in 2015.'], ans: 2, exp: '"Built" ở thì Quá khứ đơn + chủ ngữ số ít "This bridge" ➔ "was built".' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c1_vocab',
+                        skillName: 'Từ vựng chủ điểm (A1 - A2+)',
+                        skillCategory: 'vocab',
+                        visual3DType: 'vocab',
+                        sessions: [
+                            { no: 15, type: 'Bài giảng 3D', title: 'Chủ điểm 1 & 2: Family, Relationships & Daily Routines (Gia đình & Sinh hoạt)', core: 'Xây dựng mạng lưới từ vựng (Word Family & Collocations) về gia đình hạt nhân, đại gia đình và thói quen hàng ngày phục vụ Speaking Part 1.', formula: 'Collocation: Have a close-knit family • Do household chores • Maintain a balanced lifestyle', vocab: [{ w: 'Close-knit family', m: 'Gia đình gắn bó khăng khít', ex: 'I come from a very close-knit family.' }, { w: 'Household chores', m: 'Việc vặt trong nhà', ex: 'We share household chores equally.' }], quiz: { q: 'Cụm từ "a close-knit family" mang ý nghĩa gì?', opts: ['Một gia đình đông con', 'Một gia đình gắn bó, yêu thương khăng khít', 'Một gia đình sống ở xa nhau', 'Một gia đình giàu có'], ans: 1, exp: '"Close-knit" chỉ mối quan hệ gắn kết chặt chẽ giữa các thành viên.' } },
+                            { no: 16, type: 'Bài giảng 3D', title: 'Chủ điểm 3 & 4: Education, School Life & Work (Học tập & Công việc)', core: 'Từ vựng về môn học, bằng cấp, kỹ năng mềm và môi trường làm việc.', formula: 'Acquire knowledge • Broaden one\'s horizons • Pursue higher education • Heavy workload', vocab: [{ w: 'Broaden one\'s horizons', m: 'Mở mang tầm mắt / kiến thức', ex: 'Reading books helps broaden our horizons.' }, { w: 'Hands-on experience', m: 'Kinh nghiệm thực tiễn', ex: 'Internships provide valuable hands-on experience.' }], quiz: { q: 'Để diễn đạt "kinh nghiệm thực tế/thực hành", ta dùng cụm nào?', opts: ['Hands-on experience', 'Theory experience', 'Paper experience', 'High experience'], ans: 0, exp: '"Hands-on experience" là cụm từ ăn điểm chỉ kinh nghiệm thực chiến.' } },
+                            { no: 17, type: 'Phòng luyện 3D', title: 'Chủ điểm 5 & 6: Hometown, Accommodation & Weather (Quê hương, Nhà ở & Thời tiết)', core: 'Cách miêu tả nơi sinh sống (urban vs rural), tiện ích công cộng và khí hậu nhiệt đới.', formula: 'Hustle and bustle (nhộn nhịp) • Peaceful atmosphere (bầu không khí yên bình) • Public amenities', vocab: [{ w: 'Hustle and bustle', m: 'Sự hối hả, nhộn nhịp của phố thị', ex: 'I enjoy the hustle and bustle of Ho Chi Minh City.' }, { w: 'Tranquil suburb', m: 'Vùng ngoại ô yên bình', ex: 'My grandparents live in a tranquil suburb.' }], quiz: { q: 'Cụm từ nào dùng để miêu tả nhịp sống hối hả, nhộn nhịp nơi đô thị?', opts: ['Silent street', 'Hustle and bustle', 'Slow pace', 'Empty town'], ans: 1, exp: '"The hustle and bustle" là thành ngữ chuẩn IELTS Speaking Part 1 khi nói về thành phố.' } },
+                            { no: 18, type: 'Luyện tập Adaptive', title: 'Chủ điểm 7, 8 & 9: Food, Health, Leisure, Travel & Technology (Sức khỏe, Du lịch & Công nghệ)', core: 'Mở rộng vốn từ về chế độ dinh dưỡng, du lịch khám phá và thiết bị công nghệ số.', formula: 'Nutritious diet • Unwind after work • Breathtaking scenery • Cutting-edge technology', vocab: [{ w: 'Unwind /ʌnˈwaɪnd/', m: 'Thư giãn, xả hơi sau giờ làm (= relax)', ex: 'Listening to music helps me unwind after school.' }, { w: 'Breathtaking scenery', m: 'Phong cảnh đẹp ngoạn mục', ex: 'Ha Long Bay is famous for its breathtaking scenery.' }], quiz: { q: 'Từ "unwind" là từ đồng nghĩa nâng cấp (Band 6.5+) của từ nào?', opts: ['Work hard', 'Relax', 'Worry', 'Argue'], ans: 1, exp: '"Unwind" nghĩa là thư giãn tinh thần sau khi làm việc căng thẳng.' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c1_skills',
+                        skillName: 'Nghe - Đọc - Viết - Nói Sơ cấp & Kiểm tra',
+                        skillCategory: 'listening_reading',
+                        visual3DType: 'speaking',
+                        sessions: [
+                            { no: 19, type: 'Thực hành AI', title: 'Listening Foundation (Buổi 19 - 26): Nghe Bắt Từ Khóa, Số Đếm, Ngày Tháng & Tên Riêng', core: 'Làm chủ dạng bài Form Completion (Điền thông tin cá nhân, mã bưu điện, giá tiền, thời gian) và tránh bẫy tự sửa thông tin (Self-correction) của người nói.', formula: 'Bẫy số Teen (-teen nhấn âm 2 kéo dài: fifteen) vs. Ty (-ty nhấn âm 1 ngắn: fifty)', vocab: [{ w: 'Spell /spel/', m: 'Đánh vần từng chữ cái (Double L, W...)', ex: 'Could you spell your surname for me, please?' }, { w: 'Postcode /ˈpəʊstkəʊd/', m: 'Mã bưu chính (gồm cả chữ và số)', ex: 'My postcode is SW1A 2AA.' }], quiz: { q: 'Trong bài nghe IELTS Section 1, khi người nói nói "15... oh sorry, I mean 50", đáp án đúng cần điền là gì?', opts: ['15', '50', '65', '500'], ans: 1, exp: 'Đây là bẫy Self-correction (tự đính chính), thông tin đúng nằm sau cụm "sorry, I mean...".' } },
+                            { no: 27, type: 'Bài giảng 3D', title: 'Reading Foundation (Buổi 27 - 34): Kỹ thuật Skimming (Đọc lướt lấy ý chính) & Scanning (Đọc quét tìm từ khóa)', core: 'Không dịch từng từ! Dùng mắt quét nhanh Tên riêng, Con số, Ngày tháng (Scanning) và đọc câu đầu/cuối đoạn để nắm Topic Sentence (Skimming).', formula: 'Bước 1: Gạch chân Keyword câu hỏi ➔ Bước 2: Scan vị trí trong bài ➔ Bước 3: Đối chiếu từ đồng nghĩa (Synonym)', vocab: [{ w: 'Topic Sentence', m: 'Câu chủ đề chứa ý chính của cả đoạn văn', ex: 'Always read the first sentence to find the main idea.' }, { w: 'Paraphrase', m: 'Diễn đạt lại cùng một ý bằng từ vựng/cấu trúc khác', ex: '"Annual" in the question paraphrases "every year" in the text.' }], quiz: { q: 'Kỹ thuật "Scanning" trong IELTS Reading được dùng để làm gì?', opts: ['Đọc toàn bộ bài từ đầu đến cuối', 'Quét mắt cực nhanh để tìm vị trí từ khóa cụ thể (số, tên riêng, thuật ngữ)', 'Đoán nghĩa của bài mà không cần đọc', 'Viết tóm tắt đoạn văn'], ans: 1, exp: 'Scanning giúp định vị nhanh thông tin chi tiết mà không tốn thời gian đọc cả bài.' } },
+                            { no: 35, type: 'Phòng luyện 3D', title: 'Writing & Speaking Foundation (Buổi 35 - 43): Viết Câu Đơn, Câu Ghép, Câu Phức & Phản Xạ Speaking Part 1', core: 'Kết hợp liên từ (and, but, so, because, although) để nâng cấp câu đơn thành câu ghép/phức; công thức trả lời Speaking Part 1 dài 2-3 câu (Answer + Reason + Example).', formula: 'Speaking Part 1 = Direct Answer (Trả lời trực tiếp) + Because (Lý do) + For example (Ví dụ cụ thể)', vocab: [{ w: 'To be honest', m: 'Thành thật mà nói (Cụm mở đầu tự nhiên)', ex: 'To be honest, I prefer reading printed books to e-books.' }, { w: 'For instance', m: 'Ví dụ như (= For example)', ex: 'I love outdoor sports; for instance, I play badminton every weekend.' }], quiz: { q: 'Khi giám khảo hỏi "Do you like music?" trong IELTS Speaking Part 1, cách trả lời nào đạt điểm tốt nhất?', opts: ['Yes, I do.', 'No.', 'Yes, definitely! I\'m a big fan of pop music because it helps me unwind after a long day at school.', 'Music is good.'], ans: 2, exp: 'Câu trả lời mở rộng theo công thức Direct Answer + Reason + Collocation (unwind) giúp ăn điểm Fluency & Lexical Resource.' } },
+                            { no: 44, type: 'Kiểm tra', title: 'Buổi 44 - 45: Kiểm Tra Tổng Hợp Cuối Chặng 1 (Final Stage 1 Assessment - Mốc 3.5 IELTS)', core: 'Đánh giá toàn diện Phát âm, Ngữ pháp 14 chủ điểm, Từ vựng A2 và 4 kỹ năng Nghe-Nói-Đọc-Viết để mở khóa Chặng 2.', formula: 'Target: Đạt tối thiểu 75% điểm Mastery để chuyển sang Chặng 2 (Band 3.5 ➔ 4.5+)', vocab: [{ w: 'Milestone Assessment', m: 'Bài kiểm tra cột mốc chuyển chặng', ex: 'You have successfully completed the Beginner stage!' }], quiz: { q: 'Sau khi hoàn thành Chặng 1 (45 buổi), năng lực cốt lõi bạn đạt được là gì?', opts: ['Nắm vững 44 âm IPA, 14 chủ điểm ngữ pháp, 1.200 từ vựng và đạt mốc 3.5 IELTS', 'Chỉ biết bảng chữ cái', 'Chưa thể ghép câu hoàn chỉnh', 'Chỉ học mỗi kỹ năng Đọc'], ans: 0, exp: 'Chặng 1 giúp xây dựng nền móng vững chắc toàn diện để bước vào luyện dạng bài IELTS ở Chặng 2.' } }
+                        ]
+                    }
+                ]
+            },
+
+            // =================================================================
+            // CHẶNG 2: NỀN TẢNG IELTS (BAND 3.5 -> 4.5+) - 50 BUỔI
+            // =================================================================
+            {
+                id: 2,
+                name: 'Foundation (3.5 - 4.5+)',
+                shortTitle: 'Chặng 2: Nền tảng IELTS',
+                bandRange: '3.5 ➔ 4.5+ IELTS',
+                totalSessions: 50,
+                stepHeightClass: 'md:h-36',
+                goalText: 'Cần nỗ lực học tập trong <b class="text-blue-600">50 buổi học</b> ở chặng này để làm quen toàn bộ cấu trúc đề thi IELTS 4 kỹ năng và đạt <b class="text-orange-600">Band 4.5+ IELTS</b>.',
+                outcomes: [
+                    {
+                        icon: 'fa-headphones',
+                        title: 'Listening (Section 1 & Section 2)',
+                        desc: 'Thành thạo dạng bài Note/Form/Table Completion, Multiple Choice ngắn và Map Labeling (Định vị bản đồ trong Section 2).'
+                    },
+                    {
+                        icon: 'fa-book-open-reader',
+                        title: 'Reading (Passage 1 & 2 cơ bản)',
+                        desc: 'Nắm vững chiến thuật làm bài Sentence Completion, Short Answer Questions và phân biệt rõ True / False / Not Given.'
+                    },
+                    {
+                        icon: 'fa-pen-nib',
+                        title: 'Writing (Ngữ pháp Học thuật & Task 1)',
+                        desc: 'Sử dụng thuần thục Mệnh đề quan hệ (Who/Which/That), Câu điều kiện và viết hoàn chỉnh bài miêu tả biểu đồ Line Graph, Bar Chart cơ bản.'
+                    },
+                    {
+                        icon: 'fa-Comments',
+                        title: 'Speaking (Làm chủ Part 1 & Khung Part 2)',
+                        desc: 'Trả lời trôi chảy 15 chủ đề quen thuộc ở Part 1 và biết cách lập dàn ý 1 phút cho bài nói độc thoại 2 phút ở Speaking Part 2 (Cue Card).'
+                    }
+                ],
+                modules: [
+                    {
+                        moduleId: 'c2_gram_vocab',
+                        skillName: 'Từ vựng & Ngữ pháp Học thuật IELTS',
+                        skillCategory: 'grammar_pron',
+                        visual3DType: 'grammar',
+                        sessions: [
+                            { no: 1, type: 'Bài giảng 3D', title: 'Buổi 1 - 6: Mệnh Đề Quan Hệ (Relative Clauses: Who, Whom, Whose, Which, That, Where) & Rút Gọn Mệnh Đề', core: 'Sử dụng Đại từ quan hệ làm cầu nối mở rộng câu phức học thuật cho IELTS Writing và tránh lỗi câu cụt.', formula: 'Rút gọn chủ động: who/which + V ➔ V-ing | Rút gọn bị động: who/which + be + V3/ed ➔ V3/ed', vocab: [{ w: 'Relative Clause', m: 'Mệnh đề quan hệ bổ nghĩa cho danh từ đứng trước', ex: 'The proportion of people who use public transport increased significantly.' }, { w: 'Whose + Noun', m: 'Đại từ quan hệ chỉ sở hữu', ex: 'Countries whose economies rely on tourism suffered greatly.' }], quiz: { q: 'Rút gọn mệnh đề quan hệ trong câu: "The data which was collected in 2020 shows an upward trend."', opts: ['The data collecting in 2020...', 'The data collected in 2020 shows an upward trend.', 'The data which collected in 2020...', 'The data to collect in 2020...'], ans: 1, exp: 'Mệnh đề quan hệ bị động "which was collected" được rút gọn bằng cách giữ lại quá khứ phân từ V3/ed "collected".' } },
+                            { no: 7, type: 'Phòng luyện 3D', title: 'Buổi 7 - 12: Từ Vựng Học Thuật Chủ Điểm Environment, Media, Crime & Paraphrasing Cấp Độ 1', core: 'Học cách thay thế từ vựng thông thường bằng từ vựng học thuật (Academic Word List) và kỹ thuật Paraphrase bằng từ đồng nghĩa + đổi từ loại (Word Form).', formula: 'Paraphrase = Synonym (Từ đồng nghĩa) + Word Form (Verb ⇄ Noun, Adj ⇄ Adv) + Active ⇄ Passive', vocab: [{ w: 'Environmental degradation', m: 'Sự suy thoái môi trường', ex: 'Industrial emissions lead to severe environmental degradation.' }, { w: 'Mitigate /ˈmɪtɪɡeɪt/', m: 'Giảm thiểu, làm dịu bớt (= reduce)', ex: 'Governments must take action to mitigate climate change.' }], quiz: { q: 'Cách Paraphrase nào sau đây đổi từ cụm "Verb + Adverb" (increased dramatically) sang cụm "Adjective + Noun"?', opts: ['a dramatic increase', 'dramatically increase', 'increasing dramatic', 'to increase dramatically'], ans: 0, exp: 'Đổi động từ "increased" thành danh từ "increase", và trạng từ "dramatically" thành tính từ "dramatic" ➔ "a dramatic increase".' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c2_listening',
+                        skillName: 'Listening (Section 1 & Section 2)',
+                        skillCategory: 'listening',
+                        visual3DType: 'speaking',
+                        sessions: [
+                            { no: 13, type: 'Bài giảng 3D', title: 'Buổi 13 - 18: Chiến thuật Note/Table Completion & Dự đoán Từ Loại cần điền', core: 'Đọc kỹ giới hạn từ (NO MORE THAN TWO WORDS AND/OR A NUMBER), xác định từ loại cần điền (Danh từ số ít/nhiều, tính từ, con số) trước khi băng chạy.', formula: 'Predict Word Type + Listen for Synonym Anchor + Check Singular/Plural (-s)', vocab: [{ w: 'Word Limit', m: 'Giới hạn số từ được phép điền', ex: 'Always check the word limit instruction carefully.' }, { w: 'Distractor /dɪˈstræktər/', m: 'Thông tin gây nhiễu trong bài nghe', ex: 'Watch out for distractors introduced by "but", "however", or "actually".' }], quiz: { q: 'Nếu đề bài yêu cầu "NO MORE THAN ONE WORD AND/OR A NUMBER", đáp án nào sau đây HỢP LỆ?', opts: ['250 dollars', 'a black bag', 'credit card', 'very expensive'], ans: 0, exp: '"250 dollars" gồm 1 con số (250) và 1 từ (dollars) nên hoàn toàn hợp lệ với yêu cầu "ONE WORD AND/OR A NUMBER".' } },
+                            { no: 19, type: 'Phòng luyện 3D', title: 'Buổi 19 - 24: Map & Plan Labeling (Định vị Bản đồ 3D trong Listening Section 2)', core: 'Nắm vững hệ thống giới từ & cụm từ chỉ phương hướng (North, South, East, West, opposite, adjacent to, at the intersection of, across from).', formula: 'Luôn xuất phát từ điểm "You are here / Entrance" ➔ Đi theo hướng dẫn của người nói trên bản đồ', vocab: [{ w: 'Adjacent to /əˈdʒeɪsnt/', m: 'Kề bên, sát cạnh (= next to)', ex: 'The café is located adjacent to the main library.' }, { w: 'Intersection /ˌɪntərˈsekʃn/', m: 'Giao lộ, ngã tư (= crossroads)', ex: 'Turn left at the first intersection.' }], quiz: { q: 'Cụm từ "adjacent to the reception" trên bản đồ IELTS Listening có nghĩa là gì?', opts: ['Cách rất xa quầy lễ tân', 'Nằm ngay sát cạnh quầy lễ tân', 'Ở tầng trên quầy lễ tân', 'Ở bên ngoài tòa nhà'], ans: 1, exp: '"Adjacent to" đồng nghĩa với "next to / beside" (sát cạnh).' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c2_reading',
+                        skillName: 'Reading (Chiến thuật Passage 1 & 2)',
+                        skillCategory: 'reading',
+                        visual3DType: 'vocab',
+                        sessions: [
+                            { no: 25, type: 'Bài giảng 3D', title: 'Buổi 25 - 30: Chinh phục dạng bài TRUE / FALSE / NOT GIVEN & YES / NO / NOT GIVEN', core: 'Phân biệt rạch ròi giữa FALSE (Thông tin trong bài TRÁI NGƯỢC hoàn toàn với câu hỏi) và NOT GIVEN (Không tìm thấy thông tin để khẳng định hay phủ định).', formula: 'TRUE (Khớp hoàn toàn qua Paraphrase) • FALSE (Ngược nghĩa/Mâu thuẫn) • NOT GIVEN (Thiếu dữ kiện so sánh/kết luận)', vocab: [{ w: 'Contradict /ˌkɒntrəˈdɪkt/', m: 'Mâu thuẫn, trái ngược (Dấu hiệu chọn FALSE/NO)', ex: 'If the text contradicts the statement, the answer is FALSE.' }, { w: 'Exclusive words', m: 'Các từ tuyệt đối hóa cần cảnh giác (all, only, never, always)', ex: 'Pay special attention to extreme words like "only" or "always".' }], quiz: { q: 'Bài đọc viết: "More than half of the students prefer online learning." Câu hỏi: "All students prefer online learning." Đáp án là gì?', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 1, exp: '"Hơn một nửa (>50%)" mâu thuẫn trực tiếp với "Tất cả (100% - All)" nên đáp án là FALSE.' } },
+                            { no: 31, type: 'Luyện tập Adaptive', title: 'Buổi 31 - 36: Gap Filling (Sentence, Summary & Table Completion) trong IELTS Reading', core: 'Dùng ngữ pháp để khóa loại từ tại chỗ trống, sau đó định vị đoạn văn chứa từ khóa neo (Anchor Words) và trích xuất từ nguyên bản từ bài đọc.', formula: 'Từ điền vào chỗ trống phải đúng Ngữ pháp + Đúng Ngữ nghĩa + Lấy nguyên mẫu từ bài đọc', vocab: [{ w: 'Anchor Keyword', m: 'Từ khóa cố định (tên riêng, năm, thuật ngữ) không bị paraphrase', ex: 'Use dates and proper nouns as anchor keywords to scan.' }], quiz: { q: 'Khi làm bài Summary Completion (không cho sẵn hộp từ), từ điền vào chỗ trống phải lấy từ đâu?', opts: ['Tự nghĩ ra từ đồng nghĩa bất kỳ', 'Trích xuất nguyên văn từ trong bài đọc (giữ nguyên dạng từ)', 'Viết bằng tiếng Việt', 'Đổi sang từ loại khác'], ans: 1, exp: 'Với dạng Summary Completion không có danh sách từ cho sẵn, bạn phải lấy chính xác từ xuất hiện trong bài đọc.' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c2_writing_speaking',
+                        skillName: 'Writing Task 1 Cơ bản & Speaking Part 1-2',
+                        skillCategory: 'writing',
+                        visual3DType: 'writing',
+                        sessions: [
+                            { no: 37, type: 'Phòng luyện 3D', title: 'Buổi 37 - 43: IELTS Writing Task 1 — Bố cục 4 Đoạn & Ngôn ngữ Xu hướng (Line Graph & Bar Chart)', core: 'Cấu trúc chuẩn 4 đoạn (Introduction - Overview - Body 1 - Body 2) trong 20 phút, tối thiểu 150 từ. Tuyệt đối không đưa quan điểm cá nhân vào Task 1!', formula: 'Overview (Đoạn quan trọng nhất): Nêu 2 đặc điểm nổi bật nhất (Xu hướng chính + Giá trị cao nhất/thấp nhất) — KHÔNG đưa số liệu cụ thể vào Overview!', vocab: [{ w: 'Upward trend', m: 'Xu hướng tăng lên (Overall, the figure showed an upward trend)', ex: 'Overall, car ownership experienced a significant upward trend.' }, { w: 'Fluctuate /ˈflʌktʃueɪt/', m: 'Dao động lên xuống thất thường', ex: 'Gold prices fluctuated wildly between 2015 and 2020.' }], quiz: { q: 'Điều gì TUYỆT ĐỐI KHÔNG NÊN viết trong đoạn Overview của IELTS Writing Task 1?', opts: ['Từ nối "Overall,"', 'Xu hướng tăng/giảm chung của biểu đồ', 'Số liệu chi tiết cụ thể (ví dụ: 45.6%, 1,200 người) và ý kiến cá nhân', 'So sánh đối tượng lớn nhất'], ans: 2, exp: 'Overview chỉ tóm tắt bức tranh tổng quan (xu hướng chính & cực trị), số liệu chi tiết phải để dành cho Body 1 & Body 2.' } },
+                            { no: 44, type: 'Thực hành AI', title: 'Buổi 44 - 50: IELTS Speaking Part 2 (Công thức 1 Phút Take Notes 4 Nhánh) & Kiểm tra Cuối Chặng 2 (4.5+ IELTS)', core: 'Tận dụng 1 phút chuẩn bị ở Speaking Part 2 bằng sơ đồ 4 ô (Past Background ➔ Detailed Description ➔ Story/Action ➔ Personal Feeling & Future) để nói liên tục đủ 2 phút.', formula: 'Part 2 Cue Card = Introduction (I\'d like to talk about...) + What/Where/When + Memorable Story + Why you feel special', vocab: [{ w: 'Leave a lasting impression', m: 'Để lại ấn tượng sâu sắc khó phai', ex: 'That trip left a lasting impression on me.' }, { w: 'Blow off some steam', m: 'Giải tỏa căng thẳng, xả stress', ex: 'Playing sports helps me blow off some steam.' }], quiz: { q: 'Thời gian chuẩn bị (Take notes) và thời gian nói tối đa của IELTS Speaking Part 2 lần lượt là bao lâu?', opts: ['30 giây chuẩn bị - 1 phút nói', '1 phút chuẩn bị - 1 đến 2 phút nói liên tục', '5 phút chuẩn bị - 5 phút nói', 'Không có thời gian chuẩn bị'], ans: 1, exp: 'Thí sinh có đúng 1 phút để ghi chú (Take notes) và từ 1 đến 2 phút để trình bày bài nói độc thoại.' } }
+                        ]
+                    }
+                ]
+            },
+
+            // =================================================================
+            // CHẶNG 3: TĂNG TỐC TRUNG CẤP (BAND 4.5 -> 5.5+) - 60 BUỔI
+            // =================================================================
+            {
+                id: 3,
+                name: 'Intermediate (4.5 - 5.5+)',
+                shortTitle: 'Chặng 3: Tăng tốc 5.5+',
+                bandRange: '4.5 ➔ 5.5+ IELTS',
+                totalSessions: 60,
+                stepHeightClass: 'md:h-44',
+                goalText: 'Cần nỗ lực học tập trong <b class="text-blue-600">60 buổi học</b> ở chặng này để làm chủ chiến thuật xử lý từng dạng bài khó của cả 4 kỹ năng và cán mốc <b class="text-orange-600">IELTS 5.5+</b>.',
+                outcomes: [
+                    {
+                        icon: 'fa-ear-listen',
+                        title: 'Listening (Section 2 & Section 3)',
+                        desc: 'Xử lý dạng bài Multiple Choice dài, Matching Information (Nối thông tin thảo luận học thuật giữa sinh viên và giáo sư ở Section 3).'
+                    },
+                    {
+                        icon: 'fa-newspaper',
+                        title: 'Reading (Matching Headings & Information)',
+                        desc: 'Làm chủ dạng bài khó Matching Headings (Tìm tiêu đề đoạn văn), Matching Features và đọc hiểu văn bản học thuật dài 800+ từ.'
+                    },
+                    {
+                        icon: 'fa-file-signature',
+                        title: 'Writing (Pie, Table, Map, Process & Task 2)',
+                        desc: 'Viết thành thạo Pie Chart, Table, Map, Process (Task 1) và nắm vững cấu trúc đoạn văn PEEL cho 4 dạng bài luận Writing Task 2.'
+                    },
+                    {
+                        icon: 'fa-Comments',
+                        title: 'Speaking (Mở rộng sang Thảo luận Part 3)',
+                        desc: 'Phát triển câu trả lời mang tính khái quát xã hội cho Speaking Part 3 theo cấu trúc A-R-E-C (Answer - Reason - Example - Contrast).'
+                    }
+                ],
+                modules: [
+                    {
+                        moduleId: 'c3_listening',
+                        skillName: 'Listening (Section 3 & Multiple Choice)',
+                        skillCategory: 'listening',
+                        visual3DType: 'speaking',
+                        sessions: [
+                            { no: 1, type: 'Bài giảng 3D', title: 'Buổi 1 - 12: Chiến thuật Multiple Choice & Matching trong Listening Section 3 (Thảo luận Học thuật)', core: 'Trong Section 3, cả 3 phương án A, B, C đều sẽ được nhắc tới trong băng! Chìa khóa là nghe từ chỉ sự đồng tình (Agree) hoặc phản đối/đổi ý (However, But, Actually, I doubt that).', formula: 'Loại trừ đáp án bẫy (Eliminate Distractors) + Bắt tín hiệu đồng thuận cuối cùng của nhóm thảo luận', vocab: [{ w: 'Be on the same page', m: 'Đồng quan điểm, thống nhất ý kiến', ex: 'It seems we are on the same page regarding the research method.' }, { w: 'Out of the question', m: 'Không thể thực hiện được, bất khả thi', ex: 'Extending the deadline is completely out of the question.' }], quiz: { q: 'Đặc điểm điển hình nhất của dạng bài Multiple Choice trong IELTS Listening Section 3 là gì?', opts: ['Băng chỉ nhắc đến duy nhất 1 đáp án đúng', 'Băng thường nhắc đến cả 3 lựa chọn A, B, C kèm các từ chuyển hướng (but, however) để gài bẫy', 'Thí sinh không cần đọc câu hỏi trước', 'Đáp án luôn là câu đầu tiên người nói phát biểu'], ans: 1, exp: 'IELTS Listening luôn nhắc đến tất cả các lựa chọn rồi mới chốt hoặc bác bỏ bằng các từ nối đối lập.' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c3_reading',
+                        skillName: 'Reading (Matching Headings & Matching Features)',
+                        skillCategory: 'reading',
+                        visual3DType: 'vocab',
+                        sessions: [
+                            { no: 13, type: 'Phòng luyện 3D', title: 'Buổi 13 - 26: Chiến thuật Matching Headings (Đọc hiểu Ý chính đoạn văn thay vì bắt từ khóa rời rạc)', core: 'Tránh bẫy "Lặp lại từ vựng (Word Matching Trap)": Một tiêu đề chứa nguyên xi từ trong đoạn văn thường là BẪY chi tiết nhỏ, không phải ý bao quát của cả đoạn!', formula: 'Đọc 2 câu đầu + Câu có từ chuyển ý (However, Therefore) + Câu cuối ➔ Tóm tắt ý chính ➔ Đối chiếu danh sách Headings', vocab: [{ w: 'Overarching theme', m: 'Chủ đề bao quát toàn bộ đoạn văn', ex: 'A correct heading must reflect the overarching theme of the paragraph.' }, { w: 'Underlying cause', m: 'Nguyên nhân sâu xa / cốt lõi', ex: 'Paragraph B discusses the underlying causes of urbanization.' }], quiz: { q: 'Sai lầm phổ biến nhất khiến thí sinh chọn sai đáp án ở dạng bài Matching Headings là gì?', opts: ['Đọc hiểu ý chính của cả đoạn', 'Thấy một từ trong Heading giống hệt một từ nhỏ trong đoạn văn liền chọn ngay mà không kiểm tra ý tổng quát', 'Đọc câu chủ đề của đoạn', 'Loại trừ các Heading đã dùng'], ans: 1, exp: 'Đề thi thường gài một chi tiết phụ chứa từ giống hệt Heading sai để bẫy thí sinh chỉ nhìn mặt chữ (Word Matching Trap).' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c3_writing',
+                        skillName: 'Writing Task 1 (Map, Process) & Task 2 (PEEL)',
+                        skillCategory: 'writing',
+                        visual3DType: 'writing',
+                        sessions: [
+                            { no: 27, type: 'Phòng luyện 3D', title: 'Buổi 27 - 36: IELTS Writing Task 1 — Chinh phục Dạng Bài Map (Bản đồ) & Process (Quy trình sản xuất)', core: 'Với Map: Dùng từ vựng biến đổi không gian (demolished, knocked down, replaced by, expanded, converted into). Với Process: Dùng Câu bị động hiện tại đơn (is harvested, is transported, is processed) + Từ nối tuần tự (Initially, Subsequently, Finally).', formula: 'Process Formula: At the first stage, S + is/are + V3/ed ➔ Subsequently, ... ➔ Once this stage is complete, ...', vocab: [{ w: 'Make way for', m: 'Nhường chỗ cho (Dùng trong Map khi phá bỏ cái cũ xây cái mới)', ex: 'The old factory was demolished to make way for a new supermarket.' }, { w: 'Subsequently /ˈsʌbsɪkwəntli/', m: 'Sau đó, tiếp theo đó (Dùng trong Process)', ex: 'Subsequently, the mixture is heated at a high temperature.' }], quiz: { q: 'Khi viết bài IELTS Writing Task 1 dạng Quy trình nhân tạo (Man-made Process), ngữ pháp nào được sử dụng chủ đạo?', opts: ['Thì Quá khứ tiếp diễn chủ động', 'Thể Bị động ở thì Hiện tại đơn (is/are + V3/ed)', 'Thì Tương lai hoàn thành', 'Câu mệnh lệnh'], ans: 1, exp: 'Quy trình sản xuất nhân tạo tập trung vào các bước tác động lên nguyên liệu nên dùng Bị động Hiện tại đơn (is collected, is filtered...).' } },
+                            { no: 37, type: 'Bài giảng 3D', title: 'Buổi 37 - 48: IELTS Writing Task 2 — Cấu trúc Tháp 4 Đoạn & Công thức Đoạn văn P.E.E.L', core: 'Mỗi đoạn thân bài (Body Paragraph) trong Writing Task 2 phải được xây dựng chặt chẽ theo mô hình 3D P-E-E-L để đạt điểm Coherence & Cohesion và Task Response 6.5+.', formula: 'P (Point: Câu chủ đề nêu luận điểm) ➔ E (Explanation: Giải thích nguyên nhân/cơ chế) ➔ E (Example: Ví dụ thực tế) ➔ L (Link: Chốt lại liên hệ đề bài)', vocab: [{ w: 'There is no denying that...', m: 'Không thể phủ nhận rằng...', ex: 'There is no denying that technology has revolutionized education.' }, { w: 'A prime example of this is...', m: 'Một ví dụ điển hình cho điều này là...', ex: 'A prime example of this is the widespread use of remote working.' }], quiz: { q: 'Trong công thức viết đoạn văn thân bài P.E.E.L của IELTS Writing Task 2, hai chữ "E" đại diện cho thành phần nào?', opts: ['End và Exit', 'Explanation (Giải thích lập luận) và Example (Ví dụ minh họa)', 'Emotion và Energy', 'Error và Edit'], ans: 1, exp: 'P.E.E.L = Point (Luận điểm) - Explanation (Giải thích) - Example (Ví dụ) - Link (Liên kết chốt ý).' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c3_speaking',
+                        skillName: 'Speaking Part 2-3 & Bổ Trợ Ngữ Pháp Nâng Cao',
+                        skillCategory: 'speaking',
+                        visual3DType: 'speaking',
+                        sessions: [
+                            { no: 49, type: 'Thực hành AI', title: 'Buổi 49 - 60: Chiến thuật Speaking Part 3 (Công thức A.R.E.C) & Kiểm tra Tổng hợp Chặng 3 (Mốc 5.5+ IELTS)', core: 'Ở Speaking Part 3, giám khảo hỏi về các vấn đề xã hội trừu tượng. Tuyệt đối không trả lời chỉ về bản thân ("I like...") mà phải khái quát hóa ("In general, many people in society tend to...").', formula: 'A.R.E.C = Answer directly ➔ Reason (Why) ➔ Example (Social evidence) ➔ Contrast/Condition (On the other hand...)', vocab: [{ w: 'From a broader perspective', m: 'Nhìn từ góc độ rộng hơn / toàn diện hơn', ex: 'From a broader perspective, public transport reduces carbon footprints.' }, { w: 'Play a pivotal role in', m: 'Đóng vai trò then chốt/quan trọng trong việc...', ex: 'Parents play a pivotal role in shaping a child\'s character.' }], quiz: { q: 'Điểm khác biệt lớn nhất giữa câu trả lời IELTS Speaking Part 1 và Speaking Part 3 là gì?', opts: ['Part 3 trả lời ngắn hơn Part 1', 'Part 1 hỏi về cá nhân người thi, còn Part 3 yêu cầu phân tích, thảo luận ở góc độ xã hội khái quát và học thuật hơn', 'Part 3 không cần giải thích lý do', 'Part 3 được phép chuẩn bị giấy nháp 1 phút'], ans: 1, exp: 'Speaking Part 3 đánh giá khả năng tư duy phản biện và thảo luận các chủ đề xã hội trừu tượng.' } }
+                        ]
+                    }
+                ]
+            },
+
+            // =================================================================
+            // CHẶNG 4: BỨT PHÁ BAND 6.0+ (BAND 5.5 -> 6.0+) - 55 BUỔI
+            // =================================================================
+            {
+                id: 4,
+                name: 'Upper-Inter (5.5 - 6.0+)',
+                shortTitle: 'Chặng 4: Bứt phá 6.0+',
+                bandRange: '5.5 ➔ 6.0+ IELTS',
+                totalSessions: 55,
+                stepHeightClass: 'md:h-52',
+                goalText: 'Cần nỗ lực học tập trong <b class="text-blue-600">55 buổi học</b> ở chặng này để làm chủ các dạng bài học thuật khó nhất (Listening Section 4, Reading Passage 3, 4 dạng Essay Task 2) và đạt <b class="text-orange-600">Band 6.0+ IELTS</b>.',
+                outcomes: [
+                    {
+                        icon: 'fa-graduation-cap',
+                        title: 'Listening Section 4 (Bài giảng Đại học)',
+                        desc: 'Nghe hiểu bài độc thoại học thuật kéo dài liên tục không nghỉ giữa chừng dựa vào các từ chuyển ý (Signposting Language).'
+                    },
+                    {
+                        icon: 'fa-magnifying-glass-chart',
+                        title: 'Reading Passage 3 (Suy luận sâu)',
+                        desc: 'Xử lý dạng bài Multiple Choice dài, Summary Completion có Box từ vựng (đòi hỏi biến đổi từ đồng nghĩa & ngữ pháp phức tạp).'
+                    },
+                    {
+                        icon: 'fa-scale-balanced',
+                        title: 'Writing Task 2 (4 Dạng Luận Học Thuật)',
+                        desc: 'Phân tích sắc bén Opinion Essay, Discussion Essay, Advantages & Disadvantages, và Causes - Problems - Solutions.'
+                    },
+                    {
+                        icon: 'fa-award',
+                        title: 'Bổ trợ Ngữ pháp Câu Phức & Luyện Đề Rút Gọn',
+                        desc: 'Ứng dụng Đảo ngữ (Inversion), Mệnh đề phân từ (Participle Clauses), Câu chẻ (Cleft Sentences) và luyện bộ Đề thi rút gọn.'
+                    }
+                ],
+                modules: [
+                    {
+                        moduleId: 'c4_listen_read',
+                        skillName: 'Listening Section 4 & Reading Passage 3',
+                        skillCategory: 'listening_reading',
+                        visual3DType: 'vocab',
+                        sessions: [
+                            { no: 1, type: 'Bài giảng 3D', title: 'Buổi 1 - 15: Làm chủ Signposting Words trong Listening Section 4 & Reading Passage 3', core: 'Trong bài giảng học thuật Section 4, diễn giả sử dụng các cụm từ chỉ dẫn (Signposting words: Moving on to, Turning now to, What is particularly striking is...) để báo hiệu sắp chuyển sang ý chứa đáp án tiếp theo.', formula: 'Signpost Signal + Sub-heading on Question Sheet = Định vị chính xác dòng chứa đáp án không bị lạc trôi!', vocab: [{ w: 'Signposting language', m: 'Ngôn ngữ chỉ dẫn chuyển đoạn trong bài giảng học thuật', ex: 'Listen for signposting phrases to track the speaker\'s progress.' }, { w: 'Detrimental /ˌdetrɪˈmentl/', m: 'Có hại, gây tổn hại (= harmful)', ex: 'Excessive screen time has a detrimental effect on sleep quality.' }], quiz: { q: 'Khi đang nghe IELTS Listening Section 4, nếu bạn lỡ mất 1 câu, chiến thuật xử lý thông minh nhất là gì?', opts: ['Dừng lại cố nhớ câu vừa qua', 'Nhìn sẵn từ khóa ở Tiêu đề phụ (Sub-heading) và câu tiếp theo, lắng nghe từ chuyển đoạn (Signposting) để bắt kịp ngay mạch bài', 'Bỏ luôn các câu còn lại', 'Đoán bừa toàn bộ'], ans: 1, exp: 'Theo dõi các Sub-headings trên đề và nghe Signposting words giúp bạn luôn biết diễn giả đang nói tới phần nào.' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c4_writing_speaking',
+                        skillName: 'Writing Task 2 Chuyên sâu & Speaking Nâng cao',
+                        skillCategory: 'writing',
+                        visual3DType: 'writing',
+                        sessions: [
+                            { no: 16, type: 'Phòng luyện 3D', title: 'Buổi 16 - 30: Chuyên sâu 4 Dạng Luận Writing Task 2 & Kỹ thuật Phản biện (Counter-argument)', core: 'Nắm vững cách chia bố cục cân bằng cho Discussion Essay (Discuss both views and give your opinion) và kỹ thuật nhượng bộ - phản biện (While some argue that..., I contend that...) để đạt 6.5 - 7.0 Task Response.', formula: 'Concession & Refutation: Granted, [Quan điểm đối lập có lý một phần]; nevertheless, [Lập luận phản bác sắc bén hơn của bạn].', vocab: [{ w: 'Proponents /prəˈpəʊnənts/', m: 'Những người ủng hộ một quan điểm (= supporters)', ex: 'Proponents of nuclear energy argue that it reduces carbon emissions.' }, { w: 'Outweigh /ˌaʊtˈweɪ/', m: 'Vượt trội hơn, lớn hơn (Advantages outweigh disadvantages)', ex: 'In my view, the benefits of studying abroad far outweigh the drawbacks.' }], quiz: { q: 'Với đề bài "Do the advantages of this trend outweigh the disadvantages?", bạn cần làm gì trong bài viết?', opts: ['Chỉ nêu mặt lợi mà không nhắc tới mặt hại', 'Chỉ nêu mặt hại', 'Phân tích cả mặt lợi và mặt hại, đồng thời làm rõ bên nào vượt trội hơn (nặng ký hơn) xuyên suốt bài', 'Kể một câu chuyện cá nhân'], ans: 2, exp: 'Đề hỏi "outweigh" (bên nào nặng hơn) nên bắt buộc phải đặt cả 2 mặt lên bàn cân và chứng minh mặt vượt trội.' } }
+                        ]
+                    },
+                    {
+                        moduleId: 'c4_supp_grammar',
+                        skillName: 'Bổ trợ Ngữ pháp Nâng cao & Đề thi rút gọn',
+                        skillCategory: 'grammar_pron',
+                        visual3DType: 'grammar',
+                        sessions: [
+                            { no: 31, type: 'Bài giảng 3D', title: 'Buổi 31 - 42: Bổ Trợ Ngữ Pháp Band 6.5+: Câu Ghép, Câu Phức, Mệnh Đề Phân Từ & Đảo Ngữ', core: 'Đa dạng hóa cấu trúc câu (Grammatical Range and Accuracy) bằng cách kết hợp Mệnh đề nhượng bộ (Although / Despite the fact that), Câu điều kiện hỗn hợp và Đảo ngữ nhấn mạnh (Not only... but also).', formula: 'Inversion: Not only + Trợ động từ + S + V, but S also + V (Not only does exercise improve health, but it also boosts mental clarity.)', vocab: [{ w: 'Notwithstanding', m: 'Mặc dù, bất chấp (= Despite)', ex: 'Notwithstanding the high cost, renewable energy is a vital investment.' }, { w: 'Indispensable /ˌɪndɪˈspensəbl/', m: 'Không thể thiếu được, cực kỳ thiết yếu', ex: 'Digital literacy has become an indispensable skill in the modern workplace.' }], quiz: { q: 'Câu nào sau đây sử dụng đúng cấu trúc Đảo ngữ (Inversion) với "Not only" để ăn điểm ngữ pháp Band 6.5+?', opts: ['Not only technology saves time, but it also increases productivity.', 'Not only does technology save time, but it also increases productivity.', 'Not only technology does save time, it increases productivity.', 'Not only saving time technology does.'], ans: 1, exp: 'Khi "Not only" đứng đầu câu, mệnh đề đầu phải đảo trợ động từ lên trước chủ ngữ: "Not only + does + S + V(nguyên mẫu)...".' } },
+                            { no: 43, type: 'Kiểm tra', title: 'Buổi 43 - 55: Luyện Bộ Đề Thi Rút Gọn (Mini Mock Tests) & Phân Tích Lỗi Sai Adaptive', core: 'Thực hành các bài thi rút gọn theo từng Passage/Section dưới áp lực thời gian thực, thống kê tỷ lệ câu sai theo dạng bài để AI Adaptive bù đắp lỗ hổng ngay lập tức.', formula: 'Analyze Mistakes = Tìm nguyên nhân sai (Từ vựng? Bẫy Distractor? Đọc thiếu từ khóa?) ➔ Ghi vào Sổ tay Từ đồng nghĩa', vocab: [{ w: 'Error Analysis', m: 'Phân tích bản chất lỗi sai sau mỗi đề luyện', ex: 'Thorough error analysis is more effective than doing ten tests blindly.' }], quiz: { q: 'Sau khi làm xong một đề luyện tập IELTS Reading/Listening, bước quan trọng nhất giúp tăng band điểm thực sự là gì?', opts: ['Chỉ xem tổng số câu đúng rồi chuyển ngay sang đề mới', 'Phân tích chi tiết từng câu sai (Error Analysis), đối chiếu bảng Paraphrase giữa câu hỏi và bài đọc/Transcript', 'Xóa đề đi làm lại ngay lập tức', 'Học thuộc lòng đáp án A, B, C'], ans: 1, exp: 'Phân tích nguyên nhân sai và lập bảng đối chiếu Paraphrase là phương pháp duy nhất giúp bạn không lặp lại lỗi cũ.' } }
+                        ]
+                    }
+                ]
+            },
+
+            // =================================================================
+            // CHẶNG 5: CHINH PHỤC 6.5+ IELTS (BAND 6.0 -> 6.5+) - 40 BUỔI
+            // =================================================================
+            {
+                id: 5,
+                name: 'Mastery (6.0 - 6.5+)',
+                shortTitle: 'Chặng 5: Đích 6.5+ IELTS',
+                bandRange: '6.0 ➔ 6.5+ IELTS',
+                totalSessions: 40,
+                stepHeightClass: 'md:h-64',
+                goalText: 'Hoàn thành <b class="text-blue-600">40 buổi thực chiến chuyên sâu</b> cuối cùng với bộ đề chuẩn cấu trúc thi thật, tối ưu hóa chiến thuật phân bổ thời gian và tự tin <b class="text-orange-600">Chinh phục 6.5+ IELTS</b>.',
+                outcomes: [
+                    {
+                        icon: 'fa-trophy',
+                        title: 'Listening 7.0+ & Reading 7.0+',
+                        desc: 'Đạt độ chính xác ổn định 30 - 34/40 câu đúng trong thời gian quy định (60 phút Reading phân bổ 15p - 20p - 25p).'
+                    },
+                    {
+                        icon: 'fa-feather-pointed',
+                        title: 'Writing 6.0 - 6.5+ (Quản lý 60 phút)',
+                        desc: 'Hoàn thành chuẩn chỉnh cả Task 1 (20 phút) và Task 2 (40 phút) với từ vựng Collocations tự nhiên và liên kết mạch lạc.'
+                    },
+                    {
+                        icon: 'fa-microphone',
+                        title: 'Speaking 6.5+ (Bộ đề Forecast Quý)',
+                        desc: 'Thực chiến phòng thi ảo Full 3 Parts (11 - 14 phút) theo bộ đề Forecast mới nhất, sử dụng Idioms và ngữ điệu tự nhiên.'
+                    },
+                    {
+                        icon: 'fa-stopwatch',
+                        title: 'Thực Chiến Đề Thi Chuẩn Cấu Trúc',
+                        desc: 'Hoàn thành trọn bộ Full Mock Tests dưới áp lực phòng thi thật, sẵn sàng tâm lý và kỹ thuật cho kỳ thi IELTS chính thức.'
+                    }
+                ],
+                modules: [
+                    {
+                        moduleId: 'c5_full_test',
+                        skillName: 'Đề Thi Chuẩn Cấu Trúc & Thực Chiến 4 Kỹ Năng',
+                        skillCategory: 'test',
+                        visual3DType: 'writing',
+                        sessions: [
+                            { no: 1, type: 'Thực chiến Đề thi', title: 'Buổi 1 - 15: Thực Chiến Full Test Listening & Reading (Chiến thuật Phân bổ Thời gian 15-20-25)', core: 'Phân bổ đúng 15 phút cho Passage 1 (mục tiêu đúng 12-13/13 câu), 20 phút cho Passage 2, và 25 phút cho Passage 3. Nhập đáp án trực tiếp không đợi đến phút cuối!', formula: 'Reading Time Management: Passage 1 (15m) + Passage 2 (20m) + Passage 3 (25m) = 60 Minutes (Target: 30+/40 câu)', vocab: [{ w: 'Time allocation', m: 'Sự phân bổ thời gian hợp lý trong phòng thi', ex: 'Strict time allocation prevents panic during Reading Passage 3.' }, { w: 'educated guess', m: 'Phán đoán có cơ sở bằng phương pháp loại trừ', ex: 'Never leave a blank; always make an educated guess.' }], quiz: { q: 'Chiến thuật phân bổ thời gian 60 phút tối ưu nhất cho 3 Passages trong bài thi IELTS Reading là gì?', opts: ['20 phút - 20 phút - 20 phút bằng nhau', '15 phút (Passage 1) - 20 phút (Passage 2) - 25 phút (Passage 3) và điền đáp án ngay sau mỗi Passage', '40 phút cho Passage 1 và 20 phút cho 2 Passage còn lại', 'Làm Passage 3 trước hết 45 phút'], ans: 1, exp: 'Độ khó tăng dần từ Passage 1 đến Passage 3 nên cần tiết kiệm thời gian ở Passage 1 (15p) để dành 25p cho Passage 3.' } },
+                            { no: 16, type: 'Thực hành AI', title: 'Buổi 16 - 28: Chấm Chữa Chuyên Sâu Writing Task 1 & Task 2 Theo 4 Tiêu Chí Giám Khảo (TR, CC, LR, GRA)', core: 'Rà soát bài viết theo Checklist 4 tiêu chí chấm điểm chính thức: Task Achievement/Response (25%), Coherence & Cohesion (25%), Lexical Resource (25%), Grammatical Range & Accuracy (25%).', formula: '5 Phút Lập Dàn Ý + 30 Phút Viết + 5 Phút Kiểm Tra Lỗi Chính Tả / Chia Động Từ / Mạo Từ', vocab: [{ w: 'Coherence and Cohesion', m: 'Tính mạch lạc về ý tưởng và liên kết giữa các câu/đoạn', ex: 'Use referencing pronouns (this, these, such) to improve cohesion.' }, { w: 'Lexical Resource', m: 'Vốn từ vựng phong phú, đúng ngữ cảnh (Collocations)', ex: 'Avoid repeating basic words; use topic-specific collocations.' }], quiz: { q: 'Trong bài thi IELTS Writing, tỷ trọng điểm của Task 1 và Task 2 được tính như thế nào?', opts: ['Task 1 chiếm 50%, Task 2 chiếm 50%', 'Task 1 chiếm 1/3 (33%), Task 2 chiếm 2/3 (67%) tổng điểm Writing', 'Task 1 chiếm 80%, Task 2 chiếm 20%', 'Chỉ chấm điểm Task 2'], ans: 1, exp: 'Task 2 có hệ số điểm gấp đôi Task 1 (chiếm 2/3 tổng điểm Writing), vì vậy cần dành đúng 40 phút cho Task 2.' } },
+                            { no: 29, type: 'Thực chiến Đề thi', title: 'Buổi 29 - 40: Thực Chiến Phòng Thi Ảo Speaking Full 3 Parts & Tổng Duyệt Trước Ngày Thi (6.5+ IELTS)', core: 'Mô phỏng 1-1 toàn bộ 3 phần thi Speaking (11-14 phút), rèn kỹ năng kéo giờ tự nhiên khi gặp câu hỏi khó (Buying time phrases) và giữ sự tự tin, trôi chảy.', formula: 'Buying Time: "That\'s an interesting question. Well, I\'ve never thought about it before, but I suppose..."', vocab: [{ w: 'Off the top of my head', m: 'Nghĩ nhanh ngay lúc này (Cụm từ ăn điểm Speaking)', ex: 'Off the top of my head, I\'d say environmental protection is the top priority.' }, { w: 'Pass with flying colours', m: 'Vượt qua kỳ thi với kết quả xuất sắc rực rỡ', ex: 'With this adaptive roadmap, you will pass the IELTS exam with flying colours!' }], quiz: { q: 'Khi gặp một câu hỏi khó chưa kịp nghĩ ra ý ngay trong IELTS Speaking Part 3, bạn nên xử lý thế nào?', opts: ['Im lặng hoàn toàn suốt 15 giây', 'Dùng các cụm câu giờ tự nhiên (Well, that\'s a tough question, let me see...) để giữ mạch độ trôi chảy (Fluency)', 'Nói bằng tiếng Việt', 'Xin giám khảo đổi sang bài thi Viết'], ans: 1, exp: 'Sử dụng các cụm "Buying time" tự nhiên giúp bạn có thêm vài giây suy nghĩ mà vẫn được tính điểm Fluency & Lexical Resource.' } }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        /***********************************************************************
+         * PHẦN 2: QUẢN LÝ TRẠNG THÁI NGƯỜI HỌC & BỘ MÁY ADAPTIVE LEARNING
+         ***********************************************************************/
+        let currentStageIdx = 0; // Mặc định hiển thị Chặng 1 (hoặc chặng phù hợp trình độ)
+        let currentModuleFilter = 'all';
+        let completedSessionsMap = JSON.parse(localStorage.getItem('ielts_adaptive_completed_v1') || '{}');
+
+        // Modal State
+        let activeModalStageIdx = 0;
+        let activeModalModIdx = 0;
+        let activeModalSessIdx = 0;
+        let current3DVisualizerType = 'ipa';
+
+        // Adaptive Personalization State
+        let userStartStage = 0;
+        let userWeakSkill = 'all';
+        let userDailyMinutes = 90;
+
+        // Helper: Expand grouped sessions so the table shows full continuous lessons or clear structured rows
+        function getExpandedSessionsForStage(stageIdx) {
+            const stage = STAGES_DATA[stageIdx];
+            const rows = [];
+            stage.modules.forEach((mod, mIdx) => {
+                mod.sessions.forEach((sess, sIdx) => {
+                    const key = `s${stage.id}_m${mIdx}_b${sess.no}`;
+                    // Determine Adaptive Tag based on user config
+                    let adaptiveStatus = 'normal'; // 'priority' | 'fast' | 'exempt' | 'normal'
+                    if (stageIdx < userStartStage) {
+                        adaptiveStatus = 'exempt';
+                    } else if (userWeakSkill !== 'all' && mod.skillCategory.includes(userWeakSkill)) {
+                        adaptiveStatus = 'priority';
+                    } else if (userWeakSkill !== 'all' && !mod.skillCategory.includes(userWeakSkill) && stageIdx === userStartStage) {
+                        adaptiveStatus = 'fast';
+                    }
+
+                    rows.push({
+                        key,
+                        stageIdx,
+                        modIdx: mIdx,
+                        sessIdx: sIdx,
+                        skillName: mod.skillName,
+                        skillCategory: mod.skillCategory,
+                        visual3DType: mod.visual3DType,
+                        no: sess.no,
+                        type: sess.type,
+                        title: sess.title,
+                        core: sess.core,
+                        adaptiveStatus,
+                        completed: !!completedSessionsMap[key]
+                    });
+                });
+            });
+            return rows;
+        }
+
+        /***********************************************************************
+         * PHẦN 3: RENDER BIỂU ĐỒ BẬC THANG 5 CHẶNG & BẢNG LỘ TRÌNH CHUẨN MẪU
+         ***********************************************************************/
+        function renderStaircase() {
+            const container = document.getElementById('staircase-container');
+            container.innerHTML = STAGES_DATA.map((st, idx) => {
+                const isSelected = idx === currentStageIdx;
+                const isExempt = idx < userStartStage;
+                const rows = getExpandedSessionsForStage(idx);
+                const doneCount = rows.filter(r => r.completed).length;
+                const pct = Math.round((doneCount / rows.length) * 100);
+
+                let bgClass = 'bg-amber-200/80 hover:bg-amber-200 text-slate-800 border-amber-300';
+                if (isSelected) {
+                    bgClass = 'bg-gradient-to-t from-orange-500 to-amber-400 text-white border-orange-600 shadow-xl shadow-orange-500/25 ring-2 ring-orange-400';
+                } else if (isExempt) {
+                    bgClass = 'bg-emerald-100/90 hover:bg-emerald-200/80 text-emerald-900 border-emerald-300';
+                } else if (idx > currentStageIdx) {
+                    bgClass = 'bg-orange-200/75 hover:bg-orange-300/80 text-slate-800 border-orange-300';
+                }
+
+                return `
+                    <div onclick="selectStage(${idx})" class="stair-step cursor-pointer flex flex-col justify-between rounded-2xl border-2 p-3.5 relative ${st.stepHeightClass} ${bgClass}">
+                        <!-- Top Mascot / Pin if active or final -->
+                        ${isSelected ? `
+                            <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md whitespace-nowrap flex items-center gap-1">
+                                <i class="fa-solid fa-location-dot text-amber-300"></i> Đang xem
+                            </div>
+                        ` : ''}
+                        ${idx === 4 ? `
+                            <div class="absolute -top-6 right-2 text-amber-500 text-lg" title="Đích 6.5+ IELTS">
+                                <i class="fa-solid fa-crown"></i>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex items-center justify-between gap-1">
+                            <span class="text-[11px] font-extrabold uppercase tracking-tight ${isSelected ? 'text-amber-100' : 'text-slate-600'}">
+                                ${st.shortTitle}
+                            </span>
+                            <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${isSelected ? 'bg-black/20 text-white' : 'bg-white/70 text-slate-700'}">
+                                ${st.totalSessions} buổi
+                            </span>
+                        </div>
+
+                        <div class="my-auto py-1">
+                            <div class="text-sm sm:text-base font-extrabold leading-tight">${st.bandRange}</div>
+                            <div class="text-[11px] mt-0.5 ${isSelected ? 'text-white/90' : 'text-slate-600'}">
+                                ${isExempt ? '✓ Đã nắm vững (Miễn giảm)' : `Hoàn thành: ${pct}%`}
+                            </div>
+                        </div>
+
+                        <!-- Bottom Progress Strip -->
+                        <div class="w-full h-1.5 rounded-full bg-black/10 overflow-hidden">
+                            <div class="h-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}" style="width: ${isExempt ? 100 : pct}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderStageModulePills() {
+            const st = STAGES_DATA[currentStageIdx];
+            const pillsContainer = document.getElementById('stage-module-pills');
+            let html = `
+                <button onclick="setModuleFilter('all')" class="px-3 py-1.5 rounded-xl text-xs font-extrabold transition whitespace-nowrap ${
+                    currentModuleFilter === 'all'
+                        ? 'bg-orange-500 text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }">
+                    Tất cả học phần (${st.totalSessions} buổi)
+                </button>
+            `;
+            st.modules.forEach(mod => {
+                const active = currentModuleFilter === mod.moduleId;
+                html += `
+                    <button onclick="setModuleFilter('${mod.moduleId}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                        active
+                            ? 'bg-orange-500 text-white shadow-sm'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }">
+                        ${mod.skillName}
+                    </button>
+                `;
+            });
+            pillsContainer.innerHTML = html;
+        }
+
+        function renderStageOutcomes() {
+            const st = STAGES_DATA[currentStageIdx];
+            document.getElementById('stage-goal-text').innerHTML = st.goalText;
+            document.getElementById('table-stage-heading').innerHTML = `
+                <i class="fa-solid fa-list-check text-blue-600"></i>
+                <span>Chi Tiết Lộ Trình — ${st.shortTitle} (${st.bandRange})</span>
+            `;
+
+            const badge = document.getElementById('stage-adaptive-badge');
+            if (currentStageIdx < userStartStage) {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0';
+                badge.textContent = '✓ Adaptive: Đã vượt qua chặng này (Có thể ôn nhanh)';
+            } else if (currentStageIdx === userStartStage) {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-orange-100 text-orange-800 border border-orange-300 shrink-0';
+                badge.textContent = '🔥 Adaptive: Chặng xuất phát trọng tâm của bạn';
+            } else {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-300 shrink-0';
+                badge.textContent = '🎯 Adaptive: Chặng mục tiêu tiếp theo';
+            }
+
+            const grid = document.getElementById('stage-outcomes-grid');
+            grid.innerHTML = st.outcomes.map(item => `
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-sm flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0 mt-0.5">
+                        <i class="fa-solid ${item.icon}"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs sm:text-sm font-extrabold text-slate-800">${item.title}</h4>
+                        <p class="text-xs text-slate-600 mt-1 leading-relaxed">${item.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRoadmapTable() {
+            const st = STAGES_DATA[currentStageIdx];
+            const searchQ = (document.getElementById('lesson-search-input')?.value || '').trim().toLowerCase();
+            const adaptiveFilter = document.getElementById('filter-adaptive-tag')?.value || 'all';
+            const tbody = document.getElementById('roadmap-table-body');
+
+            let html = '';
+            st.modules.forEach((mod, mIdx) => {
+                if (currentModuleFilter !== 'all' && currentModuleFilter !== mod.moduleId) return;
+
+                // Filter sessions inside this module
+                const filteredSessions = [];
+                mod.sessions.forEach((sess, sIdx) => {
+                    const key = `s${st.id}_m${mIdx}_b${sess.no}`;
+                    const isDone = !!completedSessionsMap[key];
+                    let adaptiveStatus = 'normal';
+                    if (currentStageIdx < userStartStage) adaptiveStatus = 'exempt';
+                    else if (userWeakSkill !== 'all' && mod.skillCategory.includes(userWeakSkill)) adaptiveStatus = 'priority';
+                    else if (userWeakSkill !== 'all' && !mod.skillCategory.includes(userWeakSkill)) adaptiveStatus = 'fast';
+
+                    if (searchQ && !sess.title.toLowerCase().includes(searchQ) && !mod.skillName.toLowerCase().includes(searchQ)) return;
+                    if (adaptiveFilter === 'priority' && adaptiveStatus !== 'priority') return;
+                    if (adaptiveFilter === 'uncompleted' && isDone) return;
+
+                    filteredSessions.push({ sess, sIdx, key, isDone, adaptiveStatus });
+                });
+
+                if (filteredSessions.length === 0) return;
+
+                filteredSessions.forEach((item, idx) => {
+                    const { sess, sIdx, key, isDone, adaptiveStatus } = item;
+
+                    // Badge color for lesson type
+                    let typeBadgeCls = 'bg-blue-50 text-blue-700 border-blue-200';
+                    if (sess.type.includes('3D')) typeBadgeCls = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                    else if (sess.type.includes('AI')) typeBadgeCls = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    else if (sess.type.includes('Kiểm tra') || sess.type.includes('Thực chiến')) typeBadgeCls = 'bg-rose-50 text-rose-700 border-rose-200';
+
+                    // Adaptive recommendation pill
+                    let adaptivePill = '';
+                    if (adaptiveStatus === 'priority') {
+                        adaptivePill = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-orange-100 text-orange-800 border border-orange-300"><i class="fa-solid fa-fire text-orange-500"></i> Ưu tiên Adaptive (Học kỹ)</span>`;
+                    } else if (adaptiveStatus === 'exempt') {
+                        adaptivePill = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-forward"></i> Đã nắm vững (Có thể lướt)</span>`;
+                    } else if (adaptiveStatus === 'fast') {
+                        adaptivePill = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200"><i class="fa-solid fa-bolt"></i> Lướt nhanh lý thuyết</span>`;
+                    }
+
+                    html += `
+                        <tr class="hover:bg-blue-50/40 transition group ${isDone ? 'bg-emerald-50/20' : 'bg-white'}">
+                            ${idx === 0 ? `
+                                <td rowspan="${filteredSessions.length}" class="bg-brandWarm/80 border-r border-brandWarmBorder p-4 align-middle text-center">
+                                    <div class="font-extrabold text-slate-800 text-xs sm:text-sm leading-snug">${mod.skillName}</div>
+                                    <div class="mt-2 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/90 border border-amber-300 text-[11px] font-bold text-amber-900">
+                                        <i class="fa-solid fa-cube text-blue-600"></i> Có mô phỏng 3D
+                                    </div>
+                                </td>
+                            ` : ''}
+                            <td class="py-3.5 px-3 border-r border-slate-200 text-center font-mono font-bold text-slate-600 whitespace-nowrap">
+                                <div>Buổi ${sess.no}</div>
+                                <div class="text-[10px] font-normal text-slate-400">45 phút</div>
+                            </td>
+                            <td class="py-3.5 px-3 border-r border-slate-200 text-center whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold border ${typeBadgeCls}">
+                                    ${sess.type}
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                                    <div class="space-y-1 flex-1 cursor-pointer" onclick="openLessonModal(${currentStageIdx}, ${mIdx}, ${sIdx})">
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-extrabold text-slate-800 group-hover:text-blue-600 transition ${isDone ? 'line-through text-slate-400' : ''}">
+                                                ${sess.title}
+                                            </span>
+                                            ${adaptivePill}
+                                        </div>
+                                        <p class="text-xs text-slate-500 line-clamp-1">${sess.core}</p>
+                                    </div>
+
+                                    <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                                        <!-- Checkbox Complete -->
+                                        <button onclick="toggleSessionComplete('${key}')" title="Đánh dấu hoàn thành buổi học"
+                                            class="w-8 h-8 rounded-xl border flex items-center justify-center transition ${
+                                                isDone
+                                                    ? 'bg-emerald-500 border-emerald-600 text-white shadow-sm'
+                                                    : 'bg-white border-slate-300 text-slate-300 hover:border-blue-500 hover:text-blue-500'
+                                            }">
+                                            <i class="fa-solid fa-check text-xs"></i>
+                                        </button>
+                                        <!-- Open 3D Lesson Button -->
+                                        <button onclick="openLessonModal(${currentStageIdx}, ${mIdx}, ${sIdx})"
+                                            class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition">
+                                            <i class="fa-solid fa-cube"></i>
+                                            <span>Học & 3D</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
+            if (!html) {
+                html = `
+                    <tr>
+                        <td colspan="4" class="py-10 text-center text-slate-400 text-sm">
+                            Không tìm thấy buổi học nào khớp với bộ lọc hiện tại. Hãy chọn "Tất cả buổi học".
+                        </td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+            updateGlobalMetrics();
+        }
+
+        function selectStage(idx) {
+            currentStageIdx = idx;
+            currentModuleFilter = 'all';
+            renderStaircase();
+            renderStageModulePills();
+            renderStageOutcomes();
+            renderRoadmapTable();
+        }
+
+        function setModuleFilter(modId) {
+            currentModuleFilter = modId;
+            renderStageModulePills();
+            renderRoadmapTable();
+        }
+
+        function toggleSessionComplete(key) {
+            if (completedSessionsMap[key]) {
+                delete completedSessionsMap[key];
+            } else {
+                completedSessionsMap[key] = true;
+            }
+            localStorage.setItem('ielts_adaptive_completed_v1', JSON.stringify(completedSessionsMap));
+            renderStaircase();
+            renderRoadmapTable();
+        }
+
+        function applyAdaptivePersonalization() {
+            userStartStage = parseInt(document.getElementById('cfg-start-band').value, 10) || 0;
+            userWeakSkill = document.getElementById('cfg-weak-skill').value || 'all';
+            userDailyMinutes = parseInt(document.getElementById('cfg-daily-time').value, 10) || 90;
+
+            currentStageIdx = userStartStage;
+            renderStaircase();
+            renderStageModulePills();
+            renderStageOutcomes();
+            renderRoadmapTable();
+        }
+
+        function updateGlobalMetrics() {
+            const totalStandard = 250; // 45 + 50 + 60 + 55 + 40
+            let skippedSessions = 0;
+            for (let i = 0; i < userStartStage; i++) {
+                skippedSessions += STAGES_DATA[i].totalSessions;
+            }
+            const remainingSessions = totalStandard - skippedSessions;
+            const savedPct = Math.round((skippedSessions / totalStandard) * 100);
+
+            document.getElementById('metric-total-sessions').textContent = `${remainingSessions} Buổi`;
+            document.getElementById('metric-saved-sessions').textContent = skippedSessions > 0 ? `Rút gọn ${savedPct}%` : 'Chuẩn 100%';
+
+            // Overall completion across all sample items
+            let totalItems = 0;
+            let doneItems = 0;
+            STAGES_DATA.forEach((st, sIdx) => {
+                const rows = getExpandedSessionsForStage(sIdx);
+                totalItems += rows.length;
+                doneItems += rows.filter(r => r.completed || sIdx < userStartStage).length;
+            });
+            const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+            document.getElementById('metric-completed-pct').textContent = `${pct}%`;
+        }
+
+        function toggleAdaptiveConfigPanel() {
+            const drawer = document.getElementById('adaptive-config-drawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        /***********************************************************************
+         * PHẦN 4: BÀI TEST CHẨN ĐOÁN THÍCH ỨNG (CAT PLACEMENT TEST ENGINE)
+         ***********************************************************************/
+        const CAT_QUESTIONS = [
+            { band: 3.0, skill: 'Grammar Foundation (Band 3.0)', q: 'She ______ at herself in the mirror before going out yesterday.', opts: ['look', 'looks', 'looked', 'looking'], ans: 2 },
+            { band: 4.0, skill: 'Pronunciation & Vocabulary (Band 4.0)', q: 'Neither of the two candidates ______ suitable for this position.', opts: ['are', 'is', 'were', 'have been'], ans: 1 },
+            { band: 4.5, skill: 'IELTS Reading / Paraphrasing (Band 4.5)', q: 'Which word is the closest academic synonym for "reduce" in the sentence "Governments must reduce pollution"?', opts: ['mitigate', 'exacerbate', 'fluctuate', 'proliferate'], ans: 0 },
+            { band: 5.5, skill: 'IELTS Writing Task 1 (Band 5.5)', q: 'In a Process Diagram, which grammatical structure is primarily used to describe man-made manufacturing steps?', opts: ['Past Continuous Active', 'Present Simple Passive (is/are + V3/ed)', 'Future Perfect', 'Imperative Clauses'], ans: 1 },
+            { band: 6.0, skill: 'Advanced Grammar - Inversion (Band 6.0)', q: 'Choose the correct inverted sentence for IELTS Writing Task 2:', opts: ['Not only technology saves time, but it also boosts efficiency.', 'Not only does technology save time, but it also boosts efficiency.', 'Not only technology does save time, it boosts efficiency.', 'Not only saving time does technology.'], ans: 1 },
+            { band: 6.5, skill: 'Academic Lexical Resource (Band 6.5+)', q: 'The old industrial zone was demolished to ______ a modern recreational complex.', opts: ['make way for', 'take into account', 'turn a blind eye to', 'jump to conclusions'], ans: 0 }
+        ];
+
+        let catCurrentIdx = 0;
+        let catEstimatedBand = 3.5;
+
+        function openDiagnosticModal() {
+            catCurrentIdx = 0;
+            catEstimatedBand = 3.5;
+            document.getElementById('diagnostic-modal').classList.remove('hidden');
+            document.getElementById('cat-question-area').classList.remove('hidden');
+            document.getElementById('cat-result-area').classList.add('hidden');
+            renderCatQuestion();
+        }
+
+        function closeDiagnosticModal() {
+            document.getElementById('diagnostic-modal').classList.add('hidden');
+        }
+
+        function renderCatQuestion() {
+            const item = CAT_QUESTIONS[catCurrentIdx];
+            document.getElementById('cat-q-index').textContent = `${catCurrentIdx + 1} / ${CAT_QUESTIONS.length}`;
+            document.getElementById('cat-current-band-badge').textContent = `Độ khó: Band ${item.band.toFixed(1)}`;
+            document.getElementById('cat-skill-pill').textContent = item.skill;
+            document.getElementById('cat-question-text').textContent = item.q;
+
+            document.getElementById('cat-options-list').innerHTML = item.opts.map((opt, idx) => `
+                <button onclick="answerCatQuestion(${idx})" class="p-3 rounded-xl border border-slate-300 hover:border-blue-500 hover:bg-blue-50 text-left text-xs sm:text-sm font-bold text-slate-700 transition">
+                    <span class="inline-block w-6 h-6 rounded-lg bg-slate-100 text-slate-700 text-center mr-2 font-mono">${String.fromCharCode(65 + idx)}</span>
+                    ${opt}
+                </button>
+            `).join('');
+        }
+
+        function answerCatQuestion(selectedIdx) {
+            const item = CAT_QUESTIONS[catCurrentIdx];
+            if (selectedIdx === item.ans) {
+                catEstimatedBand = Math.min(6.5, catEstimatedBand + 0.5);
+            } else {
+                catEstimatedBand = Math.max(0.0, catEstimatedBand - 0.4);
+            }
+            catCurrentIdx++;
+            if (catCurrentIdx < CAT_QUESTIONS.length) {
+                renderCatQuestion();
+            } else {
+                showCatResult();
+            }
+        }
+
+        function showCatResult() {
+            document.getElementById('cat-question-area').classList.add('hidden');
+            const resBox = document.getElementById('cat-result-area');
+            resBox.classList.remove('hidden');
+
+            let recommendedStage = 0;
+            if (catEstimatedBand >= 5.2) recommendedStage = 3;
+            else if (catEstimatedBand >= 4.3) recommendedStage = 2;
+            else if (catEstimatedBand >= 3.3) recommendedStage = 1;
+            else recommendedStage = 0;
+
+            const st = STAGES_DATA[recommendedStage];
+            document.getElementById('cat-result-title').textContent = `Trình độ Chẩn đoán: ~Band ${catEstimatedBand.toFixed(1)} IELTS`;
+            document.getElementById('cat-result-desc').innerHTML = `
+                Thuật toán Adaptive Learning đề xuất bạn bắt đầu từ <b>${st.shortTitle} (${st.bandRange})</b>.
+                Các chặng trước đó sẽ được đánh dấu <b>Đã nắm vững</b> để tiết kiệm thời gian tối đa!
+            `;
+            resBox.dataset.recStage = recommendedStage;
+        }
+
+        function applyCatResultToRoadmap() {
+            const recStage = parseInt(document.getElementById('cat-result-area').dataset.recStage || '0', 10);
+            document.getElementById('cfg-start-band').value = String(recStage);
+            closeDiagnosticModal();
+            applyAdaptivePersonalization();
+        }
+
+        /***********************************************************************
+         * PHẦN 5: PHÒNG HỌC TƯƠNG TÁC & MÔ PHỎNG 3D THREE.JS (5 CHẾ ĐỘ 3D)
+         ***********************************************************************/
+        let modalScene, modalCamera, modalRenderer, modalControls, modalRootGroup;
+        let modalLabels = [];
+        let modalAnimCallbacks = [];
+        let modalClock = new THREE.Clock();
+        let threeInitialized = false;
+
+        // Interactive 3D Sub-states
+        let ipaVoiced = true;
+        let ipaOpenness = 0.7;
+        let grammarSubMode = 'svo'; // 'svo' | 'passive' | 'relative' | 'pronoun'
+        let writingSubMode = 'chart'; // 'chart' | 'peel' | 'process'
+
+        function openLessonModal(stageIdx, modIdx, sessIdx) {
+            activeModalStageIdx = stageIdx;
+            activeModalModIdx = modIdx;
+            activeModalSessIdx = sessIdx;
+
+            const modal = document.getElementById('lesson-3d-modal');
+            modal.classList.remove('hidden');
+
+            if (!threeInitialized) {
+                initModalThreeJS();
+                threeInitialized = true;
+            }
+            populateModalLessonContent();
+            setTimeout(resizeModalThreeJS, 60);
+        }
+
+        function closeLessonModal() {
+            document.getElementById('lesson-3d-modal').classList.add('hidden');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function navigateModalLesson(dir) {
+            const st = STAGES_DATA[activeModalStageIdx];
+            const mod = st.modules[activeModalModIdx];
+            let nextS = activeModalSessIdx + dir;
+            if (nextS >= 0 && nextS < mod.sessions.length) {
+                activeModalSessIdx = nextS;
+            } else if (dir > 0 && activeModalModIdx + 1 < st.modules.length) {
+                activeModalModIdx++;
+                activeModalSessIdx = 0;
+            } else if (dir < 0 && activeModalModIdx - 1 >= 0) {
+                activeModalModIdx--;
+                activeModalSessIdx = st.modules[activeModalModIdx].sessions.length - 1;
+            }
+            populateModalLessonContent();
+        }
+
+        function populateModalLessonContent() {
+            const st = STAGES_DATA[activeModalStageIdx];
+            const mod = st.modules[activeModalModIdx];
+            const sess = mod.sessions[activeModalSessIdx];
+            const key = `s${st.id}_m${activeModalModIdx}_b${sess.no}`;
+            const isDone = !!completedSessionsMap[key];
+
+            document.getElementById('modal-session-badge').textContent = `${st.shortTitle} • Buổi ${sess.no}`;
+            document.getElementById('modal-lesson-title').textContent = sess.title;
+            document.getElementById('modal-skill-tag').textContent = mod.skillName;
+            document.getElementById('modal-core-theory').textContent = sess.core;
+            document.getElementById('modal-formula-box').textContent = `📌 Công thức / Quy tắc: ${sess.formula}`;
+
+            // Complete button state
+            const cBtn = document.getElementById('modal-complete-btn');
+            if (isDone) {
+                cBtn.className = 'px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-extrabold flex items-center gap-1.5 transition';
+                cBtn.innerHTML = '<i class="fa-solid fa-check-double"></i><span>Đã Hoàn Thành</span>';
+            } else {
+                cBtn.className = 'px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold flex items-center gap-1.5 transition';
+                cBtn.innerHTML = '<i class="fa-solid fa-check"></i><span>Đánh dấu Hoàn thành</span>';
+            }
+
+            // Vocab & Examples list
+            const vocabEl = document.getElementById('modal-vocab-list');
+            vocabEl.innerHTML = sess.vocab.map(v => `
+                <div onclick="speakText('${v.ex.replace(/'/g, "\\'")}')" class="p-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 cursor-pointer transition flex items-start justify-between gap-2">
+                    <div>
+                        <div class="text-xs sm:text-sm font-extrabold text-cyan-300 font-mono">${v.w} <span class="text-slate-300 font-sans font-semibold">— ${v.m}</span></div>
+                        <div class="text-xs text-slate-300 mt-1 italic">"${v.ex}"</div>
+                    </div>
+                    <button class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+
+            // Mini Quiz
+            const qObj = sess.quiz;
+            document.getElementById('modal-quiz-question').textContent = qObj.q;
+            document.getElementById('modal-quiz-feedback').classList.add('hidden');
+            document.getElementById('modal-quiz-options').innerHTML = qObj.opts.map((opt, idx) => `
+                <button id="mquiz-opt-${idx}" onclick="checkModalQuizAnswer(${idx})" class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left text-xs font-bold text-slate-200 transition">
+                    <span class="font-mono text-amber-400 mr-2">${String.fromCharCode(65 + idx)}.</span> ${opt}
+                </button>
+            `).join('');
+
+            // Switch 3D scene to match module's default 3D visualizer
+            switch3DVisualizerType(mod.visual3DType || 'grammar');
+        }
+
+        function checkModalQuizAnswer(selectedIdx) {
+            const st = STAGES_DATA[activeModalStageIdx];
+            const mod = st.modules[activeModalModIdx];
+            const sess = mod.sessions[activeModalSessIdx];
+            const qObj = sess.quiz;
+            const isCorrect = selectedIdx === qObj.ans;
+
+            const fb = document.getElementById('modal-quiz-feedback');
+            fb.classList.remove('hidden');
+            if (isCorrect) {
+                fb.className = 'mt-3 p-3 rounded-xl text-xs leading-relaxed bg-emerald-950/80 border border-emerald-500/50 text-emerald-200';
+                fb.innerHTML = `<b>🎉 Chính xác!</b> ${qObj.exp} <div class="mt-1 text-amber-300 font-bold">✓ Hệ thống Adaptive đã tự động ghi nhận Hoàn thành buổi học này!</div>`;
+                const key = `s${st.id}_m${activeModalModIdx}_b${sess.no}`;
+                completedSessionsMap[key] = true;
+                localStorage.setItem('ielts_adaptive_completed_v1', JSON.stringify(completedSessionsMap));
+                renderStaircase();
+                renderRoadmapTable();
+                populateModalLessonContent();
+                document.getElementById('modal-quiz-feedback').classList.remove('hidden');
+            } else {
+                fb.className = 'mt-3 p-3 rounded-xl text-xs leading-relaxed bg-rose-950/80 border border-rose-500/50 text-rose-200';
+                fb.innerHTML = `<b>💡 Chưa chính xác.</b> Đáp án đúng là <b>${String.fromCharCode(65 + qObj.ans)}</b>: ${qObj.exp}`;
+            }
+        }
+
+        function toggleLessonCompletedFromModal() {
+            const st = STAGES_DATA[activeModalStageIdx];
+            const sess = st.modules[activeModalModIdx].sessions[activeModalSessIdx];
+            const key = `s${st.id}_m${activeModalModIdx}_b${sess.no}`;
+            toggleSessionComplete(key);
+            populateModalLessonContent();
+        }
+
+        function speakModalSummary() {
+            const st = STAGES_DATA[activeModalStageIdx];
+            const sess = st.modules[activeModalModIdx].sessions[activeModalSessIdx];
+            if (sess.vocab && sess.vocab.length > 0) {
+                speakText(sess.vocab.map(v => v.ex).join(' '));
+            }
+        }
+
+        /***********************************************************************
+         * PHẦN 6: THREE.JS 3D ENGINE CHO 5 CHẾ ĐỘ TRỰC QUAN HÓA BÀI HỌC
+         ***********************************************************************/
+        function initModalThreeJS() {
+            const container = document.getElementById('modal-three-container');
+            const w = container.clientWidth || 700;
+            const h = container.clientHeight || 500;
+
+            modalScene = new THREE.Scene();
+            modalScene.background = new THREE.Color(0x060b16);
+
+            modalCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 200);
+            modalCamera.position.set(0, 5.2, 13.0);
+
+            modalRenderer = new THREE.WebGLRenderer({ antialias: true });
+            modalRenderer.setSize(w, h);
+            modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(modalRenderer.domElement);
+
+            modalControls = new THREE.OrbitControls(modalCamera, modalRenderer.domElement);
+            modalControls.enableDamping = true;
+            modalControls.dampingFactor = 0.06;
+            modalControls.target.set(0, 1.4, 0);
+
+            modalScene.add(new THREE.AmbientLight(0xdbeafe, 0.75));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+            dirLight.position.set(8, 15, 10);
+            modalScene.add(dirLight);
+
+            // Studio Stage Floor
+            const floor = new THREE.Mesh(
+                new THREE.CylinderGeometry(8.5, 9.0, 0.3, 64),
+                new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.4, metalness: 0.3 })
+            );
+            floor.position.y = -0.15;
+            modalScene.add(floor);
+
+            const grid = new THREE.PolarGridHelper(8.4, 16, 8, 64, 0x1e293b, 0x1e293b);
+            grid.position.y = 0.01;
+            modalScene.add(grid);
+
+            modalRootGroup = new THREE.Group();
+            modalScene.add(modalRootGroup);
+
+            window.addEventListener('resize', resizeModalThreeJS);
+            animateModalThreeJS();
+        }
+
+        function resizeModalThreeJS() {
+            const container = document.getElementById('modal-three-container');
+            if (!container || !modalRenderer || !modalCamera) return;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            if (w === 0 || h === 0) return;
+            modalCamera.aspect = w / h;
+            modalCamera.updateProjectionMatrix();
+            modalRenderer.setSize(w, h);
+        }
+
+        function clearModal3D() {
+            if (!modalRootGroup) return;
+            while (modalRootGroup.children.length > 0) {
+                modalRootGroup.remove(modalRootGroup.children[0]);
+            }
+            modalAnimCallbacks = [];
+            modalLabels = [];
+            const lblContainer = document.getElementById('modal-labels-container');
+            if (lblContainer) lblContainer.innerHTML = '';
+        }
+
+        function addModal3DLabel(vec3, title, subtitle = '', borderColor = '#38bdf8', speakStr = '') {
+            const container = document.getElementById('modal-labels-container');
+            const el = document.createElement('div');
+            el.className = 'label-3d px-2.5 py-1.5 rounded-xl glass-dark text-center shadow-lg border cursor-pointer';
+            el.style.borderColor = borderColor;
+            el.innerHTML = `
+                <div class="text-xs font-extrabold whitespace-nowrap" style="color:${borderColor}">${title}</div>
+                ${subtitle ? `<div class="text-[10px] text-slate-200 whitespace-nowrap mt-0.5">${subtitle}</div>` : ''}
+            `;
+            el.onclick = () => {
+                if (speakStr) speakText(speakStr);
+                else speakModalSummary();
+            };
+            container.appendChild(el);
+            modalLabels.push({ el, pos: vec3.clone() });
+        }
+
+        function updateModalLabelsProjection() {
+            const container = document.getElementById('modal-three-container');
+            if (!container) return;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            const v = new THREE.Vector3();
+            modalLabels.forEach(item => {
+                v.copy(item.pos).project(modalCamera);
+                if (v.z > 1) {
+                    item.el.style.opacity = '0';
+                    return;
+                }
+                item.el.style.opacity = '1';
+                item.el.style.left = `${(v.x * 0.5 + 0.5) * w}px`;
+                item.el.style.top = `${(-(v.y * 0.5) + 0.5) * h}px`;
+            });
+        }
+
+        function switch3DVisualizerType(vType) {
+            current3DVisualizerType = vType;
+            ['ipa', 'grammar', 'vocab', 'writing', 'speaking'].forEach(t => {
+                const btn = document.getElementById(`vbtn-${t}`);
+                if (btn) {
+                    btn.className = (t === vType)
+                        ? 'px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-cyan-500 text-slate-950 shadow'
+                        : 'px-2 py-1 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white';
+                }
+            });
+
+            clearModal3D();
+            const subCtrlEl = document.getElementById('modal-3d-subcontrols');
+
+            if (vType === 'ipa') {
+                document.getElementById('modal-3d-mode-title').textContent = 'MÔ PHỎNG 3D KHẨU HÌNH IPA & DÂY THANH QUẢN';
+                subCtrlEl.innerHTML = `
+                    <button onclick="ipaVoiced=true; switch3DVisualizerType('ipa'); speakText('This bird is very big.');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${ipaVoiced ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">Hữu thanh (Voiced - Rung cổ họng)</button>
+                    <button onclick="ipaVoiced=false; switch3DVisualizerType('ipa'); speakText('Think about the ship.');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${!ipaVoiced ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">Vô thanh (Unvoiced - Luồng hơi)</button>
+                    <button onclick="ipaOpenness = ipaOpenness === 0.7 ? 1.3 : 0.7; switch3DVisualizerType('ipa');" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white">Đổi Độ Mở Hàm (/i:/ ⇄ /æ/)</button>
+                `;
+                build3D_IPA();
+            } else if (vType === 'grammar') {
+                document.getElementById('modal-3d-mode-title').textContent = 'MÔ PHỎNG 3D CẤU TRÚC NGỮ PHÁP & ĐẠI TỪ';
+                subCtrlEl.innerHTML = `
+                    <button onclick="grammarSubMode='svo'; switch3DVisualizerType('grammar');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${grammarSubMode==='svo' ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">Trật tự S - V - O</button>
+                    <button onclick="grammarSubMode='passive'; switch3DVisualizerType('grammar');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${grammarSubMode==='passive' ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">Đảo Bị Động (Passive)</button>
+                    <button onclick="grammarSubMode='relative'; switch3DVisualizerType('grammar');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${grammarSubMode==='relative' ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">Cầu Nối Mệnh Đề Quan Hệ</button>
+                `;
+                build3D_Grammar();
+            } else if (vType === 'vocab') {
+                document.getElementById('modal-3d-mode-title').textContent = 'MẠNG LƯỚI TỪ VỰNG HỌC THUẬT & CẦU NỐI PARAPHRASE 3D';
+                subCtrlEl.innerHTML = `
+                    <button onclick="speakModalSummary()" class="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950"><i class="fa-solid fa-volume-high mr-1"></i>Phát âm toàn bộ Collocations</button>
+                `;
+                build3D_VocabNetwork();
+            } else if (vType === 'writing') {
+                document.getElementById('modal-3d-mode-title').textContent = 'MÔ PHỎNG 3D BIỂU ĐỒ WRITING TASK 1 & THÁP LUẬN P.E.E.L TASK 2';
+                subCtrlEl.innerHTML = `
+                    <button onclick="writingSubMode='chart'; switch3DVisualizerType('writing');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${writingSubMode==='chart' ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">Task 1: Biểu đồ Xu hướng 3D</button>
+                    <button onclick="writingSubMode='peel'; switch3DVisualizerType('writing');" class="px-2.5 py-1 rounded-lg text-xs font-bold ${writingSubMode==='peel' ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}">Task 2: Tháp Đoạn Văn P.E.E.L</button>
+                `;
+                build3D_Writing();
+            } else {
+                document.getElementById('modal-3d-mode-title').textContent = 'THÁP PHẢN XẠ SPEAKING (A-R-E-C) & BỘ LỌC BẪY LISTENING';
+                subCtrlEl.innerHTML = `
+                    <button onclick="speakModalSummary()" class="px-3 py-1 rounded-lg text-xs font-bold bg-cyan-400 text-slate-950"><i class="fa-solid fa-microphone mr-1"></i>Nghe câu trả lời mẫu Band 6.5+</button>
+                `;
+                build3D_SpeakingStrategy();
+            }
+        }
+
+        // 1. Build 3D IPA Vocal Tract & Vocal Cord Simulator
+        function build3D_IPA() {
+            // Upper & Lower Jaw / Lips Ring
+            const upperJaw = new THREE.Mesh(
+                new THREE.TorusGeometry(1.6, 0.28, 16, 48, Math.PI),
+                new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.35 })
+            );
+            upperJaw.position.set(0, 2.1, 0);
+
+            const lowerJaw = new THREE.Mesh(
+                new THREE.TorusGeometry(1.6, 0.28, 16, 48, Math.PI),
+                new THREE.MeshStandardMaterial({ color: 0xf43f5e, roughness: 0.35 })
+            );
+            lowerJaw.rotation.z = Math.PI;
+            lowerJaw.position.set(0, 2.1 - ipaOpenness, 0);
+
+            // Tongue 3D Curve
+            const tongue = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 0.35, 1.4),
+                new THREE.MeshStandardMaterial({ color: 0xfb7185 })
+            );
+            tongue.position.set(0, 1.75 - ipaOpenness * 0.35, -0.2);
+
+            // Vocal Cord Ring at Throat
+            const cordColor = ipaVoiced ? 0x10b981 : 0xfacc15;
+            const vocalCords = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.65, 0.65, 0.9, 24),
+                new THREE.MeshStandardMaterial({ color: cordColor, emissive: cordColor, emissiveIntensity: 0.45 })
+            );
+            vocalCords.position.set(-3.2, 1.1, 0);
+
+            // Airflow particles
+            const airParticles = [];
+            for (let i = 0; i < 8; i++) {
+                const p = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 12), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+                modalRootGroup.add(p);
+                airParticles.push(p);
+            }
+
+            modalRootGroup.add(upperJaw, lowerJaw, tongue, vocalCords);
+
+            modalAnimCallbacks.push((t) => {
+                if (ipaVoiced) {
+                    const s = 1 + Math.sin(t * 25) * 0.14;
+                    vocalCords.scale.set(s, 1, s);
+                }
+                airParticles.forEach((p, idx) => {
+                    const prog = ((t * 1.6 + idx * 0.12) % 1);
+                    p.position.set(-3.0 + prog * 6.0, 1.8 + Math.sin(prog * Math.PI * 2) * 0.2, 0);
+                });
+            });
+
+            addModal3DLabel(new THREE.Vector3(0, 3.3, 0), ipaOpenness > 1 ? 'Khẩu hình mở rộng (/æ/, /ɑː/)' : 'Khẩu hình hẹp căng ngang (/i:/, /ɪ/)', 'Click để nghe phát âm mẫu', '#fb7185');
+            addModal3DLabel(new THREE.Vector3(-3.2, 2.2, 0), ipaVoiced ? 'Dây Thanh Quản: RUNG (Voiced)' : 'Dây Thanh Quản: KHÔNG RUNG (Unvoiced)', ipaVoiced ? '/b, d, g, v, ð, z/' : '/p, t, k, f, θ, s/', ipaVoiced ? '#34d399' : '#facc15');
+        }
+
+        // 2. Build 3D Grammar Structure (S-V-O, Passive Swap, Relative Clause Bridge)
+        function build3D_Grammar() {
+            if (grammarSubMode === 'passive') {
+                const leftBox = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.3, 1.3), new THREE.MeshStandardMaterial({ color: 0xfacc15 }));
+                leftBox.position.set(-3.2, 1.3, 0);
+                const verbCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 2.8, 24), new THREE.MeshStandardMaterial({ color: 0x10b981 }));
+                verbCyl.rotation.z = Math.PI / 2;
+                verbCyl.position.set(0, 1.3, 0);
+                const rightBox = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.3, 1.3), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
+                rightBox.position.set(3.2, 1.3, 0);
+                modalRootGroup.add(leftBox, verbCyl, rightBox);
+
+                addModal3DLabel(new THREE.Vector3(-3.2, 2.5, 0), 'New Subject (Object cũ)', 'The book / The product', '#facc15');
+                addModal3DLabel(new THREE.Vector3(0, 2.4, 0), 'PASSIVE VERB: BE + V3/ED', 'was written / is manufactured', '#34d399');
+                addModal3DLabel(new THREE.Vector3(3.2, 2.5, 0), 'Agent (by + Subject cũ)', 'by him / by the factory', '#38bdf8');
+            } else if (grammarSubMode === 'relative') {
+                const isl1 = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.4, 0.9, 8), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+                isl1.position.set(-3.4, 0.8, 0);
+                const isl2 = isl1.clone();
+                isl2.position.set(3.4, 0.8, 0);
+                const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-1.8, 1.1, 0), new THREE.Vector3(0, 2.6, 0), new THREE.Vector3(1.8, 1.1, 0));
+                const bridge = new THREE.Mesh(new THREE.TubeGeometry(curve, 32, 0.22, 12, false), new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x0284c7, emissiveIntensity: 0.4 }));
+                modalRootGroup.add(isl1, isl2, bridge);
+
+                addModal3DLabel(new THREE.Vector3(-3.4, 2.2, 0), 'Main Clause (Mệnh đề chính)', 'The students...', '#38bdf8');
+                addModal3DLabel(new THREE.Vector3(0, 3.2, 0), 'RELATIVE PRONOUN: WHO / WHICH / THAT / WHOSE', 'Cầu nối mở rộng câu phức Band 6.5+', '#22d3ee');
+                addModal3DLabel(new THREE.Vector3(3.4, 2.2, 0), 'Relative Clause (Mệnh đề phụ)', '...who study with Adaptive Learning achieve 6.5+.', '#facc15');
+            } else {
+                // Default S - V - O
+                const sSphere = new THREE.Mesh(new THREE.SphereGeometry(0.95, 28, 28), new THREE.MeshStandardMaterial({ color: 0x38bdf8 }));
+                sSphere.position.set(-3.4, 1.4, 0);
+                const vOct = new THREE.Mesh(new THREE.OctahedronGeometry(0.95, 0), new THREE.MeshStandardMaterial({ color: 0x10b981 }));
+                vOct.position.set(0, 1.8, 0);
+                const oBox = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), new THREE.MeshStandardMaterial({ color: 0xf472b6 }));
+                oBox.position.set(3.4, 1.4, 0);
+                modalRootGroup.add(sSphere, vOct, oBox);
+
+                modalAnimCallbacks.push((t) => { vOct.rotation.y = t * 1.2; });
+                addModal3DLabel(new THREE.Vector3(-3.4, 2.8, 0), '1. SUBJECT (Noun / Pronoun)', 'Chủ ngữ thực hiện hành động', '#38bdf8');
+                addModal3DLabel(new THREE.Vector3(0, 3.2, 0), '2. VERB + ADVERB', 'Động từ chia theo Thì & Chủ ngữ', '#34d399');
+                addModal3DLabel(new THREE.Vector3(3.4, 2.8, 0), '3. OBJECT + ADJECTIVE', 'Tân ngữ nhận tác động', '#f472b6');
+            }
+        }
+
+        // 3. Build 3D Vocabulary & Paraphrase Semantic Hub
+        function build3D_VocabNetwork() {
+            const st = STAGES_DATA[activeModalStageIdx];
+            const sess = st.modules[activeModalModIdx].sessions[activeModalSessIdx];
+
+            const centerHub = new THREE.Mesh(
+                new THREE.OctahedronGeometry(1.05, 1),
+                new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.45 })
+            );
+            centerHub.position.set(0, 1.8, 0);
+            modalRootGroup.add(centerHub);
+            addModal3DLabel(new THREE.Vector3(0, 3.3, 0), 'TOPIC & PARAPHRASE CORE', sess.title.split(':')[0], '#38bdf8');
+
+            const items = sess.vocab.length > 0 ? sess.vocab : [{ w: 'Keyword', m: 'Từ khóa', ex: 'Example' }];
+            const nodes = [
+                ...items,
+                { w: 'Synonym / Paraphrase', m: 'Từ đồng nghĩa ăn điểm Reading & Writing', ex: sess.formula }
+            ];
+
+            nodes.forEach((node, idx) => {
+                const angle = (idx / nodes.length) * Math.PI * 2;
+                const x = Math.cos(angle) * 3.8;
+                const z = Math.sin(angle) * 3.8;
+                const sphere = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.65, 24, 24),
+                    new THREE.MeshStandardMaterial({ color: idx % 2 === 0 ? 0x10b981 : 0xf59e0b })
+                );
+                sphere.position.set(x, 1.4, z);
+                modalRootGroup.add(sphere);
+
+                const line = new THREE.LineCurve3(new THREE.Vector3(0, 1.8, 0), new THREE.Vector3(x, 1.4, z));
+                modalRootGroup.add(new THREE.Mesh(new THREE.TubeGeometry(line, 12, 0.04, 8, false), new THREE.MeshBasicMaterial({ color: 0x38bdf8 })));
+
+                addModal3DLabel(new THREE.Vector3(x, 2.4, z), node.w, node.m, '#fef08a', node.ex);
+            });
+        }
+
+        // 4. Build 3D IELTS Writing Task 1 Chart & Task 2 PEEL Essay Tower
+        function build3D_Writing() {
+            if (writingSubMode === 'peel') {
+                const tiers = [
+                    { y: 0.45, w: 3.8, c: 0x38bdf8, title: 'L — LINK (Chốt đoạn & Liên kết đề bài)', sub: 'Therefore, this measure is essential.' },
+                    { y: 1.35, w: 3.3, c: 0x10b981, title: 'E — EXAMPLE (Ví dụ thực tế cụ thể)', sub: 'For instance, in Singapore...' },
+                    { y: 2.25, w: 2.8, c: 0xf59e0b, title: 'E — EXPLANATION (Giải thích nguyên nhân - kết quả)', sub: 'This is because...' },
+                    { y: 3.15, w: 2.3, c: 0xf43f5e, title: 'P — POINT (Topic Sentence - Luận điểm chính)', sub: 'First and foremost, ...' }
+                ];
+                tiers.forEach(t => {
+                    const block = new THREE.Mesh(new THREE.BoxGeometry(t.w, 0.72, 2.2), new THREE.MeshStandardMaterial({ color: t.c }));
+                    block.position.set(0, t.y, 0);
+                    modalRootGroup.add(block);
+                    addModal3DLabel(new THREE.Vector3(0, t.y + 0.1, 1.3), t.title, t.sub, '#ffffff');
+                });
+            } else {
+                // 3D Trend Bar Chart + Line Trend
+                const bars = [
+                    { yr: '2010', h: 1.1, c: 0x38bdf8, desc: 'Starting point (22%)' },
+                    { yr: '2015', h: 2.1, c: 0x06b6d4, desc: 'Rose steadily (42%)' },
+                    { yr: '2020', h: 1.6, c: 0xf59e0b, desc: 'Experienced a slight dip (32%)' },
+                    { yr: '2025', h: 3.4, c: 0x10b981, desc: 'Reached a peak (68%)' }
+                ];
+                const pts = [];
+                bars.forEach((b, idx) => {
+                    const x = (idx - 1.5) * 2.1;
+                    const mesh = new THREE.Mesh(new THREE.BoxGeometry(1.1, b.h, 1.1), new THREE.MeshStandardMaterial({ color: b.c }));
+                    mesh.position.set(x, b.h / 2, 0);
+                    modalRootGroup.add(mesh);
+                    pts.push(new THREE.Vector3(x, b.h + 0.25, 0));
+                    addModal3DLabel(new THREE.Vector3(x, b.h + 0.8, 0), `${b.yr}: ${b.desc}`, 'Task 1 Trend Language', '#fef08a', b.desc);
+                });
+                const curve = new THREE.CatmullRomCurve3(pts);
+                modalRootGroup.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 32, 0.07, 8, false), new THREE.MeshBasicMaterial({ color: 0xfacc15 })));
+            }
+        }
+
+        // 5. Build 3D Speaking A-R-E-C & Listening/Reading Strategy
+        function build3D_SpeakingStrategy() {
+            const steps = [
+                { x: -3.6, h: 1.2, c: 0x38bdf8, t: '1. Direct Answer', s: 'Trả lời trực tiếp câu hỏi' },
+                { x: -1.2, h: 1.9, c: 0x10b981, t: '2. Reason (Because)', s: 'Giải thích lý do tại sao' },
+                { x: 1.2, h: 2.6, c: 0xf59e0b, t: '3. Example (For instance)', s: 'Đưa ví dụ thực tế / cá nhân' },
+                { x: 3.6, h: 3.3, c: 0xec4899, t: '4. Contrast / Result', s: 'Mở rộng kết quả Band 6.5+' }
+            ];
+            steps.forEach(st => {
+                const col = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.75, st.h, 24), new THREE.MeshStandardMaterial({ color: st.c }));
+                col.position.set(st.x, st.h / 2, 0);
+                modalRootGroup.add(col);
+                addModal3DLabel(new THREE.Vector3(st.x, st.h + 0.65, 0), st.t, st.s, '#f8fafc');
+            });
+        }
+
+        function animateModalThreeJS() {
+            requestAnimationFrame(animateModalThreeJS);
+            if (!threeInitialized) return;
+            const t = modalClock.getElapsedTime();
+            if (modalControls) modalControls.update();
+            for (let i = 0; i < modalAnimCallbacks.length; i++) {
+                modalAnimCallbacks[i](t);
+            }
+            if (modalRenderer && modalScene && modalCamera) {
+                modalRenderer.render(modalScene, modalCamera);
+                updateModalLabelsProjection();
+            }
+        }
+
+        /***********************************************************************
+         * PHẦN 7: WEB SPEECH API (PHÁT ÂM TIẾNG ANH CHUẨN) & KHỞI TẠO
+         ***********************************************************************/
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const clean = text.replace(/\/.*?\//g, '').replace(/[•➔]/g, '');
+            const u = new SpeechSynthesisUtterance(clean);
+            u.lang = 'en-US';
+            u.rate = 0.94;
+            window.speechSynthesis.speak(u);
+        }
+
+        window.onload = function () {
+            renderStaircase();
+            renderStageModulePills();
+            renderStageOutcomes();
+            renderRoadmapTable();
+        };
+    </script>
+</body>
+</html>
